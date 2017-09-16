@@ -1,0 +1,7 @@
+Refract
+{
+$dudvmap "stormfox/effects/raindrop_normal3"
+$normalmap "stormfox/effects/raindrop_normal3"
+$refracttint "[0.95 0.95 0.95]"
+$refractamount .15
+}

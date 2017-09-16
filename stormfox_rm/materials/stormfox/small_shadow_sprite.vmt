@@ -1,0 +1,6 @@
+"UnlitGeneric"
+{
+	"$basetexture" "stormfox/small_shadow_sprite"
+	"$additive" "1"
+	"$no_fullbright" 1
+}

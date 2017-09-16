@@ -1,0 +1,10 @@
+Refract
+{
+$translucent 1
+$dudvmap "stormfox/effects/rainscreen"
+$normalmap "stormfox/effects/rainscreen"
+$refracttint "[0.95 0.95 0.95]"
+$refractamount .07
+$translucent 1
+$vertexalpha 1
+}
