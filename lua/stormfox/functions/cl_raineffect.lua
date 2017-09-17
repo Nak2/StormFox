@@ -324,10 +324,12 @@ local RainScreen_RT = GetRenderTarget("StormFox RainScreenRT",ScrW(),ScrH())
 local ScreenDummy = Material("stormfox/effects/rainscreen_dummy")
 local mat_Copy		= Material( "pp/fb" )
 local rainscreen_mat = Material("stormfox/effects/rainscreen")
-
+local old_raindrop = Material("sprites/heatwave")
 -- Draw drain on screen
 	local rainscreen_alpha = 0
 	hook.Add("HUDPaint","StormFox - RenderRainScreen",function()
+		local con = GetConVar("sf_allow_raindrops")
+		if con and not con:GetBool() then return end
 		local Gauge = StormFox.GetData("Gauge",20)
 		if Gauge <= 0 then rainscreen_alpha = 0 return end
 		local ft = FrameTime()
@@ -371,12 +373,18 @@ local rainscreen_mat = Material("stormfox/effects/rainscreen")
 
 	hook.Add("HUDPaint","StormFox - RainScreenEffect",function()
 		surface.SetDrawColor(255,255,255)
-		local grav = max(50 -  abs(EyeAngles().p),0) / 50 --Gravity the raindrops
+		local grav = max(50 -  abs(EyeAngles().p),0) / 60 --Gravity the raindrops
+		local con = GetConVar("sf_allow_raindrops")
+		local oldrain = con and not con:GetBool() or false
+		local ms = 1
+		if oldrain then
+			ms = 2
+		end
 		for i,d in ipairs(screenParticles) do
 			if d.rain then
 				surface.SetDrawColor(255,255,255)
-				surface.SetMaterial(rain_particles[d.p or 1])
-				surface.DrawTexturedRect(d.x,d.y,d.size,d.size * (1 + d.weight))
+				surface.SetMaterial(oldrain and old_raindrop or rain_particles[d.p or 1])
+				surface.DrawTexturedRect(d.x,d.y,d.size * ms,d.size * (1 + d.weight) * ms)
 				screenParticles[i].y = d.y + grav * d.weight * 100 * FrameTime()
 			else
 				local ll = d.life - SysTime()

@@ -110,6 +110,8 @@
 				clientTrickBox(panel,"sf_allow_dynamiclights")
 			-- Sunbeams
 				clientTrickBox(panel,"sf_allow_sunbeams",function() return not render.SupportsPixelShaders_2_0() end)
+			-- Raindrops
+				clientTrickBox(panel,"sf_allow_raindrops")
 			-- Dynamic shadows
 				clientTrickBox(panel,"sf_allow_dynamicshadow")
 			-- Dynamic shadows

@@ -73,7 +73,7 @@ else
 	CreateClientConVar("sf_allow_sunbeams","1",true,false,"Enable sunbeams.")
 	CreateClientConVar("sf_allow_dynamicshadow","0",true,false,"Enable dynamic light/shadows.")
 	CreateClientConVar("sf_redownloadlightmaps","1",true,false,"Lighterrors and light_environment fix (Can lagspike)")
-
+	CreateClientConVar("sf_allow_raindrops","1",true,false,"Enables raindrops on the screen")
 end
 
 -- Launch Stormfox
