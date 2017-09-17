@@ -270,7 +270,7 @@ hook.Add("Think","StormFox - light_env support",function()
 		t = SysTime() + 15
 	local con = GetConVar("sf_redownloadlightmaps")
 	if con and not con:GetBool() then return end
-	local ml = StormFox.GetData("MapLight")
+	local ml = StormFox.GetData("MapLight",0)
 	if abs(ml - oml) < 32 then return end
 	oml = ml
 	render.RedownloadAllLightmaps()
