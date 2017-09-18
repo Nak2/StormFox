@@ -159,13 +159,10 @@ local material_list = {"stormfox/effects/raindrop.vmt",
 	"stormfox/symbols/Sunny.png",
 	"stormfox/symbols/Thunder.png",
 	"stormfox/symbols/Windy.png",
-	"stormfox/MaterialReplacement.png",
 	"stormfox/clock_material.vmt",
 	"stormfox/combine_light_off.vmt",
 	"stormfox/imdoinguselessthings.png",
-	"stormfox/moon_dark.png",
 	"stormfox/moon_fix.vmt",
-	"stormfox/moon_full.png",
 	"stormfox/moon_glow.vmt",
 	"stormfox/normalmap.png",
 	"stormfox/raindrop-multi.png",
@@ -180,12 +177,12 @@ timer.Simple(30,function()
 	if g_SkyPaint then
 		_STORMFOX_TOPCOLOROR = _STORMFOX_TOPCOLOROR or g_SkyPaint.SetTopColor
 		function g_SkyPaint.SetTopColor(...)
-			local calldata = string.Explode("\n",debug.traceback())[3]
-			local caller = string.match(calldata,"%s-([%a%d/_-]+).lua")
+			local calldata = string.Explode("\n",debug.traceback())[3] or ""
+			local caller = string.match(calldata,"%s-([%a%d/_-]+).lua") or ""
 			local addon = string.match(caller,"addons/(.-)/")
-			caller = addon or "Unknown"
-			if caller ~= "stormfox_rm" then
-				ShowMessageBox("A mod is causing conflict","A mod is causing conflict with StormFox.\nThe mod is called '" .. caller .. "'.",true)
+			if not addon then return end
+			if addon ~= "stormfox_rm" then
+				ShowMessageBox("A mod is causing conflict","A mod is causing conflict with StormFox.\nThe mod is called '" .. addon .. "'.",true)
 			end
 			_STORMFOX_TOPCOLOROR(...)
 			--ShowMessageBox(title,problem,dontshow_option,yesnooption)
