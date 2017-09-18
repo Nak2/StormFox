@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.07
+StormFox.Version = 1.08
 
 if SERVER then
 	game.ConsoleCommand("sv_skyname painted\n")

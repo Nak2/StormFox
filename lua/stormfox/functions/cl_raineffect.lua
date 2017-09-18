@@ -349,7 +349,7 @@ local old_raindrop = Material("sprites/heatwave")
 		local temp = StormFox.GetData("Temperature",20)
 		
 		local acc = (viewAmount * clamp(temp - 4,0.1,(Gauge / 200))) * ft * 10
-		if acc <= 0 then
+		if acc <= 0 or not StormFox.Env.IsInRain() then
 			acc = -0.4 * ft
 		end
 		rainscreen_alpha = clamp(rainscreen_alpha + acc,0,0.8)

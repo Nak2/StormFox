@@ -380,7 +380,7 @@
 			end
 			local pw,ph = 200,284
 			panel = vgui.Create("DFrame")
-				panel:SetTitle("StormFox")
+				panel:SetTitle("StormFox " .. StormFox.Version)
 				panel:SetSize(pw,ph)
 				function panel.Paint(self,w,h)
 					surface.SetDrawColor(colors[2])
