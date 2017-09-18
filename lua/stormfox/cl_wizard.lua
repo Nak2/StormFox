@@ -59,6 +59,7 @@ local function ShowMessageBox(title,problem,dontshow_option,yesnooption,snd)
 	if options[problem] then return end
 	if occurred[problem] then return end
 	if snd then
+		print(snd)
 		LocalPlayer():EmitSound(snd)
 	end
 		occurred[problem] = true -- Error protection
@@ -197,7 +198,7 @@ timer.Simple(2,function()
 		end
 	end
 	if #a > 0 then
-		ShowMessageBox("You're missing materials","You're missing " .. #a .. " material" .. (#a ~= 1 and "s" or "") .. ". " .. table.concat( a, "\n" ),true)
+		ShowMessageBox("You're missing materials","You're missing " .. #a .. " material" .. (#a ~= 1 and "s" or "") .. ". ",true)
 	end
 end)
 
@@ -230,6 +231,6 @@ timer.Create("StormFox - Wizzardcheck",4,0,function()
 			end
 			LocalPlayer():EmitSound("buttons/lever2.wav")
 			ShowMessageBox("Done","All settings are now set to low.")
-		end,nil,"vo/k_lab/ba_pushinit.wav")
+		end,"vo/k_lab/ba_pushinit.wav")
 	end
 end)

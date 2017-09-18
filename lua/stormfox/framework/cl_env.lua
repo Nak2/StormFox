@@ -13,7 +13,8 @@ Potato protection
 		else
 			avagefps = buffer / bi
 			buffer = 0
-			conDetect = math.Clamp(math.Round(avagefps / 11),1,(cookie.GetNumber("StormFox_ultraqt",0) == 0 and 7 or 20))
+			local max = math.Clamp(math.Round(avagefps / 11),1,(cookie.GetNumber("StormFox_ultraqt",0) == 0 and 7 or 20))
+			conDetect = (conDetect + max) / 2
 			bi = 0
 		end
 	end)
@@ -280,12 +281,5 @@ hook.Add("HUDPaint","RainDebug2",function()
 	surface.SetFont("default")
 	surface.SetTextPos(24,120)
 	surface.SetTextColor(255,255,255)
-	surface.DrawText("Environment")
-	surface.SetTextPos(24,134)
-	local i = 0
-	for name,data in pairs(enviroment) do
-		i = i + 1
-		surface.SetTextPos(24,134 + i * 14)
-		surface.DrawText(name .. " " .. tostring(data))
-	end
+	--surface.DrawText("HQ: "..StormFox.GetExspensive())
 end)]]

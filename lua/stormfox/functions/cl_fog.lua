@@ -11,7 +11,7 @@ local SkyFog = function(scale)
 	local col = StormFox.GetData("Bottomcolor",Color(255,255,255))
 	local outside = StormFox.Env.IsOutside() or StormFox.Env.NearOutside()
 
-	local fogend,fogstart = StormFox.GetData("Fogend",0), StormFox.GetData("Fogstart",900)
+	local fogend,fogstart = StormFox.GetData("Fogend",10000), StormFox.GetData("Fogstart",10000)
 	local ft = FrameTime()
 	local amf = ft * 2500
 	if not outside then
