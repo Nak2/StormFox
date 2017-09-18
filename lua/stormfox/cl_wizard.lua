@@ -176,7 +176,7 @@ local material_list = {"stormfox/effects/raindrop.vmt",
 	"stormfox/snow-multi.png",
 	"stormfox/stormfox.png"
 }
-timer.Simple(2,function()
+timer.Simple(30,function()
 	if g_SkyPaint then
 		_STORMFOX_TOPCOLOROR = _STORMFOX_TOPCOLOROR or g_SkyPaint.SetTopColor
 		function g_SkyPaint.SetTopColor(...)
@@ -202,7 +202,7 @@ timer.Simple(2,function()
 	end
 end)
 
-local ts = SysTime() + 10
+local ts = SysTime() + 30
 timer.Create("StormFox - Wizzardcheck",4,0,function()
 	-- Only do this after 10 seconds. Just in case.
 	if ts >= SysTime() or not system.HasFocus() then return end
