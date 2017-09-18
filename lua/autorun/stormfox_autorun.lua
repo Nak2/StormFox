@@ -1,5 +1,6 @@
 StormFox = {}
 StormFox.Version = 1.08
+StormFox.WorkShopVersion = true
 
 if SERVER then
 	game.ConsoleCommand("sv_skyname painted\n")
@@ -43,10 +44,10 @@ end
 	end
 
 if SERVER then
-	-- Permissions 
-	resource.AddWorkshop("1132466603")
+	if StormFox.WorkShopVersion then
+		resource.AddWorkshop("1132466603")
+	else
 	-- Add addon content
-		--[[
 		local i = 0
 		local function AddDir(dir,dirlen)
 			if not dirlen then dirlen = dir:len() end
@@ -66,7 +67,8 @@ if SERVER then
 		AddDir("materials/stormfox")
 		AddDir("sound/stormfox")
 
-		MsgN("[StormFox] Added " .. i .. " content files")]]
+		MsgN("[StormFox] Added " .. i .. " content files")
+	end
 else
 	CreateClientConVar("sf_exspensive","0",true,false,"[0-7+] Enable exspensive weather calculations.")
 	CreateClientConVar("sf_material_replacment","1",true,false,"Enable material replacment for weather effects.")

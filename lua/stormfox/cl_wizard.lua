@@ -56,7 +56,7 @@ if file.Exists("stormfox/wizzard.txt","DATA") then
 end
 local occurred = {}
 local function ShowMessageBox(title,problem,dontshow_option,yesnooption,snd)
-	if options[problem] then return end
+	if options[title] then return end
 	if occurred[problem] then return end
 	if snd then
 		print(snd)
@@ -117,7 +117,7 @@ local function ShowMessageBox(title,problem,dontshow_option,yesnooption,snd)
 			yesbutton:SetPos(w / 3 - ww / 2, h - 40)
 			function yesbutton.DoClick ()
 				if tick and tick:GetChecked() then
-					options[problem] = true
+					options[title] = true
 					file.Write("stormfox/wizzard.txt",util.TableToJSON(options))
 				end
 				yesnooption()
@@ -126,7 +126,7 @@ local function ShowMessageBox(title,problem,dontshow_option,yesnooption,snd)
 		end
 		function closebutton.DoClick ()
 			if tick and tick:GetChecked() then
-				options[problem] = true
+				options[title] = true
 				file.Write("stormfox/wizzard.txt",util.TableToJSON(options))
 			end
 			panel:Remove()
