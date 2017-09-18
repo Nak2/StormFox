@@ -3,28 +3,32 @@ local max,min,clamp,rad,cos,sin = math.max,math.min,math.Clamp,math.rad,math.cos
 --[[-------------------------------------------------------------------------
 Potato protection
 ---------------------------------------------------------------------------]]
-	local avagefps = 1 / FrameTime()
-	local lastmessure = SysTime()
-	local buffer,bi = 0,0
+	local avagefps = 1 / RealFrameTime()
+	local bi,buffer = 0,0
+	local conDetect = 1
+	timer.Create("StormFox - PotatoSupport",0.5,0,function()
+		if bi < 10 then
+			buffer = buffer + 1 / RealFrameTime()
+			bi = bi + 1
+		else
+			avagefps = buffer / bi
+			buffer = 0
+			conDetect = math.Clamp(math.Round(avagefps / 11),1,(cookie.GetNumber("StormFox_ultraqt",0) == 0 and 7 or 20))
+			bi = 0
+		end
+	end)
 	function StormFox.GetExspensive()
 		local con = GetConVar("sf_exspensive")
 		local n = con:GetFloat() or 3
 		if n <= 0 then
 			-- Detect
-			if lastmessure > SysTime() - 2 then
-				buffer = buffer + 1 / FrameTime()
-				bi = bi + 1
-			else
-				lastmessure = SysTime()
-				avagefps = buffer / bi
-				bi = 0
-				buffer = 0
-			end
-			return math.Clamp(math.Round(avagefps / 11),1,(cookie.GetNumber("StormFox_ultraqt",0) == 0 and 7 or 20))
+			return conDetect
 		else
 			return n
 		end
-		return n
+	end
+	function StormFox.GetAvageFPS()
+		return avagefps or 1 / RealFrameTime()
 	end
 
 --[[-------------------------------------------------------------------------
@@ -62,11 +66,6 @@ Outdoor varables
 			if string.match(hittext,"window") or string.match(hittext,"glass") then return true end
 			return false
 		end
-	-- Get camara ang and pos from calcview
-		local eyepos,eyeang = Vector(0,0,0),Angle(0,0,0)
-		hook.Add("PreDrawOpaqueRenderables","StormFox Camara - outdoors",function()
-			eyepos,eyeang = EyePos(),EyeAngles()
-		end)
 	-- Get downfall norm
 		local function GetDFn() -- direction of rain
 			local Gauge = StormFox.GetData("Gauge",0)
@@ -126,7 +125,7 @@ Outdoor varables
 				Is it glass?
 		]]
 		local function HandleSkyPillar(ScanPos,norm,db)
-			local HitPos,HitGlass = CreateSkyPillar(ScanPos or eyepos,norm)
+			local HitPos,HitGlass = CreateSkyPillar(ScanPos or EyePos(),norm)
 
 			-- From eyepos. No need to use more tracers
 			if not ScanPos then
@@ -135,7 +134,7 @@ Outdoor varables
 			end
 
 			-- Something is in the way
-			local trace = ETPos(HitPos or ScanPos,eyepos)
+			local trace = ETPos(HitPos or ScanPos,EyePos())
 			--debugoverlay.Line(HitPos or ScanPos,eyepos,4,Color( 255, 255, 255 ),false)
 			if trace.Hit then
 				HitPos = trace.HitPos
@@ -152,7 +151,7 @@ Outdoor varables
 			end
 			if not pos then return end
 			if type(pos) == "Vector" then
-				pos = (FadeDistance - pos:DistToSqr(eyepos)) / FadeDistance
+				pos = (FadeDistance - pos:DistToSqr(EyePos())) / FadeDistance
 			end
 
 			if pos <= 0 then return end -- Throw it out if its 0 or less
@@ -185,6 +184,7 @@ Outdoor varables
 				end
 			-- Scan the enviroment
 				if lEnv > SysTime() then return end
+				local eyepos,eyeang = EyePos(),EyeAngles()
 				local exp = StormFox.GetExspensive()
 				lEnv = SysTime() + clamp( 1 - exp * 0.1,0.2,2)
 				table.Empty(enviroment)

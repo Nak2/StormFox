@@ -7,6 +7,7 @@ StormFox.SetData("SunMoonAngle",270)
 StormFox.SetData("Wind",0)
 StormFox.SetData("WindAngle",math.random(360))
 StormFox.SetData("ThunderLight",0)
+local updateTime = 10
 
 --[[-------------------------------------------------------------------------
 	Valid weather data-templats
@@ -194,7 +195,7 @@ StormFox.SetData("ThunderLight",0)
 		if not force and skyUpdate > SysTime() then return end
 		local t = StormFox.GetTimeSpeed()
 		if t <= 0 then t = 2 end
-		skyUpdate = SysTime() + 5 / t
+		skyUpdate = SysTime() + updateTime / t
 		-- Sun
 			local sunSize = floor(StormFox.GetData("SunSize") or 30,0)
 			local sunOverLay = floor(StormFox.GetData("SunOverlay") or 30,0)
@@ -212,9 +213,9 @@ StormFox.SetData("ThunderLight",0)
 			StormFox.SetMapBloom(0)
 	--	end
 
-		local time = StormFox.GetTime() -- The 5 seconds in the furture (Unless you speed up time)
+		local time = StormFox.GetTime() -- The updateTime seconds in the furture (Unless you speed up time)
 		if t <= 0 then t = 0.2 end
-			time = time + 5 / t
+			time = time + updateTime / t
 
 		local daytime = StormFox.GetDaylightAmount(time)
 		StormFox.SetData("Topcolor",LeapVarable(Get(CurrentWeatherData["SkyColor"],1),Get(CurrentWeatherData["NightColor"],1),1 - daytime),time)

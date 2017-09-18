@@ -71,12 +71,12 @@ local LocalPlayer = LocalPlayer
 		if not size then size = 1 end
 		local sky = ET(pos, fDN * -16384) --, MASK_SHOT)
 		if not sky.HitSky and sky.HitTexture != "TOOLS/TOOLSINVISIBLE" then
-
-		return nil,"No sky" end -- Not under sky
+			return nil
+		end -- Not under sky
 		--PrintTable(ET(sky.HitPos,pos))
 		--PrintTable(ET(sky.HitPos - Vector(0,0,5),pos))
 		local btr = ETPos(sky.HitPos + fDN,pos  + fDN)
-		if btr.Hit then return nil,"Mapboarder in the way" end -- Trace was inside world .. but backtrace checked it
+		if btr.Hit then return nil end -- Trace was inside world .. but backtrace checked it
 
 		-- We got a valid position now .. for now
 		local t_ground = ETHull(pos ,fDN * 16384 ,size , MASK_SHOT )
@@ -84,8 +84,11 @@ local LocalPlayer = LocalPlayer
 
 		-- Checl fpr water
 		local wtr = ETPos(t_ground.StartPos,t_ground.HitPos,-1)
-		if wtr.Hit and string.find(wtr.HitTexture,"water") then
+		if wtr.Hit and string.find(wtr.HitTexture:lower(),"water") then
 			t_ground = wtr
+			t_ground.HitWater = true
+		else
+			t_ground.HitWater = false
 		end
 		return t_ground
 	end
@@ -169,7 +172,7 @@ local LocalPlayer = LocalPlayer
 					-- HitNormal
 						drop.hitnorm = tr.HitNormal
 					-- HitWater
-						drop.hitwater = string.find(tr.HitTexture,"water")
+						drop.hitwater = tr.HitWater
 					-- NoDrop
 						drop.nodrop = string.find(tr.HitTexture,"TOOLS/TOOLSSKYBOX") or string.find(tr.HitTexture,"TOOLS/TOOLSINVISIBLE") or false
 						drop.alive = true
@@ -247,9 +250,16 @@ local rand = math.Rand
 local viewAmount = 0
 local rainAmount = 0
 local snow_particles = {(Material("particle/smokesprites_0001")),(Material("particle/smokesprites_0002")),(Material("particle/smokesprites_0003"))}
-local rain_particles = { (Material("stormfox/effects/raindrop")) , (Material("stormfox/effects/raindrop2")) }
+local rain_particles = { (Material("stormfox/effects/raindrop")), (Material("stormfox/effects/raindrop2"))}--, (Material("stormfox/effects/raindrop2")) }
 -- Create 2D raindrops
 	hook.Add("Think","StormFox - RenderFalldownScreenThink",function()
+		if not LocalPlayer() then return end
+		if LocalPlayer():WaterLevel() >= 3 then
+			if #screenParticles > 0 then
+				table.Empty(screenParticles)
+			end
+			return
+		end
 		if l > SysTime() then return end
 		-- Bin old particles
 			for i = #screenParticles,1,-1 do
@@ -258,7 +268,7 @@ local rain_particles = { (Material("stormfox/effects/raindrop")) , (Material("st
 				end
 			end
 		-- Safty first
-			if #screenParticles > 200 then print("aa") return end
+			if #screenParticles > 200 then return end
 		-- Is it even raining?
 			local Gauge = StormFox.GetData("Gauge",0)
 			if Gauge <= 0 then return end
@@ -282,7 +292,7 @@ local rain_particles = { (Material("stormfox/effects/raindrop")) , (Material("st
 				fDN:Normalize()
 			local a = EyeAngles():Forward():Dot(fDN)
 		viewAmount = -a
-		if viewAmount <= 0 then return end
+		if viewAmount <= 0 then viewAmount = 0 return end
 		rainAmount = max((10 - Gauge) / 10,0.1) -- 0 in heavy rain, 1 in light
 		-- Next rainrop
 			l = SysTime() + rand(rainAmount,rainAmount * 2) / viewAmount * 0.01
@@ -290,7 +300,7 @@ local rain_particles = { (Material("stormfox/effects/raindrop")) , (Material("st
 			drop.life = SysTime() + ran(0.4,1)
 			drop.x = ran(ScrW())
 			drop.y = ran(ScrH())
-			drop.size = 5 + rand(2,3) * Gauge
+			drop.size = 25 + rand(2,3) * Gauge
 			drop.weight = ran(0,1)
 			drop.rain = rain
 			drop.r = ran(360)
@@ -327,22 +337,27 @@ local rainscreen_mat = Material("stormfox/effects/rainscreen")
 local old_raindrop = Material("sprites/heatwave")
 -- Draw drain on screen
 	local rainscreen_alpha = 0
+	local icescreen_alpha = 0
 	hook.Add("HUDPaint","StormFox - RenderRainScreen",function()
+		if not LocalPlayer() then return end
 		local con = GetConVar("sf_allow_raindrops")
 		if con and not con:GetBool() then return end
+
 		local Gauge = StormFox.GetData("Gauge",20)
-		if Gauge <= 0 then rainscreen_alpha = 0 return end
-		local ft = FrameTime()
-		local acc = max(viewAmount * ft * 2,ft * -0.2)
-		if not StormFox.Env.IsInRain() then
-			acc = ft * -0.5
+		if LocalPlayer():WaterLevel() >= 3 then rainscreen_alpha = 0.8 return end
+		local ft = RealFrameTime()
+		local temp = StormFox.GetData("Temperature",20)
+		
+		local acc = (viewAmount * clamp(temp - 4,0.1,(Gauge / 200))) * ft * 10
+		if acc <= 0 then
+			acc = -0.4 * ft
 		end
-		rainscreen_alpha = clamp(rainscreen_alpha + acc,0,Gauge / 10)
+		rainscreen_alpha = clamp(rainscreen_alpha + acc,0,0.8)
 		if rainscreen_alpha <= 0 then return end
 		--if true then return end
 		cam.Start2D()
 		local w,h = ScrW(),ScrH()
-		local scale = 256 * 1.2
+		local scale = 256 * 1
 		-- Copy the backbuffer to the screen effect texture
 		render.UpdateScreenEffectTexture()
 		-- Render the screen
@@ -353,17 +368,12 @@ local old_raindrop = Material("sprites/heatwave")
 			render.SetRenderTarget( RainScreen_RT )
 				render.SetMaterial( mat_Copy )
 				render.DrawScreenQuad()
-			cam.Start2D()
-				surface.SetDrawColor(255,255,255)
-				surface.SetMaterial(Material("stormfox/effects/rainscreen"))
-				drawSemiRandomUV(0,0,w,h,scale,scale)
-			cam.End2D()
 		-- Reset
 		render.SetRenderTarget( OldRT )
 		-- Draw raindrops
 			surface.SetDrawColor(255,255,255)
-			surface.SetMaterial(Material("stormfox/effects/rainscreen"))
-			drawSemiRandomUV(0,0,w,h,255,255)
+			surface.SetMaterial(rainscreen_mat)
+			drawSemiRandomUV(0,0,w,h,scale,scale)
 		-- Override screen with old and draw
 			ScreenDummy:SetTexture("$basetexture",RainScreen_RT)
 		cam.End2D()
@@ -384,7 +394,7 @@ local old_raindrop = Material("sprites/heatwave")
 			if d.rain then
 				surface.SetDrawColor(255,255,255)
 				surface.SetMaterial(oldrain and old_raindrop or rain_particles[d.p or 1])
-				surface.DrawTexturedRect(d.x,d.y,d.size * ms,d.size * (1 + d.weight) * ms)
+				surface.DrawTexturedRect(d.x,d.y,d.size * ms,d.size * 1.2 * ms)
 				screenParticles[i].y = d.y + grav * d.weight * 100 * FrameTime()
 			else
 				local ll = d.life - SysTime()
@@ -393,6 +403,7 @@ local old_raindrop = Material("sprites/heatwave")
 				surface.DrawTexturedRectRotated(d.x,d.y,d.size + d.weight * 5,d.size + d.weight * 5,d.r)
 				screenParticles[i].y = d.y + grav * d.weight * 100 * FrameTime()
 			end
+			screenParticles[i].weight = max(screenParticles[i].weight - rand(1,0.2) * FrameTime(),0.01)
 		end
 	end)
 --[[]]
@@ -414,6 +425,7 @@ hook.Add("Think","StormFox - RenderFalldownHanlde",function()
 	local wind = StormFox.GetData("Wind",0)
 	local Gauge = StormFox.GetData("Gauge",0)
 	local eyepos = EyePos()
+	if LocalPlayer():WaterLevel() >= 3 then return end
 	--local sky_col = StormFox.GetData("Bottomcolor",Color(204,255,255))
 	--	sky_col = Color(max(sky_col.r,24),max(sky_col.g,155),max(sky_col.b,155),155)
 	local sky_col = Color(255,255,255)
@@ -579,7 +591,7 @@ end)
 local RenderRain = function(depth, sky)
 	--if depth or sky then return end
 	--if true then return end
-
+	if LocalPlayer():WaterLevel() >= 3 then return end
 	if not StormFox.GetData then return end
 	if depth or sky then return end
 	_STORMFOX_PEM:Draw()

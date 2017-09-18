@@ -54,6 +54,7 @@
 	function StormFox.IsDon(str)
 		return aimdata[str]
 	end
+	local cdata = {}
 	function StormFox.GetData(str,base)
 		if not StormFox.GetTime then return base end
 		if not data[str] then return base end
@@ -70,8 +71,16 @@
 			StormFox_AIMDATA[str] = nil
 			return data[str]
 		end
+		-- Cache
+		if cdata[str] then
+			if cdata[str][1] > SysTime() then
+				return cdata[str][2]
+			end
+		end
 		-- We need to calculate the data .. darn
-		return LeapVarable(data[str],aimdata[str][1],aimdata[str][2],timestamp),aimdata[str][1],aimdata[str][2]
+		n = LeapVarable(data[str],aimdata[str][1],aimdata[str][2],timestamp)
+		cdata[str] = {SysTime() + FrameTime() + 0.02,n}
+		return n,aimdata[str][1],aimdata[str][2]
 	end
 
 	local datacashe = {}

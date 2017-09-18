@@ -1,8 +1,0 @@
-Refract
-{
-$model 1
-$dudvmap "stormfox/screen_bump_dudv"
-$normalmap "stormfox/screen_bump_normal"
-$refracttint "[1 1 1]"
-$refractamount .02
-}

@@ -1,4 +1,6 @@
 StormFox = {}
+StormFox.Version = 1.06
+
 if SERVER then
 	game.ConsoleCommand("sv_skyname painted\n")
 end
@@ -44,7 +46,7 @@ if SERVER then
 	-- Permissions 
 	resource.AddWorkshop("1132466603")
 	-- Add addon content
-	--[[
+		--[[
 		local i = 0
 		local function AddDir(dir,dirlen)
 			if not dirlen then dirlen = dir:len() end
@@ -57,6 +59,7 @@ if SERVER then
 			for k, v in ipairs(files) do
 				local fil = dir .. "/" .. v --:sub(dirlen + 2)
 				resource.AddFile(fil,dirlen)
+			--	print('"' .. fil .. '",')
 				i = i + 1
 			end
 		end
@@ -108,10 +111,9 @@ for _,fil in ipairs(file.Find("stormfox/functions/*.lua","LUA")) do
 end
 --print("Rest")
 HandleFile("stormfox/" .. "sh_options.lua")
+HandleFile("stormfox/" .. "cl_wizard.lua")
 if SERVER then
 	HandleFile("stormfox/" .. "sv_map_lights.lua")
 	HandleFile("stormfox/" .. "sv_weather_controller.lua")
 	HandleFile("stormfox/" .. "sv_weather_generator.lua")
-else
-
 end

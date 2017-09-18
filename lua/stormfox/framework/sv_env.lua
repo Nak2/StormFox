@@ -172,6 +172,7 @@ hook.Add("StormFox - PostEntity","StormFox - FindEntities",FindEntities)
 
 -- Sun (w skypaint)
 	function StormFox.SetSunAngle(ang,setShadow,forceday)
+		if not ang then return end
 		local env_sun = StormFox.GetSun()
 		if not IsValid(env_sun) then return end
 		ang.p = (ang.p + 180) % 360 -- Make the angle point up at 90.

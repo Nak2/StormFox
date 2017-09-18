@@ -6,6 +6,7 @@ Breath
 	local m_mats = {(Material("particle/smokesprites_0001")),(Material("particle/smokesprites_0002")),(Material("particle/smokesprites_0003"))}
 	local function breath(ply,size)
 		if size <= 0 then return end
+		if ply:WaterLevel() >= 3 then return end
 		if not emit then
 			emit = ParticleEmitter(LocalPlayer():GetPos(),false)
 		else

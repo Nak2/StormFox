@@ -27,4 +27,5 @@ function ENT:SpawnFunction( ply, tr, ClassName )
 	ent:Activate()
 
 	return ent
+
 end
