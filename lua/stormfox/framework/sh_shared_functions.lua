@@ -50,24 +50,44 @@ if SERVER then
 
     -- Used to update the current stormfox time
     function StormFox.SetTime( var )
+        local flNewTime = nil
         if type( var ) == "string" then
-            local flNewTime = StringToTime( var )
-            BASE_TIME = SysTime() - ( flNewTime / TIME_SPEED )
-            hook.Call( "StormFox - Timechange", nil, flNewTime )
-            return flNewTime
+            flNewTime = StringToTime( var )
         elseif type( var ) == "number" then
-            BASE_TIME = SysTime() - ( var / TIME_SPEED )
-            hook.Call( "StormFox - Timechange", nil, var )
-            return var
+            flNewTime = var
+        else
+            return false
         end
-        return false
+
+        BASE_TIME = SysTime() - ( flNewTime / TIME_SPEED )
+        hook.Call( "StormFox - Timechange", nil, flNewTime )
+        updateClientsTimeVars()
+
+        return flNewTime
     end
+
+
+    local SUN_RISE = 360
+    local SUN_SET = 1160
+    local SUNRISE_CALLED = false
+    local SUNSET_CALLED = false
 
     local timerfunction = function()
         if StormFox.GetTimeSpeed() <= 0 then return end
+        local time = StormFox.GetTime()
+        if not SUNRISE_CALLED and time >= SUN_RISE and time < SUN_SET then
+            hook.Call( "StormFox-Sunrise" )
+            SUNRISE_CALLED = true
+            SUNSET_CALLED = false
+        elseif not SUNSET_CALLED and ( time < SUN_RISE or time >= SUN_SET ) then
+            hook.Call( "StormFox-Sunset" )
+            SUNRISE_CALLED = false
+            SUNSET_CALLED = true
+        end
+
         hook.Call( "StormFox-Tick", nil, StormFox.GetTime() )
     end
-    timer.Create("StormFox-tick",1, 0, timerfunction) -- TODO: We shouldn't need a timer here
+    timer.Create( "StormFox-tick", 1, 0, timerfunction )
 
 else -- CLIENT
 
