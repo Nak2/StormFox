@@ -185,7 +185,7 @@ hook.Add("StormFox - PostEntity","StormFox - FindEntities",FindEntities)
 		if setShadow then
 			StormFox.SetShadowAngle(ang,forceday)
 		end
-		return true,ang
+		return true, ang
 	end
 
 	local nold = -1
