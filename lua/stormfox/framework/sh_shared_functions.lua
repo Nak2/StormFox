@@ -84,7 +84,7 @@ if SERVER then
             SUNRISE_CALLED = false
             SUNSET_CALLED = true
         end
-
+        
         hook.Call( "StormFox-Tick", nil, StormFox.GetTime() )
     end
     timer.Create( "StormFox-tick", 1, 0, timerfunction )

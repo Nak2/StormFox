@@ -22,8 +22,9 @@ end
 
 local max,min,abs = math.max,math.min,math.abs
 local distance = 5000
-hook.Add("Think","StormFox - Suntest",function()
+hook.Add("Think", "StormFox - Suntest", function()
 	if not LocalPlayer() then return end
+
 	local con = GetConVar("sf_allow_dynamicshadow")
 	local dla = StormFox.GetDaylightAmount()
 	if not con:GetBool() or (dla < 0.55 and dla > 0.45) then
@@ -46,7 +47,6 @@ hook.Add("Think","StormFox - Suntest",function()
 	end
 	local lppos,isday = eyepos + sunAngle:Forward() * -distance
 	if not STORMFOX_SUN or not IsValid(STORMFOX_SUN) then
-		--print("create")
 		STORMFOX_SUN = ProjectedTexture()
 		STORMFOX_SUN:SetPos(lppos)
 		STORMFOX_SUN:SetAngles(sunAngle)
