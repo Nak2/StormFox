@@ -14,8 +14,7 @@ local oldSunSize
 local max = math.max
 hook.Add("Think","StormFox - SkyThink",function()
 	if not IsValid(g_SkyPaint) then return end
-	-- Main
-	--	if not (StormFox.IsDon("topcolor") and StormFox.IsDon("bottomcolor") and StormFox.IsDon("fadebias") and StormFox.IsDon("HDRScale")) then
+
 		local tl = StormFox.GetData("ThunderLight",0)
 		local topColor = StormFox.GetData("Topcolor",Color(51,127.5,255))
 		g_SkyPaint:SetTopColor(ColVec(Color(max(topColor.r,tl),max(topColor.g,tl),max(topColor.b,tl)),255))
@@ -26,20 +25,17 @@ hook.Add("Think","StormFox - SkyThink",function()
 		local s = StormFox.GetData("SunSize",20) / 500
 		g_SkyPaint:SetSunSize( StormFox.GetDaylightAmount() * s) --max( StormFox.GetData("SunOverlay",20) / 20 ) )
 
-	--	end
-	-- Dusk
-	--if not (StormFox.IsDon("DuskColor") and StormFox.IsDon("DuskIntensity") and StormFox.IsDon("DuskScale")) then
+
 		g_SkyPaint:SetDuskColor(ColVec(StormFox.GetData("DuskColor",Color(255,51,0)),255))
 		g_SkyPaint:SetDuskIntensity(StormFox.GetData("DuskIntensity",1))
 		g_SkyPaint:SetDuskScale(StormFox.GetData("DuskScale",1))
-	--end
-	-- Stars
-	--	if not (StormFox.IsDon("DrawStars") and StormFox.IsDon("StarFade") and StormFox.IsDon("StarTexture")) then
+
+
 		g_SkyPaint:SetDrawStars(StormFox.GetData("DrawStars",false))
 		g_SkyPaint:SetStarSpeed(StormFox.GetData("StarSpeed",0.001))
 		g_SkyPaint:SetStarFade(StormFox.GetData("StarFade",1.5))
 		g_SkyPaint:SetStarTexture(StormFox.GetData("StarTexture","skybox/starfield"))
-	--	end
+
 end)
 
 local shootingstars = {}

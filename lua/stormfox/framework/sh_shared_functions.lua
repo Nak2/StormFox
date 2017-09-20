@@ -71,6 +71,7 @@ if SERVER then
     local SUN_SET = 1160
     local SUNRISE_CALLED = false
     local SUNSET_CALLED = false
+    local NEWDAY_CALLED = false
 
     local timerfunction = function()
         if StormFox.GetTimeSpeed() <= 0 then return end
@@ -83,8 +84,12 @@ if SERVER then
             hook.Call( "StormFox-Sunset" )
             SUNRISE_CALLED = false
             SUNSET_CALLED = true
+            NEWDAY_CALLED = false
+        elseif time < 5 and not NEWDAY_CALLED then
+            hook.Call( "StormFox-NewDay" )
+            NEWDAY_CALLED = true
         end
-        
+
         hook.Call( "StormFox-Tick", nil, StormFox.GetTime() )
     end
     timer.Create( "StormFox-tick", 1, 0, timerfunction )

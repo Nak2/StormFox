@@ -18,230 +18,230 @@ local EyePos,EyeAngles = EyePos,EyeAngles
 local LocalPlayer = LocalPlayer
 
 -- Do the math outside
-	hook.Add("Think","StormFox - DownfallUpdater",function()
-		if uptimer > SysTime() then return end
-		uptimer = SysTime() + 1
-		local Gauge = StormFox.GetData("Gauge",0)
-		if Gauge <= 0 then return end
+hook.Add("Think","StormFox - DownfallUpdater",function()
+	if uptimer > SysTime() then return end
+	uptimer = SysTime() + 1
+	local Gauge = StormFox.GetData("Gauge",0)
+	if Gauge <= 0 then return end
 
-		local wind = StormFox.GetData("Wind",0)
-		local windangle = StormFox.GetData("WindAngle",0)
+	local wind = StormFox.GetData("Wind",0)
+	local windangle = StormFox.GetData("WindAngle",0)
 
-		local downspeed = -max(1.56 * Gauge + 1.22,10) -- Base on realworld stuff .. and some tweaking (Was too slow)
-		downfallNorm = Angle(0,windangle,0):Forward() * wind
-			downfallNorm.z = downfallNorm.z + downspeed
-	end)
+	local downspeed = -max(1.56 * Gauge + 1.22,10) -- Base on realworld stuff .. and some tweaking (Was too slow)
+	downfallNorm = Angle(0,windangle,0):Forward() * wind
+		downfallNorm.z = downfallNorm.z + downspeed
+end)
 
 -- Downfall functions
-	local function ETPos(pos,pos2,mask)
-		local t = util.TraceLine( {
-		start = pos,
-		endpos = pos2,
-		mask = mask or LocalPlayer(),
-		filter = LocalPlayer():GetViewEntity() or LocalPlayer()
-		} )
-		t.HitPos = t.HitPos or (pos + pos2)
-		return t
-	end
+local function ETPos(pos,pos2,mask)
+	local t = util.TraceLine( {
+	start = pos,
+	endpos = pos2,
+	mask = mask or LocalPlayer(),
+	filter = LocalPlayer():GetViewEntity() or LocalPlayer()
+	} )
+	t.HitPos = t.HitPos or (pos + pos2)
+	return t
+end
 
-	function ET(pos,pos2,mask)
-		local t = util.TraceLine( {
+function ET(pos,pos2,mask)
+	local t = util.TraceLine( {
+	start = pos,
+	endpos = pos + pos2,
+	mask = mask or LocalPlayer(),
+	filter = LocalPlayer():GetViewEntity() or LocalPlayer()
+	} )
+	t.HitPos = t.HitPos or (pos + pos2)
+	return t
+end
+
+local function ETHull(pos,pos2,size,mask)
+	local t = util.TraceHull( {
 		start = pos,
 		endpos = pos + pos2,
+		maxs = Vector(size,size,4),
+		mins = Vector(-size,-size,0),
 		mask = mask or LocalPlayer(),
 		filter = LocalPlayer():GetViewEntity() or LocalPlayer()
 		} )
-		t.HitPos = t.HitPos or (pos + pos2)
-		return t
+	return t
+end
+
+local function ETCalcTrace(pos,size,fDN)
+	if not size then size = 1 end
+	local sky = ET(pos, fDN * -16384) --, MASK_SHOT)
+	if not sky.HitSky and sky.HitTexture != "TOOLS/TOOLSINVISIBLE" then
+		return nil
+	end -- Not under sky
+	--PrintTable(ET(sky.HitPos,pos))
+	--PrintTable(ET(sky.HitPos - Vector(0,0,5),pos))
+	local btr = ETPos(sky.HitPos + fDN,pos  + fDN)
+	if btr.Hit then return nil end -- Trace was inside world .. but backtrace checked it
+
+	-- We got a valid position now .. for now
+	local t_ground = ETHull(pos ,fDN * 16384 ,size , MASK_SHOT )
+	if not t_ground.Hit then return nil,"No ground found" end -- Outside the world
+
+	-- Checl fpr water
+	local wtr = ETPos(t_ground.StartPos,t_ground.HitPos,-1)
+	if wtr.Hit and string.find(wtr.HitTexture:lower(),"water") then
+		t_ground = wtr
+		t_ground.HitWater = true
+	else
+		t_ground.HitWater = false
 	end
-
-	local function ETHull(pos,pos2,size,mask)
-		local t = util.TraceHull( {
-			start = pos,
-			endpos = pos + pos2,
-			maxs = Vector(size,size,4),
-			mins = Vector(-size,-size,0),
-			mask = mask or LocalPlayer(),
-			filter = LocalPlayer():GetViewEntity() or LocalPlayer()
-			} )
-		return t
-	end
-
-	local function ETCalcTrace(pos,size,fDN)
-		if not size then size = 1 end
-		local sky = ET(pos, fDN * -16384) --, MASK_SHOT)
-		if not sky.HitSky and sky.HitTexture != "TOOLS/TOOLSINVISIBLE" then
-			return nil
-		end -- Not under sky
-		--PrintTable(ET(sky.HitPos,pos))
-		--PrintTable(ET(sky.HitPos - Vector(0,0,5),pos))
-		local btr = ETPos(sky.HitPos + fDN,pos  + fDN)
-		if btr.Hit then return nil end -- Trace was inside world .. but backtrace checked it
-
-		-- We got a valid position now .. for now
-		local t_ground = ETHull(pos ,fDN * 16384 ,size , MASK_SHOT )
-		if not t_ground.Hit then return nil,"No ground found" end -- Outside the world
-
-		-- Checl fpr water
-		local wtr = ETPos(t_ground.StartPos,t_ground.HitPos,-1)
-		if wtr.Hit and string.find(wtr.HitTexture:lower(),"water") then
-			t_ground = wtr
-			t_ground.HitWater = true
-		else
-			t_ground.HitWater = false
-		end
-		return t_ground
-	end
+	return t_ground
+end
 
 -- Create Downfall drops
-	local canSnow = 0
-	local FrameTime = FrameTime
-	hook.Add("Think","StormFox - RenderFalldownThink",function()
-		local temp = StormFox.GetData("Temperature",20)
-		local Gauge = StormFox.GetData("Gauge",0)
-		local raindebug = StormFox.GetData("Raindebug",false)
-		if Gauge <= 0 then return end
+local canSnow = 0
+local FrameTime = FrameTime
+hook.Add("Think","StormFox - RenderFalldownThink",function()
+	local temp = StormFox.GetData("Temperature",20)
+	local Gauge = StormFox.GetData("Gauge",0)
+	local raindebug = StormFox.GetData("Raindebug",false)
+	if Gauge <= 0 then return end
 
-		local lp = LocalPlayer()
-		if not lp then return end
+	local lp = LocalPlayer()
+	if not lp then return end
 
-		local pos,ang = EyePos(),EyeAngles()
-		local angf = ang:Forward()
-			angf.z = 0
+	local pos,ang = EyePos(),EyeAngles()
+	local angf = ang:Forward()
+		angf.z = 0
 
-		local mainpos = pos + angf * (rain_range * 0.8)
-			mainpos.z = mainpos.z + ran(rain_range * 1, rain_range * 1.2)
+	local mainpos = pos + angf * (rain_range * 0.8)
+		mainpos.z = mainpos.z + ran(rain_range * 1, rain_range * 1.2)
 
-		local skytrace = ET(lp:GetShootPos(),Vector(0,0,9000),lp)
-		if skytrace.HitSky then
-			mainpos.z = math.min(mainpos.z,skytrace.HitPos.z - 10)
+	local skytrace = ET(lp:GetShootPos(),Vector(0,0,9000),lp)
+	if skytrace.HitSky then
+		mainpos.z = math.min(mainpos.z,skytrace.HitPos.z - 10)
+	else
+		-- Lets try and find this skybox .. or it will look strange
+		local l = 4 -- 4 tries .. after all this is in think
+		while l > 0 do
+			l = l - 1
+			skytrace = ET(skytrace.HitPos + Vector(0,0,1),Vector(0,0,9000),lp)
+			if skytrace.HitSky then
+				mainpos.z = math.min(mainpos.z,skytrace.HitPos.z - 10)
+				break
+			end
+		end
+
+	end
+
+	-- Choose rain or snow
+	local IsRain = true
+	if temp < 5 then
+		if temp < -2 then
+			IsRain = false
 		else
-			-- Lets try and find this skybox .. or it will look strange
-			local l = 4 -- 4 tries .. after all this is in think
-			while l > 0 do
-				l = l - 1
-				skytrace = ET(skytrace.HitPos + Vector(0,0,1),Vector(0,0,9000),lp)
-				if skytrace.HitSky then
-					mainpos.z = math.min(mainpos.z,skytrace.HitPos.z - 10)
-					break
-				end
-			end
-
+			-- Choose
+			IsRain = temp > ran(-2,5)
 		end
+	end
 
-		-- Choose rain or snow
-		local IsRain = true
-		if temp < 5 then
-			if temp < -2 then
-				IsRain = false
-			else
-				-- Choose
-				IsRain = temp > ran(-2,5)
-			end
-		end
+	-- Calk max
+	local exp = StormFox.GetExspensive()
+	local maxparticles = max(exp,1) * 64
 
-		-- Calk max
-		local exp = StormFox.GetExspensive()
-		local maxparticles = max(exp,1) * 64
+	local weight = IsRain and 1 or 0.2
+	local fDN = Vector(downfallNorm.x,downfallNorm.y,downfallNorm.z * weight)
+	local windoffset = fDN * (rain_range * 1)
 
-		local weight = IsRain and 1 or 0.2
-		local fDN = Vector(downfallNorm.x,downfallNorm.y,downfallNorm.z * weight)
-		local windoffset = fDN * (rain_range * 1)
+	if #particles.main < maxparticles then
+		local maxmake = maxparticles - #particles.main
+		local m = maxmake * FrameTime() * Gauge * 2
 
-		if #particles.main < maxparticles then
-			local maxmake = maxparticles - #particles.main
-			local m = maxmake * FrameTime() * Gauge * 2
+		for i = 1,min(m,maxmake) do
+			-- Make a rain/snowdrop
 
-			for i = 1,min(m,maxmake) do
-				-- Make a rain/snowdrop
-
-				local testpos = mainpos + Vector(ran(-random_side,random_side) + fDN.x * -(20 / weight) ,ran(-random_side,random_side) + fDN.y * -(20 / weight),1 / weight * 30)
-					testpos.z = math.min(testpos.z,mainpos.z)
-				local tr = ETCalcTrace(testpos,IsRain and 4 or clamp(20 - Gauge * 2,0,16),fDN)
-				if tr then
-					local drop = {}
-					-- StartPos
-						drop.pos = testpos
-					-- Norm
-						drop.norm = fDN
-					-- Random
-						drop.length_m = ran(1,2)
-						drop.size = clamp(Gauge / ran(3,5),1,3)
-					-- EndPos
-						drop.endpos = tr.HitPos
-					-- HitNormal
-						drop.hitnorm = tr.HitNormal
-					-- HitWater
-						drop.hitwater = tr.HitWater
-					-- NoDrop
-						drop.nodrop = string.find(tr.HitTexture,"TOOLS/TOOLSSKYBOX") or string.find(tr.HitTexture,"TOOLS/TOOLSINVISIBLE") or false
-						drop.alive = true
-						drop.r = ran(360)
-						drop.r2 = ran(10)
-						drop.ang = fDN:Angle()
-						drop.rain = IsRain
-					table.insert(particles.main,drop)
-					--if raindebug then
-						--debugoverlay.Cross(testpos,10,0.1,Color(0,255,0))
-						--debugoverlay.Cross(tr.HitPos,10,0.1,Color(255,255,255))
-					--end
-				end
+			local testpos = mainpos + Vector(ran(-random_side,random_side) + fDN.x * -(20 / weight) ,ran(-random_side,random_side) + fDN.y * -(20 / weight),1 / weight * 30)
+				testpos.z = math.min(testpos.z,mainpos.z)
+			local tr = ETCalcTrace(testpos,IsRain and 4 or clamp(20 - Gauge * 2,0,16),fDN)
+			if tr then
+				local drop = {}
+				-- StartPos
+					drop.pos = testpos
+				-- Norm
+					drop.norm = fDN
+				-- Random
+					drop.length_m = ran(1,2)
+					drop.size = clamp(Gauge / ran(3,5),1,3)
+				-- EndPos
+					drop.endpos = tr.HitPos
+				-- HitNormal
+					drop.hitnorm = tr.HitNormal
+				-- HitWater
+					drop.hitwater = tr.HitWater
+				-- NoDrop
+					drop.nodrop = string.find(tr.HitTexture,"TOOLS/TOOLSSKYBOX") or string.find(tr.HitTexture,"TOOLS/TOOLSINVISIBLE") or false
+					drop.alive = true
+					drop.r = ran(360)
+					drop.r2 = ran(10)
+					drop.ang = fDN:Angle()
+					drop.rain = IsRain
+				table.insert(particles.main,drop)
+				--if raindebug then
+					--debugoverlay.Cross(testpos,10,0.1,Color(0,255,0))
+					--debugoverlay.Cross(tr.HitPos,10,0.1,Color(255,255,255))
+				--end
 			end
 		end
+	end
 
-		local maxbg = 32 + ((exp - 4) * 64)
-		if not IsRain then maxbg = maxbg * 0.5 end
-		if #particles.bg < maxbg then
-			local maxmake = maxbg - #particles.bg
-			local m = maxmake * FrameTime() * Gauge
+	local maxbg = 32 + ((exp - 4) * 64)
+	if not IsRain then maxbg = maxbg * 0.5 end
+	if #particles.bg < maxbg then
+		local maxmake = maxbg - #particles.bg
+		local m = maxmake * FrameTime() * Gauge
 
-			for i = 1,min(m,maxmake) do
-				local s = ran(1,4)
-				local xx = 0
-				local yy = 0
-				local mindistance = random_side
-				if s == 1 then
-					xx = ran(mindistance,random_side * 4)
-					yy = ran(random_side * -2,random_side * 2)
-				elseif s == 2 then
-					xx = ran(mindistance,random_side * 4) * -1
-					yy = ran(random_side * -2,random_side * 2)
-				elseif s == 3 then
-					yy = ran(mindistance,random_side * 4)
-					xx = ran(random_side * -2,random_side * 2)
-				elseif s == 4 then
-					yy = ran(mindistance,random_side * 4) * -1
-					xx = ran(random_side * -2,random_side * 2)
-				end
+		for i = 1,min(m,maxmake) do
+			local s = ran(1,4)
+			local xx = 0
+			local yy = 0
+			local mindistance = random_side
+			if s == 1 then
+				xx = ran(mindistance,random_side * 4)
+				yy = ran(random_side * -2,random_side * 2)
+			elseif s == 2 then
+				xx = ran(mindistance,random_side * 4) * -1
+				yy = ran(random_side * -2,random_side * 2)
+			elseif s == 3 then
+				yy = ran(mindistance,random_side * 4)
+				xx = ran(random_side * -2,random_side * 2)
+			elseif s == 4 then
+				yy = ran(mindistance,random_side * 4) * -1
+				xx = ran(random_side * -2,random_side * 2)
+			end
 
-				local testpos = mainpos + Vector(xx + fDN.x * -(20 / weight) ,yy + fDN.y * -(20 / weight),1 / weight * 30)
-				local tr = ETCalcTrace(testpos,IsRain and 4 or clamp(96 - Gauge * 2,0,96),fDN)
-				if tr then
-					local drop = {}
-					local smoke = ran(1,5) > 4
-						drop.pos = testpos
-						drop.norm = fDN
-						drop.smoke = smoke
-						drop.size = clamp(Gauge / ran(3,5),1,3) * (IsRain and 10 or 32)
-						drop.length_m = ran(2,4)
-						drop.endpos = tr.HitPos
-						drop.hitnorm = tr.HitNormal
-						drop.hitwater = string.find(tr.HitTexture,"water")
-						drop.nodrop = string.find(tr.HitTexture,"TOOLS/TOOLSSKYBOX") or string.find(tr.HitTexture,"TOOLS/TOOLSINVISIBLE") or false
-						drop.alive = true
-						drop.r = ran(360)
-						drop.r2 = ran(10)
-						drop.ang = fDN:Angle()
-						drop.rain = IsRain
-					table.insert(particles.bg,drop)
-					--if raindebug then
-						--debugoverlay.Cross(testpos,10,0.1,Color(0,255,0))
-						--debugoverlay.Cross(tr.HitPos,10,0.1,Color(255,255,255))
-					--end
-				end
+			local testpos = mainpos + Vector(xx + fDN.x * -(20 / weight) ,yy + fDN.y * -(20 / weight),1 / weight * 30)
+			local tr = ETCalcTrace(testpos,IsRain and 4 or clamp(96 - Gauge * 2,0,96),fDN)
+			if tr then
+				local drop = {}
+				local smoke = ran(1,5) > 4
+					drop.pos = testpos
+					drop.norm = fDN
+					drop.smoke = smoke
+					drop.size = clamp(Gauge / ran(3,5),1,3) * (IsRain and 10 or 32)
+					drop.length_m = ran(2,4)
+					drop.endpos = tr.HitPos
+					drop.hitnorm = tr.HitNormal
+					drop.hitwater = string.find(tr.HitTexture,"water")
+					drop.nodrop = string.find(tr.HitTexture,"TOOLS/TOOLSSKYBOX") or string.find(tr.HitTexture,"TOOLS/TOOLSINVISIBLE") or false
+					drop.alive = true
+					drop.r = ran(360)
+					drop.r2 = ran(10)
+					drop.ang = fDN:Angle()
+					drop.rain = IsRain
+				table.insert(particles.bg,drop)
+				--if raindebug then
+					--debugoverlay.Cross(testpos,10,0.1,Color(0,255,0))
+					--debugoverlay.Cross(tr.HitPos,10,0.1,Color(255,255,255))
+				--end
 			end
 		end
-	end)
+	end
+end)
 
 local screenParticles = {}
 local l = 0
@@ -347,7 +347,7 @@ local old_raindrop = Material("sprites/heatwave")
 		if LocalPlayer():WaterLevel() >= 3 then rainscreen_alpha = 0.8 return end
 		local ft = RealFrameTime()
 		local temp = StormFox.GetData("Temperature",20)
-		
+
 		local acc = (viewAmount * clamp(temp - 4,0,(Gauge / 200))) * ft * 10
 		if acc <= 0 or not StormFox.Env.IsInRain() or Gauge <= 0 then
 			acc = -0.4 * ft

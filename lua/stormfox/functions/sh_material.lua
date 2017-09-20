@@ -118,7 +118,7 @@ local function LoadMapData()
 		_STORMFOX_ORIGNALTEX = ScanMapTextures(materials)
 	else
 		print("[StormFox]: Generating texmap (Might take a bit)...")
-		
+
 		local str = file.Read("maps/" .. game.GetMap() .. ".bsp","GAME")
 		local materials = {}
 		local mats = 0
@@ -141,7 +141,7 @@ local function LoadMapData()
 		local str = util.TableToJSON(materials)
 		file.Write("stormfox/" .. game.GetMap() .. ".txt",str)
 		LoadTexts(materials)
-		
+
 		_STORMFOX_ORIGNALTEX = ScanMapTextures(materials)
 		print("[StormFox]: Saving texmap cache.")
 	end
@@ -160,7 +160,7 @@ local function ReplaceMaterial(str,texture,id)
 	local parm = "$basetexture" .. (id == 1 and "" or id)
 	local currentbase = mat:GetTexture(parm)
 	if (currentbase:GetName() or "null") == texture then return end
-	
+
 	if not _STORMFOX_REPLACETEX_STR[str] then
 		_STORMFOX_REPLACETEX_STR[str] = {}
 	end
@@ -221,7 +221,7 @@ hook.Add("Think","StormFox - Snow Replacement",function()
 	end
 end)
 
-hook.Add("PlayerFootstep","StormFox - Material Footstep",function( ply, pos, foot, sound, volume, rf )
+hook.Add("PlayerFootstep","StormFox - Material Footstep",function( ply, pos, foot, sound, volume, rf ) -- TODO: Move clientside or remove 
 	local con = GetConVar("sf_material_replacment")
 	if not con:GetBool() then return end
 	local lvl = math.Clamp(StormFox.GetData("SnowMaterial",0),0,3)

@@ -3,7 +3,7 @@ function StormFox.GetMoonAngle(time) -- Same as the sun .. tbh
 	time = time or StormFox.GetTime()
 	local pitch = ((time / 360) - 1) * 90
 	if pitch < 0 then pitch = pitch + 360 end
-	local ang = Angle(pitch,StormFox.GetData("SunMoonAngle",0), 0)
+	local ang = Angle(pitch,StormFox.SunMoonAngle, 0)
 	return ang
 end
 
@@ -57,10 +57,10 @@ hook.Add( "PostDraw2DSkyBox", "StormFox - MoonRender", function()
 				render.DrawQuadEasy( N * 200, -N, moonsize / nn, moonsize / nn, Color(c.r,c.g,c.b, glow * 255), (ang.p >= 270 or ang.p < 90) and 180 or 0 )
 
 				render.SetMaterial( m )
-				
+
 				--render.DrawQuadEasy( pos, -N, moonsize, moonsize, Color(c.r,c.g,c.b, clamp((a - 0.3) * 255,0,255)),(ang.p >= 270 or ang.p < 90) and 180 or 0 )
 				local moonalpha = clamp((a * 1.1) - 0.2,0,1) * 255
-	
+
 				render.DrawQuadEasy( N * 200, -N, moonsize / 100, moonsize / 100, Color(c.r,c.g,c.b, moonalpha), (ang.p >= 270 or ang.p < 90) and 180 or 0 )
 
 				render.SetMaterial(sunMat)

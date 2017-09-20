@@ -452,9 +452,9 @@
 				function slider:DoClick()
 					local w,h = self:GetSize()
 					local x,y = self:CursorPos()
-					local procent = clamp((x - w * 0.05) / (w * 0.9),0,1) -- w * 0.9
-					tselectedamount = procent
-					self.var = procent
+					local percent = clamp((x - w * 0.05) / (w * 0.9),0,1) -- w * 0.9
+					tselectedamount = percent
+					self.var = percent
 				end
 			-- Thunder
 				local thunder = CreateButton(panel,"")
@@ -507,11 +507,11 @@
 					function tslider:DoClick()
 						local w,h = self:GetSize()
 						local x,y = self:CursorPos()
-						local procent = clamp((x - w * 0.05) / (w * 0.9),0,1) -- w * 0.9
+						local percent = clamp((x - w * 0.05) / (w * 0.9),0,1) -- w * 0.9
 						net.Start("StormFox - WeatherC")
 							net.WriteBool(true)
 							net.WriteString("Temperature")
-							net.WriteType(procent * 30 - 10)
+							net.WriteType(percent * 30 - 10)
 						net.SendToServer()
 					end
 					function tslider:Think()
@@ -540,11 +540,11 @@
 					function tslider:DoClick()
 						local w,h = self:GetSize()
 						local x,y = self:CursorPos()
-						local procent = clamp((x - w * 0.05) / (w * 0.9),0,1) -- w * 0.9
+						local percent = clamp((x - w * 0.05) / (w * 0.9),0,1) -- w * 0.9
 						net.Start("StormFox - WeatherC")
 							net.WriteBool(true)
 							net.WriteString("Wind")
-							net.WriteType(procent * 20)
+							net.WriteType(percent * 20)
 						net.SendToServer()
 					end
 					function tslider:Think()

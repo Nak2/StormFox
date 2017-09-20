@@ -7,7 +7,7 @@ local function sunAng(time)
 	local pitch = ((time / 360) - 1) * 90
 	if pitch < 0 then pitch = pitch + 360 end
 	if pitch > 180 then pitch = pitch - 180 end
-	local a = StormFox.GetData("SunMoonAngle",0)
+	local a = StormFox.SunMoonAngle
 	return Angle(pitch,a, 0)
 end
 local BufferAngle = Angle(0,0,0)
@@ -110,10 +110,10 @@ local Clouds = {}
 			}
 		table.insert(Clouds[ran(#Clouds)], t)
 	end
-	for i = 0,10 do 
+	for i = 0,10 do
 	--	CreateCloud(i * 200 - 1000,0,300,1)
 	end
-	for i = 0,10 do 
+	for i = 0,10 do
 	--	CreateCloud(0,i * 200 - 1000,300,1)
 	end
 
@@ -175,7 +175,7 @@ local Clouds = {}
 					mesh.Position(Vector(0,d.x * s * 1.2,d.y * s * 1.2))
 
 					local alpha = clamp(ang_away * light_amount,clamp(255 * (CloudData.dot - 0.7) * 3,0,255),255)
-					
+
 					mesh.TexCoord(0,d.u,d.v)
 					mesh.Normal(Vector(0,0,-1))
 					mesh.Color(144,255,0,alpha)
@@ -207,7 +207,7 @@ local Clouds = {}
 		if true then return end
 		local scale = StormFox.SkyboxScale()
 		sky_center = StormFox.SkyboxPos() + Vector(0,0,StormFox.SkyboxOBBMaxs().z - 300)
-		for layer,l_clouds in ipairs(Clouds) do	
+		for layer,l_clouds in ipairs(Clouds) do
 			for i,CloudData in pairs(l_clouds) do
 				local pos = sky_center + Vector(CloudData.x,CloudData.y,0)
 				--Clouds[layer][i].render_ang = (pos - pPos):Angle()
@@ -240,7 +240,7 @@ local Clouds = {}
 			pPos = StormFox.WorldToSkybox(LocalPlayer():GetPos() + Vector(0,0,30))
 		if LocalPlayer():GetPos():WithinAABox(StormFox.SkyboxPos() + StormFox.SkyboxOBBMins() - Vector(0,0,10),StormFox.SkyboxPos() + StormFox.SkyboxOBBMaxs()) and skybox then return end
 
-			
+
 		for layer,l_clouds in ipairs(Clouds) do
 			local sky_center = StormFox.SkyboxPos() + Vector(0,0,StormFox.SkyboxOBBMaxs().z - layer * 10)
 			for _,CloudData in pairs(l_clouds) do
