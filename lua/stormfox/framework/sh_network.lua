@@ -17,7 +17,9 @@
 	StormFox_DATA = data
 	local aimdata = StormFox_AIMDATA or {}
 	StormFox_AIMDATA = aimdata
-
+	hook.Add("StormFox - Timeset","StormFox - DropData",function()
+		table.Empty(aimdata)
+	end)
 -- Set, get and handle data
 	local function LeapVarable(basevar,aimvar,timestart,timeend) -- Number, table and color
 		local t = StormFox.GetTime()

@@ -54,7 +54,7 @@ if SERVER then
     -- Update our local TIME_SPEED variable if the convar is changed
     cvars.AddChangeCallback( "sf_timespeed", function( sConvarName, sOldValue, sNewValue )
         local flNewValue = tonumber( sNewValue )
-        if flNewValue <= 0 or flNewValue >= 2 then
+        if flNewValue <= 0 or flNewValue >= 20 then
             MsgN( "[StormFox] WARNING: Timespeed was set to invalid value. Reverting to a value of 1.0")
             GetConVar( "sf_timespeed" ):SetFloat( 1.0 )
             TIME_SPEED = 1
@@ -117,6 +117,7 @@ else -- CLIENT
         local flCurrentTime = net.ReadFloat()
         TIME_SPEED = net.ReadFloat()
         BASE_TIME = SysTime() - ( flCurrentTime / TIME_SPEED )
+        hook.Call( "StormFox - Timeset")
     end )
 
 end

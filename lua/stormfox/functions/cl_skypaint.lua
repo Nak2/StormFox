@@ -9,7 +9,7 @@
 
 
 -- SkyPaint Main
-local max,round = math.max,math.Round
+local max,round,clamp = math.max,math.Round,math.Clamp
 local oldSunSize
 local max = math.max
 hook.Add("Think","StormFox - SkyThink",function()
@@ -22,8 +22,12 @@ hook.Add("Think","StormFox - SkyThink",function()
 		g_SkyPaint:SetBottomColor(ColVec(StormFox.GetData("Bottomcolor",Color(204,255,255)),255))
 		g_SkyPaint:SetFadeBias(StormFox.GetData("FadeBias",1))
 		g_SkyPaint:SetHDRScale(StormFox.GetData("HDRScale",0.66))
-		g_SkyPaint:SetSunColor(ColVec(StormFox.GetData("SunColor",Color(255,255,255)),255))
-		local s = StormFox.GetData("SunSize",20) / 500
+		local sunsize = StormFox.GetData("SunSize",20)
+		local col = StormFox.GetData("SunColor",Color(255,255,255))
+
+		g_SkyPaint:SetSunColor(ColVec(col,255))
+		
+		local s = (sunsize>5 and sunsize or 0) / 500
 		g_SkyPaint:SetSunSize( StormFox.GetDaylightAmount() * s) --max( StormFox.GetData("SunOverlay",20) / 20 ) )
 
 	--	end

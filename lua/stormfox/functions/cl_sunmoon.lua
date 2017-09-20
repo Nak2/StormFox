@@ -53,20 +53,24 @@ hook.Add( "PostDraw2DSkyBox", "StormFox - MoonRender", function()
 				render.SetMaterial( MoonGlow )
 				--render.DrawSprite( pos2 , s, s, Color(c.r,c.g,c.b,a * 25)) -- Draw the sprite in the middle of the map, at 16x16 in it's original colour with full alpha.
 				local nn = 60
-				local glow = clamp(a,0,1)
+				local glow = clamp(a,0,1) - 0.1
 				render.DrawQuadEasy( N * 200, -N, moonsize / nn, moonsize / nn, Color(c.r,c.g,c.b, glow * 255), (ang.p >= 270 or ang.p < 90) and 180 or 0 )
 
 				render.SetMaterial( m )
 				
 				--render.DrawQuadEasy( pos, -N, moonsize, moonsize, Color(c.r,c.g,c.b, clamp((a - 0.3) * 255,0,255)),(ang.p >= 270 or ang.p < 90) and 180 or 0 )
 				local moonalpha = clamp((a * 1.1) - 0.2,0,1) * 255
-	
+
 				render.DrawQuadEasy( N * 200, -N, moonsize / 100, moonsize / 100, Color(c.r,c.g,c.b, moonalpha), (ang.p >= 270 or ang.p < 90) and 180 or 0 )
 
 				render.SetMaterial(sunMat)
 				local sunSize = StormFox.GetData("SunSize", 30) or 30
-				local sunColor = StormFox.GetData("SunColor",Color(255,255,255))
-				render.DrawQuadEasy( N * -200, N, sunSize, sunSize, sunColor, 0 )
+				if sunSize <= 15 then
+					local sunColor_b = StormFox.GetData("SunColor",Color(255,255,255))
+					local n = sunSize / 5
+					local sunColor = Color(255 * n,255 * n,255 * n)
+					render.DrawQuadEasy( N * -200, N, 30, 30, sunColor, 0 )
+				end
 
 				render.SuppressEngineLighting(false)
 				render.SetLightingMode( 0 )

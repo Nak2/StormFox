@@ -158,7 +158,7 @@ local updateTime = 5
 			end
 			return at_one
 	end
-
+	local skyUpdate = 0
 	local CurrentWeatherData = table.Copy(Weather.Clear)
 	function StormFox.SetWeather(name,procent)
 		if not Weather[name] then print("[StormFox] Weather not found:",name) return end
@@ -171,6 +171,7 @@ local updateTime = 5
 		StormFox.SetData("Weather",procent > 0 and name or "Clear")
 		CurrentWeatherData = table.Copy(Weather.Clear)
 		if procent <= 0 then
+			skyUpdate = 0
 			return CurrentWeatherData
 		end
 		for key,data in pairs(Weather[name]) do
@@ -180,6 +181,7 @@ local updateTime = 5
 				CurrentWeatherData[key] = LeapVarable(CurrentWeatherData[key],data,procent)
 			end
 		end
+		skyUpdate = 0
 		return CurrentWeatherData
 	end
 
@@ -190,20 +192,20 @@ local updateTime = 5
 		return var
 	end
 
-	local skyUpdate = 0
 	hook.Add("StormFox - Timeset","StormFox - FixSky",function()
-		skyUpdate = 0
+		skyUpdate = SysTime() + 1
 	end)
+	local max = math.max
 	local function weatherThink(force)
 		if not force and skyUpdate > SysTime() then return end
-		local t = StormFox.GetTimeSpeed()
-		if t <= 0 then t = 2 end
+		local t = max(StormFox.GetTimeSpeed(),1)
+
 		skyUpdate = SysTime() + updateTime / t
 		-- Sun
 			local sunSize = floor(StormFox.GetData("SunSize") or 30,0)
 			local sunOverLay = floor(StormFox.GetData("SunOverlay") or 30,0)
 			StormFox.SetSunSize(sunSize > 15 and sunSize or 0)
-			StormFox.SetSunOverlaySize(sunOverLay)
+			StormFox.SetSunOverlaySize(sunOverLay > 15 and sunOverLay or 0)
 			StormFox.SetSunColor(StormFox.GetData("SunColor"))
 			StormFox.SetSunOverlayColor(StormFox.GetData("SunColor"))
 
@@ -212,26 +214,23 @@ local updateTime = 5
 			StormFox.SetMapBloom(StormFox.GetData("MapBloom",0))
 			StormFox.SetMapBloomAutoExposureMin(StormFox.GetData("MapBloomMin",0.7))
 			StormFox.SetMapBloomAutoExposureMax(StormFox.GetData("MapBloomMax",1))
-	--	else
-			StormFox.SetMapBloom(0)
-	--	end
 
 		local time = StormFox.GetTime() -- The updateTime seconds in the furture (Unless you speed up time)
-		if t <= 0 then t = 0.2 end
 			time = time + updateTime / t
-
 		local daytime = StormFox.GetDaylightAmount(time)
 		StormFox.SetData("Topcolor",LeapVarable(Get(CurrentWeatherData["SkyColor"],1),Get(CurrentWeatherData["NightColor"],1),1 - daytime),time)
 		StormFox.SetData("Bottomcolor",LeapVarable(Get(CurrentWeatherData["SkyColor"],2),Get(CurrentWeatherData["NightColor"],2),1 - daytime),time)
 		StormFox.SetMapLight(LeapVarable(CurrentWeatherData["MapLight"][1],CurrentWeatherData["MapLight"][2],1 - daytime))
 
 
-		local n = (CurrentWeatherData["StarFade"] or 1.5) * clamp(((1 - daytime) - 0.5) * 2,0,1)
+		local n = (CurrentWeatherData["StarFade"] or 1.5) * (1 - daytime)
 		StormFox.SetData("StarFade",n,time)
 		if n > 0 then
-			StormFox.SetData("DrawStars",CurrentWeatherData["DrawStars"],time)
+			StormFox.SetData("DrawStars",CurrentWeatherData["DrawStars"])
 			StormFox.SetData("StarTexture",CurrentWeatherData["StarTexture"],time)
 			StormFox.SetData("StarSpeed",CurrentWeatherData["StarSpeed"],time)
+		else
+			StormFox.SetData("DrawStars",false)
 		end
 
 		-- Sun
