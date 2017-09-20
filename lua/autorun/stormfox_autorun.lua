@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.08
+StormFox.Version = 1.09
 StormFox.WorkShopVersion = true
 
 if SERVER then

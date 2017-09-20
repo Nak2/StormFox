@@ -7,7 +7,7 @@ StormFox.SetData("SunMoonAngle",270)
 StormFox.SetData("Wind",0)
 StormFox.SetData("WindAngle",math.random(360))
 StormFox.SetData("ThunderLight",0)
-local updateTime = 10
+local updateTime = 5
 
 --[[-------------------------------------------------------------------------
 	Valid weather data-templats
@@ -191,6 +191,9 @@ local updateTime = 10
 	end
 
 	local skyUpdate = 0
+	hook.Add("StormFox - Timeset","StormFox - FixSky",function()
+		skyUpdate = 0
+	end)
 	local function weatherThink(force)
 		if not force and skyUpdate > SysTime() then return end
 		local t = StormFox.GetTimeSpeed()

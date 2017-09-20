@@ -9,6 +9,7 @@
 			whitelist["sf_disable_autoweather"] = true
 			whitelist["sf_disable_mapsupport"] = true
 			whitelist["sf_disable_autoweather_cold"] = true
+			whitelist["time_set"] = true
 
 		util.AddNetworkString("StormFox_Settings")
 		net.Receive("StormFox_Settings",function(len,ply)
@@ -348,11 +349,51 @@
 				if self:IsDown() then
 					col.a = 25
 				end
+				local e = ""
+				if self.editing and SysTime() % 2 < 1 then
+					e = "_"
+				end
 				surface.SetTextColor(col)
 				surface.SetFont("SkyFox-Console")
+				local tw,th = surface.GetTextSize(self.text .. e)
+				surface.SetTextPos(w / 2 - tw / 2,h / 2 - th / 2)
+				surface.DrawText(self.text .. e)
+			end
+			return button
+		end
+		local function CreateSmallButton(panel,text)
+			local button = vgui.Create("DButton",panel)
+			button:SetText("")
+			button:SetSize(60,12)
+			button.text = text or ""
+			function button:Paint(w,h)
+				if self:IsDown() then
+					surface.SetDrawColor(colors[3])
+				else
+					surface.SetDrawColor(colors[2])
+				end
+				surface.DrawRect(0,0,w,h)
+				surface.SetMaterial(grad)
+				surface.SetDrawColor(colors[3])
+				surface.DrawTexturedRect(0,0,w,h)
+				surface.SetDrawColor(colors[4])
+					surface.DrawLine(0,0,w,0)
+					surface.DrawLine(0,0,0,h)
+					surface.DrawLine(w - 1,0,w - 1,h)
+					surface.DrawLine(w - 1,0,w - 1,h - 1)
+				local col = Color(241,223,221)
+				if self:IsDown() then
+					col.a = 25
+				end
+				surface.SetTextColor(col)
+				surface.SetFont("SkyFox-Console_Small")
 				local tw,th = surface.GetTextSize(self.text)
 				surface.SetTextPos(w / 2 - tw / 2,h / 2 - th / 2)
-				surface.DrawText(self.text)
+				local e = ""
+				if self.editing and SysTime() % 2 == 1 then
+					e = "_"
+				end
+				surface.DrawText(self.text .. e)
 			end
 			return button
 		end
@@ -378,7 +419,7 @@
 			if STORMFOX_WPANEL and IsValid(STORMFOX_WPANEL) then
 				STORMFOX_WPANEL:Remove()
 			end
-			local pw,ph = 200,284
+			local pw,ph = 200,354
 			panel = vgui.Create("DFrame")
 				panel:SetTitle("StormFox " .. StormFox.Version)
 				panel:SetSize(pw,ph)
@@ -592,7 +633,6 @@
 						surface.SetDrawColor(colors[2])
 					end
 					surface.DrawTexturedRect(n,n,w - n * 2,h - n * 2)
-
 					local text = "Set WindAngle"
 					surface.SetFont("SkyFox-Console_Small")
 					local tw,th = surface.GetTextSize(text)
@@ -607,6 +647,118 @@
 						net.WriteType(EyeAngles().y + 180)
 					net.SendToServer()
 				end
+			-- Time options
+				local ampm = cookie.GetNumber("stormfox-ampm",0)
+				local settimeoption = vgui.Create("DPanel",panel)
+					settimeoption:SetSize(pw - 40,24)
+					settimeoption:SetPos(20,280)
+				local function SetTimeOption()
+					for k,v in pairs(settimeoption:GetChildren()) do
+						v:Remove()
+					end
+					local ampm = cookie.GetNumber("stormfox-ampm",0)
+					local sw,sh = settimeoption:GetSize()
+					local time = StormFox.GetRealTime(nil,ampm == 1)
+					local h = string.match(time,"(%d+):")
+					local m = string.match(time,":(%d+)")
+					local a = string.match(time,":%d+%s?(.+)") or ""
+					settimeoption.htext = {h,m,a}
+
+					local hour = CreateButton(settimeoption,h)
+					settimeoption.hour = hour
+						hour.editing = false
+					local min = CreateButton(settimeoption,m)
+					settimeoption.min = min
+						min.editing = false
+					local s = sw / (ampm == 0 and 2 or 3)
+					hour:SetSize(s,sh)
+					hour.hour = true
+					hour.ampm = ampm
+					min:SetSize(s,sh)
+					min.ampm = ampm
+					min:SetPos(s,0)
+					function hour:DoClick()
+						self.editing = not self.editing
+						min.editing = false
+					end
+					function min:DoClick()
+						self.editing = not self.editing
+						hour.editing = false
+					end
+					local Think = function(self)
+						if self.editing and not self.oldtext then
+							self.oldtext = self.text
+							self.text = ""
+						elseif (not self.editing or #self.text >= 2 or input.IsKeyDown(64)) and self.oldtext then
+							if #self.text < 1 or string.match(self.text,"%d+") ~= self.text then
+								self.text = self.oldtext
+							end
+							local min = self.hour and (ampm == 1 and 1 or 0) or 0
+							local max = self.hour and (ampm == 1 and 12 or 23) or 59
+							if tonumber(self.text) > max then
+								self.text = max
+							elseif tonumber(self.text) < min then
+								self.text = min
+							elseif tonumber(self.text) ~= self.text then
+								self.text = tonumber(self.text)
+							end
+							self.oldtext = nil
+							self.editing = false
+						elseif self.editing then
+							for i = 0,9 do
+								if input.IsKeyDown(i + 1) and i ~= self.lastkey then
+									self.text = self.text .. i
+									self.lastkey = i
+								end
+							end
+							if self.lastkey and not input.IsKeyDown(self.lastkey + 1) then
+								self.lastkey = nil
+							end
+						end
+					end
+					hour.Think = Think
+					min.Think = Think
+
+					if ampm == 1 then
+						local ampmb = CreateButton(settimeoption,a)
+						settimeoption.ampmb = ampmb
+						ampmb:SetSize(math.ceil(s),sh)
+						ampmb:SetPos(s * 2,0)
+						function ampmb:DoClick()
+							ampmb.text = (ampmb.text == "AM" and "PM" or "AM")
+							settimeoption.htext[3] = ampmb.text
+							LocalPlayer():EmitSound("buttons/button22.wav")
+						end
+					end
+				end
+				SetTimeOption()
+
+				local ampmtoggle = CreateSmallButton(panel,ampm == 0 and "AM/PM" or "24 clock")
+					ampmtoggle:SetSize(60,12)
+					ampmtoggle:SetPos(20,264)
+				function ampmtoggle:DoClick()
+					LocalPlayer():EmitSound("buttons/button22.wav")
+					ampm = 1 - ampm
+					ampmtoggle.text = ampm == 0 and "AM/PM" or "24 clock"
+					cookie.Set("stormfox-ampm",ampm .. "")
+					SetTimeOption()
+				end
+				local settimebutton = CreateButton(panel,"SetTime")
+				settimebutton:SetSize(pw - 40,24)
+				settimebutton:SetPos(20,308)
+				function settimebutton:DoClick()
+					local str = settimeoption.hour.text .. ":" .. settimeoption.min.text
+					if settimeoption.ampmb and settimeoption.ampmb.text then
+						str = str .. settimeoption.ampmb.text or "AM"
+					end
+					net.Start("StormFox_Settings")
+						net.WriteString("time_set")
+						net.WriteString(str)
+					net.SendToServer()
+					print(str)
+				end
+				
+
 			local blabel = vgui.Create("DLabel",panel)
 				blabel.text = "Hold C"
 				blabel:SetText("")
@@ -622,6 +774,7 @@
 				if not self.enabled and input.IsKeyDown(KEY_C) then
 					self.enabled = true
 					self:MakePopup()
+					self:SetSelected()
 				elseif self.enabled and not input.IsKeyDown(KEY_C) then
 					self.enabled = false
 					self:SetMouseInputEnabled(false)
@@ -633,6 +786,7 @@
 			--panel:MakePopup()
 			STORMFOX_WPANEL = panel
 		end
+		StormFox.OpenWeatherMenu()
 		concommand.Add("sf_menu",StormFox.OpenWeatherMenu)
 		hook.Add("OnPlayerChat","StormFox - Menu",function(pl,text)
 			if pl ~= LocalPlayer() then return end

@@ -11,6 +11,27 @@ local mmin = math.min
 local BASE_TIME = SysTime() -- The base time we will use to calculate current time with.
 local TIME_SPEED = SERVER and ( GetConVar("sf_timespeed") and GetConVar("sf_timespeed"):GetFloat() or 1 ) or 1
 
+-- Local functions
+local function StringToTime( str )
+    if !str then return 0 end
+    local a = string.Explode( ":", str )
+    if #a < 2 then return 0 end
+    local h,m = string.match(a[1],"%d+"),string.match(a[2],"%d+")
+    local ex = string.match(a[2]:lower(),"[ampm]+")
+    if not h or not m then return end
+        h,m = tonumber(h),tonumber(m)
+    if ex then
+        -- 12clock to 24clock
+        if ex == "am" and h == 12 then
+            h = h - 12
+        end
+        if h < 12 and ex == "pm" then
+            h = h + 12
+        end
+    end
+    return ( h * 60 + m ) % 1440
+end
+
 if SERVER then
     util.AddNetworkString( "StormFox_SetTimeData" )
 
@@ -61,6 +82,7 @@ if SERVER then
 
         BASE_TIME = SysTime() - ( flNewTime / TIME_SPEED )
         hook.Call( "StormFox - Timechange", nil, flNewTime )
+        hook.Call( "StormFox - Timeset")
         updateClientsTimeVars()
 
         return flNewTime
@@ -103,32 +125,27 @@ function StormFox.GetTimeSpeed()
 	return TIME_SPEED
 end
 
--- Local functions
-local function StringToTime( str )
-    if !str then return 0 end
-    local a = string.Explode( ":", str )
-    if #a < 2 then return 0 end
-    return ( tonumber( a[1] ) * 60 + tonumber( a[2] ) ) % 1440
-end
-
 function StormFox.GetTime( bNearestSecond )
     local flTime = ( ( SysTime() - BASE_TIME ) * TIME_SPEED ) % 1440
     return bNearestSecond and math.Round( flTime ) or flTime
 end
 
 function StormFox.GetRealTime(num, _12clock )
-	local t = num or StormFox.GetTime()
-		local h = math.floor(t / 60)
-		local m = t - (h * 60)
-	if _12clock then
-		local e = " AM"
-		if h >= 12 then
-			h = h - 12
-			e = " PM"
-		end
-		return h .. ":" .. ( m < 10 and "0" or "" ) .. m .. e
-	end
-	return h .. ":" .. ( m < 10 and "0" or "" ) .. m
+	local var = num or StormFox.GetTime()
+    local h = math.floor(var / 60)
+    local m = math.floor(var - (h * 60))
+    if not _12clock then return h .. ":" .. (m < 10 and "0" or "") .. m end
+
+    local e = "PM"
+    if h < 12 or h == 0 then
+        e = "AM"
+    end
+    if h == 0 then
+        h = 12
+    elseif h > 12 then
+        h = h - 12
+    end
+    return h .. ":" .. (m < 10 and "0" or "") .. m .. " " .. e
 end
 
 function StormFox.GetDaylightAmount( num )
