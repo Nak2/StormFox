@@ -12,27 +12,12 @@ end)
 
 local darkalpha = 0
 local min,max = math.min,math.max
---[[hook.Add("PreDrawHUD","StormFox - env_light_fix",function()
-	-- Light_env fix (Make it look dark) if missing map-light entity
-	if StormFox.GetData("has_light_environment",false) then return end
 
-	local outside = StormFox.Env.IsOutside() or StormFox.Env.NearOutside()
-	if outside and darkalpha < 1.5 then
-		darkalpha = min(darkalpha + 0.01, 1.5)
-	elseif not outside and darkalpha > 0 then
-		darkalpha = max(darkalpha - 0.01, 0)
-	end
-	alpha = StormFox.GetData("MapLight",100)
-	cam.Start2D()
-		surface.SetDrawColor(0,0,0,(100 - alpha) * darkalpha)
-		surface.DrawRect( 0, 0, ScrW(), ScrH() )
-	cam.End2D()
-end)]]
 local darkalpha = 0
 local clamp = math.Clamp
 hook.Add( "RenderScreenspaceEffects", "stormFox - screenmodifier", function()
 	local outside = StormFox.Env.IsOutside() or StormFox.Env.NearOutside()
-	
+
 	if outside and darkalpha < 1.5 then
 		darkalpha = min(darkalpha + 0.01, 1)
 	elseif not outside and darkalpha > 0 then
@@ -40,7 +25,7 @@ hook.Add( "RenderScreenspaceEffects", "stormFox - screenmodifier", function()
 	end
 	local amount = StormFox.GetData("MapLight",100)
 	local ml = clamp((100 - amount) / 100,0,1)
-	
+
 	if ml <= 0 or darkalpha <= 0 then return end
 	local tab = {}
 	tab[ "$pp_colour_addr" ] = 0

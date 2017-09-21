@@ -13,7 +13,8 @@ function StormFox.GetData( sKey, anyFallback )
 end
 
 function StormFox.SetData( sKey, anyValue )
-	StormFox[ sKey ] = anyValue
+	if anyValue == nil then return end
+	StormFox.Data[ sKey ] = anyValue
 end
 
 
@@ -22,8 +23,7 @@ StormFox.SetData( "Wind", 0 )
 StormFox.SetData( "WindAngle", math.random(360) ) --cl
 StormFox.SetData( "ThunderLight", 0 )
 
-if CLIENT then
-
-	StormFox.ClientVariables
-
-end
+-- if CLIENT then
+--
+--
+-- end

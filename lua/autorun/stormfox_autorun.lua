@@ -103,19 +103,22 @@ end
 		end
 	end
 
---print("Framework")
+HandleFile("stormfox/" .. "sh_variables.lua")
+HandleFile("stormfox/" .. "sh_weathertypes.lua")
+HandleFile("stormfox/" .. "sh_weather_controller.lua")
+HandleFile("stormfox/" .. "sh_options.lua")
+HandleFile("stormfox/" .. "cl_wizard.lua")
+
 for _,fil in ipairs(file.Find("stormfox/framework/*.lua","LUA")) do
 	HandleFile("stormfox/framework/" .. fil)
 end
---print("Functions")
+
 for _,fil in ipairs(file.Find("stormfox/functions/*.lua","LUA")) do
 	HandleFile("stormfox/functions/" .. fil)
 end
---print("Rest")
-HandleFile("stormfox/" .. "sh_options.lua")
-HandleFile("stormfox/" .. "cl_wizard.lua")
+
+
 if SERVER then
 	HandleFile("stormfox/" .. "sv_map_lights.lua")
-	HandleFile("stormfox/" .. "sv_weather_controller.lua")
 	HandleFile("stormfox/" .. "sv_weather_generator.lua")
 end

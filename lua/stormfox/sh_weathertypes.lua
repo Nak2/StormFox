@@ -1,4 +1,4 @@
-local Weather = {}
+Weather = {}
 StormFox.Weather = "Clear"
 
 function StormFox.AddWeather( sWeatherId, tWeatherTable )
@@ -24,9 +24,9 @@ local floor,round,clamp,min,max = math.floor,math.Round,math.Clamp,math.min,math
 
 Weather.Clear = {
 	-- SkyPaint
-				-- Top 					Bottom
-	["SkyColor"] = { Color(51, 127.5, 255), Color(204, 255, 255) },
-	["NightColor"] = { Color(0, 0, 0), Color(0, 1.5, 5.25) },
+				
+	["Topcolor"] = { Color(51, 127.5, 255), Color(0, 0, 0) },
+	["Bottomcolor"] = { Color(204, 255, 255), Color(0, 1.5, 5.25) },
 				-- Day, [sunrise/sunset,] night
 	["FadeBias"] = { 0.3, 0.16, 0.06 },
 	["DuskColor"] = { Color(255, 255, 255), Color(255, 204, 0), Color(0, 0, 0) },

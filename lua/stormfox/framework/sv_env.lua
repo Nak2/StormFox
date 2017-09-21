@@ -62,7 +62,8 @@ local function FindEntities()
 
 	local tSunlist = ents.FindByClass( "env_sun" )
 	for i = 1, #tSunlist do -- Remove any env_suns there should be only one but who knows
-		SafeRemoveEntity( sunlist[ i ] )
+		tSunlist[ i ]:Fire( "TurnOff" )
+		SafeRemoveEntity( tSunlist[ i ] )
 	end
 
 	StormFox.light_environment = StormFox.light_environment or ents.FindByClass( "light_environment" )[ 1 ] or nil
@@ -76,6 +77,8 @@ local function FindEntities()
 end
 hook.Add( "StormFox - PostEntity", "StormFox - FindEntities", FindEntities )
 
+if #player.GetAll() > 0 then FindEntities() end
+
 
 -- Shadow controls
 function StormFox.SetShadowColor( cColor )
@@ -87,7 +90,7 @@ function StormFox.SetShadowAngle( nShadowPitch )
 	if not StormFox.shadow_control then return end
 	nShadowPitch = (nShadowPitch + 180) % 360
 	-- min 190 max 350
-	local sAngleString = ( aShadowAng.p + 180 ) .. " " .. aShadowAng.y .. " " .. aShadowAng.r .. " "
+	local sAngleString = ( nShadowPitch + 180 ) .. " " .. StormFox.SunMoonAngle .. " " .. 0 .. " "
 	StormFox.shadow_control:Fire( "SetAngles" , sAngleString , 0 )
 end
 
@@ -99,25 +102,6 @@ end
 function StormFox.SetShadowDisable( bool )
 	if not StormFox.shadow_control then return end
 	StormFox.shadow_control:SetKeyValue( "SetShadowsDisabled", bool and 1 or 0 )
-end
-
--- Sun (w skypaint)
-function StormFox.SetSunAngle( nSunPitch )
-	if not nSunPitch then return end
-	local env_sun = StormFox.GetSun()
-	if not IsValid( env_sun ) then return end
-
-	nSunPitch = (nSunPitch + 180) % 360 -- Make the angle point up at 90.
-	if nSunPitch == 270 then nSunPitch = 271 end -- Somehow the sun gets disabled at this angle.
-
-	local aSunAng = Angle( nSunPitch, StormFox.SunMoonAngle, 0 )
-	local vSunForwardVec = aSunAng:Forward()
-	env_sun:SetKeyValue( "sun_dir" ,  tostring( vSunForwardVec ) )
-
-	if StormFox.env_skypaint then StormFox.env_skypaint:SetSunNormal( vSunForwardVec ) end
-	StormFox.SetShadowAngle( aSunAng )
-
-	return true, ang
 end
 
 -- Maplight

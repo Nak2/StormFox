@@ -78,7 +78,7 @@ Outdoor varables
 			return downfallNorm
 		end
 	-- Calculate sky "pillars" to determine the environment by tracing up and down
-		--[[Returns: 
+		--[[Returns:
 				vector 	The positions if its not free
 				Is it glass it hit?
 		]]
@@ -274,6 +274,7 @@ hook.Add("Think","StormFox - light_env support",function()
 	local ml = StormFox.GetData("MapLight",0)
 	if abs(ml - oml) < 32 then return end
 	oml = ml
+	MsgN("Redownloading light maps")
 	render.RedownloadAllLightmaps()
 end)
 --[[

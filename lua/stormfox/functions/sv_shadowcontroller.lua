@@ -19,5 +19,8 @@ local function ShadowAngleThink( )
 	StormFox.SetShadowAngle( pitch )
 	StormFox.SetShadowColor( Color( shadowColor, shadowColor, shadowColor ) )
 
+	StormFox.SetMapLight( StormFox.CalculateMapLight( flTime ) )
+
+
 end
-timer.Create( 2.5, "StormFox.UpdateShadows", ShadowAngleThink )
+timer.Create( "StormFox.UpdateShadows", 2.5, 0, ShadowAngleThink )

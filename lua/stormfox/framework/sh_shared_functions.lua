@@ -44,7 +44,7 @@ if SERVER then
             BASE_TIME = SysTime() - ( flOldTime / TIME_SPEED )
             updateClientsTimeVars()
 
-            timer.Adjust( "StormFox-tick", 1 / TIME_SPEED, 0, timerfunction )
+            timer.Adjust( "StormFox-tick", 1 / TIME_SPEED )
         end
     end, "StormFox_TimeSpeedChanged" )
 
@@ -96,10 +96,15 @@ if SERVER then
 
 else -- CLIENT
 
+    timer.Create( "StormFox-tick", 1, 0, function()
+        hook.Call( "StormFox-Tick", nil, StormFox.GetTime and StormFox.GetTime() )
+    end )
+
     net.Receive( "StormFox_SetTimeData", function()
         local flCurrentTime = net.ReadFloat()
         TIME_SPEED = net.ReadFloat()
         BASE_TIME = SysTime() - ( flCurrentTime / TIME_SPEED )
+        timer.Adjust( "StormFox-tick", 1 / TIME_SPEED, 0, timerfunction )
     end )
 
 end

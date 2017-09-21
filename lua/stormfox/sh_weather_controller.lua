@@ -1,4 +1,8 @@
 
+local clamp = math.Clamp
+local min = math.min
+
+
 if SERVER then
 	util.AddNetworkString("StormFox-ForceWeather")
 
@@ -10,6 +14,12 @@ if SERVER then
 	end
 end
 
+function StormFox.CalculateMapLight( flTime )
+	flTime = flTime or StormFox.GetTime()
+	-- Just a function to calc daylight amount based on time. See here https://www.desmos.com/calculator/842tvu0nvq
+	local flMapLight = -0.00058 * math.pow( flTime - 750, 2 ) + 100
+	return clamp( flMapLight, 1, 100 )
+end
 
 if CLIENT then
 
@@ -63,20 +73,20 @@ if CLIENT then
 
 	local UPDATE_INTERVAL = 10
 	local LERP_AMOUNT = 0.5
-	local CurrentWeatherData = table.Copy( StormFox.Weather.Clear )
+	local CurrentWeatherData = table.Copy( StormFox.GetWeatherType("Clear") )
 	local tDailyWeatherForecast = {}
 
 
 	function StormFox.SetWeather( name, percent )
-		if not StormFox.Weather[ name ] then print( "[StormFox] Weather not found:", name ) return end
+		if not StormFox.GetWeatherType( name ) then print( "[StormFox] Weather not found:", name ) return end
 		StormFox.Weather = name
 		percent = clamp( percent or 1, 0, 1 )
 
-		CurrentWeatherData = table.Copy(StormFox.Weather.Clear)
+		CurrentWeatherData = table.Copy( StormFox.GetWeatherType( "Clear" ) )
 		if percent <= 0 then
 			return CurrentWeatherData
 		end
-		for key,data in pairs(StormFox.Weather[name]) do
+		for key,data in pairs(StormFox.GetWeatherType(name)) do
 			if not CurrentWeatherData[key] then
 				CurrentWeatherData[key] = data
 			else
@@ -99,9 +109,10 @@ if CLIENT then
 	end )
 
 	hook.Add( "StormFox-Tick", "StormFox - WeatherUpdate", function( flTime )
-		StormFox.SetData("Wind", Lerp( LERP_AMOUNT, StormFox.GetData("Wind", 1), tDailyWeatherForecast.wind ) )
-		StormFox.SetData("Temperature", Lerp( LERP_AMOUNT, StormFox.GetData("Temperature", 1), tDailyWeatherForecast.temp ) )
-		StormFox.SetData("WindAngle", Lerp( LERP_AMOUNT, StormFox.GetData("WindAngle", 1), tDailyWeatherForecast.windangle ) )
+		PrintTable(tDailyWeatherForecast)
+		StormFox.SetData("Wind", Lerp( LERP_AMOUNT, StormFox.GetData("Wind", 1), tDailyWeatherForecast.wind or 1 ) )
+		StormFox.SetData("Temperature", Lerp( LERP_AMOUNT, StormFox.GetData("Temperature", 1), tDailyWeatherForecast.temp or 20) )
+		StormFox.SetData("WindAngle", Lerp( LERP_AMOUNT, StormFox.GetData("WindAngle", 1), tDailyWeatherForecast.windangle or 40) )
 
 		if tDailyWeatherForecast.name != "Clear" and flTime == tDailyWeatherForecast.trigger  then
 			StormFox.SetWeather( tDailyWeatherForecast.name , tDailyWeatherForecast.percent or 1 )
@@ -129,17 +140,26 @@ if CLIENT then
 		flTime = flTime + UPDATE_INTERVAL / flTimeSpeed
 
 		local daytime = StormFox.GetDaylightAmount( flTime )
-		StormFox.SetData("Topcolor",LerpVariable(Get(CurrentWeatherData["SkyColor"],1),Get(CurrentWeatherData["NightColor"],1),1 - daytime))
-		StormFox.SetData("Bottomcolor",LerpVariable(Get(CurrentWeatherData["SkyColor"],2),Get(CurrentWeatherData["NightColor"],2),1 - daytime))
+		local cTopColor = StormFox.GetData( "Topcolor", Color(10,10,220) )
+		local cBottomColor = StormFox.GetData( "Bottomcolor", Color( 110, 0, 202))
+		local timeIndex = flTime < 720 and 0 or 1
+
+		local cTargetTop = CurrentWeatherData["Topcolor"][timeIndex] or Color(10,10,220)
+		local cTargetBottom = CurrentWeatherData["Bottomcolor"][timeIndex] or Color(10,10,220)
+		-- This is temporary. Ill replace it with a better solution soon
+		StormFox.SetData("Topcolor", Color( Lerp( LERP_AMOUNT, cTopColor.r, cTargetTop.r ), Lerp( LERP_AMOUNT, cTopColor.g, cTargetTop.g ), Lerp( LERP_AMOUNT, cTopColor.b, cTargetTop.b ) ) )
+		StormFox.SetData("Bottomcolor",Color( Lerp( LERP_AMOUNT, cBottomColor.r, cTargetBottom.r ), Lerp( LERP_AMOUNT, cBottomColor.g, cTargetBottom.g ), Lerp( LERP_AMOUNT, cBottomColor.b, cTargetBottom.b ) ) )
 
 
 		local n = (CurrentWeatherData["StarFade"] or 1.5) * clamp(((1 - daytime) - 0.5) * 2,0,1)
-		StormFox.SetData("StarFade",n,flTime)
+		StormFox.SetData("StarFade",n)
 		if n > 0 then
 			StormFox.SetData("DrawStars",CurrentWeatherData["DrawStars"])
 			StormFox.SetData("StarTexture",CurrentWeatherData["StarTexture"])
 			StormFox.SetData("StarSpeed",CurrentWeatherData["StarSpeed"])
 		end
+
+		StormFox:SetData("MapLight", StormFox.CalculateMapLight( flTime ))
 
 
 		local blacklist = {"SkyColor","NightColor","StarFade"}
