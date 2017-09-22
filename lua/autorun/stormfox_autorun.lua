@@ -104,7 +104,7 @@ end
 	end
 
 HandleFile("stormfox/" .. "sh_variables.lua")
-HandleFile("stormfox/" .. "sh_weathertypes.lua")
+HandleFile("stormfox/" .. "sh_weathertype_meta.lua")
 HandleFile("stormfox/" .. "sh_weather_controller.lua")
 HandleFile("stormfox/" .. "sh_options.lua")
 HandleFile("stormfox/" .. "cl_wizard.lua")
