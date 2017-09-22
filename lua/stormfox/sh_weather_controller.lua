@@ -77,7 +77,10 @@ if CLIENT then
 
 		-- TODO: We need to check when storms start and then they do adjust the third param which is storm amount and also switch StormFox.Weather to that weather type
 		tCurrentValues = StormFox.Weather:GetAllVariables( StormFox.GetTime(), tCurrentValues, 0 )
-		
+
+		for index, value in pairs( tCurrentValues ) do -- update the internal variables @TODO: Maybe move this inside of the metatable itself?
+			StormFox.SetData( index, value )
+		end
 		-- local daytime = StormFox.GetDaylightAmount( flTime )
 		--
 		-- local n = (CurrentWeatherData["StarFade"] or 1.5) * clamp(((1 - daytime) - 0.5) * 2,0,1)
