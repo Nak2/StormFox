@@ -76,7 +76,7 @@ if CLIENT then
 		flTime = flTime + UPDATE_INTERVAL / flTimeSpeed
 
 		-- TODO: We need to check when storms start and then they do adjust the third param which is storm amount and also switch StormFox.Weather to that weather type
-		tCurrentValues = StormFox.Weather:GetAllVariables( StormFox.GetTime(), tCurrentValues, 0 )
+		tCurrentValues = StormFox.Weather:GetAllVariables( StormFox.GetTime(), 0, tCurrentValues )
 
 		for index, value in pairs( tCurrentValues ) do -- update the internal variables @TODO: Maybe move this inside of the metatable itself?
 			StormFox.SetData( index, value )
