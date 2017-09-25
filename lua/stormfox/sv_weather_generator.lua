@@ -35,8 +35,8 @@ function StormFox.AddWeatherCondition(name,clockrange,percentrange,lengthrange,c
 	table.insert(weatherdata,{name = name,clockrange = clockrange,percentrange = percentrange,lengthrange = lengthrange,canPick = canPick})
 end
 
-StormFox.AddWeatherCondition("Clear") -- Always
-StormFox.AddWeatherCondition("Rain",nil,{0.2,1},{240,720})
+StormFox.AddWeatherCondition("clear") -- Always
+StormFox.AddWeatherCondition("rain",nil,{0.2,1},{240,720})
 
 --StormFox.AddWeatherCondition("Cloudy",nil,{0.2,1},{240,960})
 
@@ -70,6 +70,7 @@ function GetDataAcceleration(current,lastacc,min,max,lerp_acc)
 end
 
 local week = {}
+StormFox.tDailyWeatherForecast = StormFox.tDailyWeatherForecast or {}
 function StormFox.GenerateNewDay(dont_update)
 	-- Delete last weather
 	if #week >= 7 then
@@ -100,24 +101,24 @@ function StormFox.GenerateNewDay(dont_update)
 	local windangle = ((lastWeather.windangle or StormFox.GetData("WindAngle",math.random(0,360))) + math.random(-50,50)) % 360
 	windangle = windangle < 0 and windangle + 360 or windangle
 	-- Pick a random weather
-	local next_weather_id = PickRandomWeather(lastWeather.name or "Clear")
+	local next_weather_id = PickRandomWeather(lastWeather.name or "clear")
 	local data = weatherdata[next_weather_id]
 
-	local d_length = data.lengthrange or { 50,1440 * 0.8 }
+	local d_length = data.lengthrange or { 60, 1440 * 0.8 }
 	local length = math.random(d_length[1],d_length[2])
 
-	local d_timestart = data.clockrange or {0,1440}
+	local d_timestart = data.clockrange or { 50, 1440 * 0.8 }
 	local timestart = math.random(d_timestart[1],d_timestart[2])
 
 	local d_percent = data.percentrange or {0.1,1}
 	local percent = math.Rand(d_percent[1], d_percent[2])
 	local thunder = false
-	if percent >= 0.8 and wind >= 10 and data.name == "Rain" then
+	if percent >= 0.8 and wind >= 10 and data.name == "rain" then
 		thunder = true
 	end
 	table.insert(week,{name = data.name,
 					trigger = timestart,
-					stoptime = math.max(timestart + length),
+					length = length,
 					percent = percent,
 					temp = temp,
 					tempacc = tempacc,
@@ -147,7 +148,15 @@ hook.Add("StormFox-NewDay", "StormFox-SendNextDay", function()
 	if not bAutoWeatherOn then return end
 
 	StormFox.GenerateNewDay( )
+	StormFox.tDailyWeatherForecast = week[1]
 	net.Start("StormFox-NextDayWeather")
 		net.WriteTable( week[1] )
 	net.Broadcast()
 end )
+
+hook.Add( "PlayerInitialSpawn", "StormFox_SendInitialWeatherData", function( pPlayer )
+	if not bAutoWeatherOn then return end
+	net.Start("StormFox-NextDayWeather")
+		net.WriteTable( week[1] )
+	net.Send( pPlayer )
+end)

@@ -99,7 +99,7 @@ function StormFox.WeatherType.new( sId )
 
 	local metaWeatherType = {}
 	metaWeatherType.id = sId
-	return setmetatable( metaWeatherType, StormFox.WeatherType )
+	return setmetatable( metaWeatherType, table.Copy(StormFox.WeatherType) )
 end
 
 -- Allows you to initialize a weather type using StormFox.WeatherType("<id>")
@@ -275,7 +275,7 @@ end
 local WeatherTypes = {
 	clear = StormFox.WeatherType("clear")
 }
-StormFox.Weather = WeatherTypes[ "clear" ] -- Current weather
+StormFox.Weather = StormFox.Weather or WeatherTypes[ "clear" ] -- Current weather
 
 function StormFox.AddWeatherType( metaWeatherType )
 	if not metaWeatherType.id then

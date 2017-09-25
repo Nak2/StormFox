@@ -1,6 +1,6 @@
-local max = math.max 
+local max = math.max
 
-local RainStorm = StormFox.WeatherType( "rain" )
+local RainStorm = StormFox.WeatherType.new( "rain" )
 
 RainStorm.StormMagnitudeMin = 0.2
 
@@ -57,6 +57,7 @@ RainStorm.CalculatedData.SunColor = Color(255,255,255,15)
 RainStorm.DataCalculationFunctions.StarFade = function( flPercent ) return max( 1 - flPercent * 10, 0 ) end
 RainStorm.DataCalculationFunctions.SunSize = function( flPercent ) return max( 0, 10 - ( 10 * flPercent ) ) end
 RainStorm.DataCalculationFunctions.MoonLight = function( flPercent ) return 100 - flPercent * 90 end
+RainStorm.DataCalculationFunctions.Gauge = function( flPercent ) return flPercent * 10 end
 
 function RainStorm:GetName( nTemperature, nWindSpeed, bThunder  )
 	if bThunder then return "Thunder" end
