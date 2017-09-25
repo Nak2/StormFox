@@ -426,8 +426,7 @@ hook.Add("Think","StormFox - RenderFalldownHanlde",function()
 	local Gauge = StormFox.GetData("Gauge",0)
 	local eyepos = EyePos()
 	if LocalPlayer():WaterLevel() >= 3 then return end
-	--local sky_col = StormFox.GetData("Bottomcolor",Color(204,255,255))
-	--	sky_col = Color(max(sky_col.r,24),max(sky_col.g,155),max(sky_col.b,155),155)
+	
 	local sky_col = Color(255,255,255)
 	for id,data in ipairs(particles.main) do
 		if data.alive then

@@ -48,10 +48,10 @@ StormFox.WeatherType.TimeDependentData = {
 		 TIME_SUNSET = 0.1
 	},
 	MapLight = { -- The amount of daylight ( suns brightness )
-		 TIME_SUNRISE = 68,
+		 TIME_SUNRISE = 35,
 		 TIME_NOON = 100,
 		 TIME_SUNSET = 45,
-		 TIME_NIGHT = 10
+		 TIME_NIGHT = 19
 	},
 	Fogdensity = { -- TODO: Nak, what is this? Please add a comment
 		 TIME_SUNRISE = 0.8,
@@ -130,13 +130,13 @@ local timeValueNotFoundFallbacks = {
 }
 
 local function timeToEnumeratedValue( flTime )
-	if flTime <= self.TIME_SURISE then
+	if flTime <= StormFox.WeatherType.TIME_SUNRISE then
 		return "TIME_SUNRISE"
-	elseif flTime <= self.TIME_NOON then
+	elseif flTime <= StormFox.WeatherType.TIME_NOON then
 		return "TIME_NOON"
-	elseif flTime <= self.TIME_SUNSET then
+	elseif flTime <= StormFox.WeatherType.TIME_SUNSET then
 		return "TIME_SUNSET"
-	elseif flTime <= self.TIME_NIGHT then
+	elseif flTime <= StormFox.WeatherType.TIME_NIGHT then
 		return "TIME_NIGHT"
 	else
 		ErrorNoHalt("Warning enumerated value requested for weather type but time was out of bounds. Falling back to TIME_NIGHT. Time: " .. flTime )
@@ -144,6 +144,17 @@ local function timeToEnumeratedValue( flTime )
 		return "TIME_NIGHT"
 	end
 end
+
+-- The times of the previous intervals start times.
+local timeIntervalStarts = {
+	TIME_SUNRISE = 0,
+	TIME_NOON = StormFox.WeatherType.TIME_SUNRISE,
+	TIME_SUNSET = StormFox.WeatherType.TIME_NOON,
+	TIME_NIGHT = StormFox.WeatherType.TIME_SUNSET
+}
+-- local function getPercentOfTimeInterval( flTime )
+--
+-- end
 
 local function lerpAnyValue( amount, currentValue, targetValue )
 	if not currentValue then return targetValue end -- NOTE: If you find that the values are going instantly to the target check here first
@@ -172,14 +183,23 @@ end
 function StormFox.WeatherType:GetLerpedTimeValue( sIndex, currentValue, flTime )
 	local targetValue = self:GetTimeBasedData( sIndex, flTime )
 	local targetTime = self[ timeToEnumeratedValue( flTime ) ]
-	local lerpAmount = ( targetTime - flTime ) < 70 and 0.3 or 0.04
+	local lerpAmount = ( targetTime - flTime ) < 80 and 0.35 or 0.04
+
 	return lerpAnyValue( lerpAmount, currentValue, targetValue )
 end
 
 function StormFox.WeatherType:GetTimeBasedData( sIndex, flTime )
 	local varTable = self.TimeDependentData[ sIndex ]
+	if not varTable then
+		ErrorNoHalt("Unable to find timebaseddata val for index: " .. sIndex)
+		return 1
+	end
+	if type( varTable ) != "table" then
+		return varTable
+	end
+
 	local timeIndex =  timeToEnumeratedValue( flTime )
-	return self.TimeDependentData[ sIndex ][ timeIndex ] or self.TimeDependentData[ sIndex ][ timeValueNotFoundFallbacks[ timeIndex ] ]
+	return varTable[ timeIndex ] or varTable[ timeValueNotFoundFallbacks[ timeIndex ] ]
 end
 
 -- Gets a data member from TimeDependentData, CalculatedData, or StaticData. For TimeDependentData it takes the current time into consideration
@@ -200,7 +220,7 @@ function StormFox.WeatherType:GetAllVariables( flTime, flStormMagnitude, tCurren
 	local tValues = {}
 	-- Get all time variables
 	for index, value in pairs( self.TimeDependentData ) do
-		tValues[ index ] = GetLerpedTimeValue( index, tCurrentValues and tCurrentValues[ index ] or nil, flTime )
+		tValues[ index ] = self:GetLerpedTimeValue( index, tCurrentValues and tCurrentValues[ index ] or nil, flTime )
 	end
 	-- Get all storm magnitude variables
 	self:UpdateCalculatedData( flStormMagnitude or 0 )
@@ -244,7 +264,7 @@ end
 WeatherTypes = {
 	clear = StormFox.WeatherType("clear")
 }
-StormFox.Weather = WeatherTypes[ "clear" ] -- Current weather
+StormFox.Weather = StormFox.Weather or WeatherTypes[ "clear" ] -- Current weather
 
 function StormFox.AddWeatherType( metaWeatherType )
 	if not metaWeatherType.id then

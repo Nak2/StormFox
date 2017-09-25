@@ -2,6 +2,12 @@
 local clamp = math.Clamp
 local min = math.min
 
+function StormFox.CalculateMapLight( flTime )
+	flTime = flTime or StormFox.GetTime()
+	-- Just a function to calc daylight amount based on time. See here https://www.desmos.com/calculator/842tvu0nvq
+	local flMapLight = -0.00058 * math.pow( flTime - 750, 2 ) + 100
+	return clamp( flMapLight, 1, 100 )
+end
 
 if SERVER then
 	util.AddNetworkString("StormFox-ForceWeather")
@@ -12,20 +18,30 @@ if SERVER then
 			net.WriteFloat( nPercent or 1 )
 		net.Broadcast()
 	end
-end
 
-function StormFox.CalculateMapLight( flTime )
-	flTime = flTime or StormFox.GetTime()
-	-- Just a function to calc daylight amount based on time. See here https://www.desmos.com/calculator/842tvu0nvq
-	local flMapLight = -0.00058 * math.pow( flTime - 750, 2 ) + 100
-	return clamp( flMapLight, 1, 100 )
+
+	local skyUpdate = 0
+	local UPDATE_INTERVAL = 5
+	local function weatherThink()
+		if skyUpdate > SysTime() then return end
+		local flTimeSpeed = StormFox.GetTimeSpeed()
+		skyUpdate = SysTime() + UPDATE_INTERVAL / flTimeSpeed
+
+		local flTime = StormFox.GetTime() -- The UPDATE_INTERVAL seconds in the furture (Unless you speed up flTime)
+		flTime = flTime + UPDATE_INTERVAL / flTimeSpeed
+
+		StormFox.SetData("MapLight", StormFox.Weather:GetLerpedTimeValue( "MapLight", StormFox.GetData("MapLight", 1), flTime ))
+		MsgN(StormFox.GetData("MapLight", -1))
+	end
+	hook.Add( "Think", "StormFox - WeatherThink", weatherThink )
+
 end
 
 if CLIENT then
 
 	local LERP_AMOUNT = 0.1
 	local flStormMagnitude = 0.1
-	tDailyWeatherForecast = {}
+	local tDailyWeatherForecast = {}
 	local tCurrentValues = StormFox.Weather:GetAllVariables( StormFox.GetTime(), 0 )
 
 	function StormFox.SetWeather( sWeatherId, flMagnitude )
@@ -50,7 +66,7 @@ if CLIENT then
 	end )
 
 	hook.Add( "StormFox-Tick", "StormFox - WeatherUpdate", function( flTime )
-		PrintTable(tDailyWeatherForecast)
+
 		StormFox.SetData("Wind", Lerp( LERP_AMOUNT, StormFox.GetData("Wind", 1), tDailyWeatherForecast.wind or 1 ) )
 		StormFox.SetData("Temperature", Lerp( LERP_AMOUNT, StormFox.GetData("Temperature", 1), tDailyWeatherForecast.temp or 20) )
 		StormFox.SetData("WindAngle", Lerp( LERP_AMOUNT, StormFox.GetData("WindAngle", 1), tDailyWeatherForecast.windangle or 40) )

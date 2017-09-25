@@ -8,7 +8,7 @@ local SkyFog = function(scale)
 	if con and con:GetBool() then
 		return
 	end
-	local col = StormFox.GetData("Bottomcolor",Color(255,255,255))
+	local col = StormFox.GetData("SkyBottomColor",Color(255,255,255))
 	local outside = StormFox.Env.IsOutside() or StormFox.Env.NearOutside()
 
 	local fogend,fogstart = StormFox.GetData("Fogend",10000), StormFox.GetData("Fogstart",10000)

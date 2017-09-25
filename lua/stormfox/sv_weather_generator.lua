@@ -139,7 +139,7 @@ local bAutoWeatherOn = autoWeatherConvar and autoWeatherConvar:GetBool() or true
 
 cvars.AddChangeCallback( "sf_disable_autoweather", function( sConvar, sOldValue, sNewValue )
 	MsgN("[StormFox] Auto Weather " .. ( sNewValue == "1" and "enabled" or "disabled" ) )
-	StormFox.SetWeather("Clear")
+	StormFox.SetWeather("clear")
 	bAutoWeatherOn = false
 end, "StormFox-AutoWeatherChanged")
 

@@ -16,9 +16,9 @@ hook.Add("Think","StormFox - SkyThink",function()
 	if not IsValid(g_SkyPaint) then return end
 
 		local tl = StormFox.GetData("ThunderLight",0)
-		local topColor = StormFox.GetData("Topcolor",Color(51,127.5,255))
+		local topColor = StormFox.GetData("SkyTopColor",Color(51,127.5,255))
 		g_SkyPaint:SetTopColor(ColVec(Color(max(topColor.r,tl),max(topColor.g,tl),max(topColor.b,tl)),255))
-		g_SkyPaint:SetBottomColor(ColVec(StormFox.GetData("Bottomcolor",Color(204,255,255)),255))
+		g_SkyPaint:SetBottomColor(ColVec(StormFox.GetData("SkyBottomColor",Color(204,255,255)),255))
 		g_SkyPaint:SetFadeBias(StormFox.GetData("FadeBias",1))
 		g_SkyPaint:SetHDRScale(StormFox.GetData("HDRScale",0.66))
 		g_SkyPaint:SetSunColor(ColVec(StormFox.GetData("SunColor",Color(255,255,255)),255))

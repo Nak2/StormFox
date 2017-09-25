@@ -45,7 +45,7 @@ end
 
 if SERVER then
 	if StormFox.WorkShopVersion then
-		resource.AddWorkshop("1132466603")
+		--resource.AddWorkshop("1132466603")
 	else
 	-- Add addon content
 		local i = 0
@@ -104,14 +104,15 @@ end
 	end
 
 HandleFile("stormfox/" .. "sh_variables.lua")
-HandleFile("stormfox/" .. "sh_weathertype_meta.lua")
-HandleFile("stormfox/" .. "sh_weather_controller.lua")
-HandleFile("stormfox/" .. "sh_options.lua")
-HandleFile("stormfox/" .. "cl_wizard.lua")
 
 for _,fil in ipairs(file.Find("stormfox/framework/*.lua","LUA")) do
 	HandleFile("stormfox/framework/" .. fil)
 end
+
+HandleFile("stormfox/" .. "sh_weathertype_meta.lua")
+HandleFile("stormfox/" .. "sh_weather_controller.lua")
+HandleFile("stormfox/" .. "sh_options.lua")
+HandleFile("stormfox/" .. "cl_wizard.lua")
 
 for _,fil in ipairs(file.Find("stormfox/functions/*.lua","LUA")) do
 	HandleFile("stormfox/functions/" .. fil)
