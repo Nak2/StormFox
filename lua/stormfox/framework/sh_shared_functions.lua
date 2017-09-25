@@ -33,19 +33,26 @@ if SERVER then
     -- Update our local TIME_SPEED variable if the convar is changed
     cvars.AddChangeCallback( "sf_timespeed", function( sConvarName, sOldValue, sNewValue )
         local flNewValue = tonumber( sNewValue )
-        if flNewValue <= 0 or flNewValue >= 2 then
-            MsgN( "[StormFox] WARNING: Timespeed was set to invalid value. Reverting to a value of 1.0")
-            GetConVar( "sf_timespeed" ):SetFloat( 1.0 )
-            TIME_SPEED = 1
+        if flNewValue < 0 or flNewValue > 66 then
+            local bHigher = flNewValue > 66
+            TIME_SPEED = bHigher and 66 or 1
+            MsgN( "[StormFox] WARNING: Timespeed was set to invalid value (Must be between 0 and 66). Reverting to a value of " .. TIME_SPEED)
+            GetConVar( "sf_timespeed" ):SetFloat( TIME_SPEED )
         else
-            MsgN( "[StormFox] Timespeed changed to: " .. sNewValue )
-            local flOldTime = StormFox.GetTime()
+            MsgN( "[StormFox] Timespeed changed to: " .. flNewValue )
             TIME_SPEED = flNewValue
-            BASE_TIME = SysTime() - ( flOldTime / TIME_SPEED )
-            updateClientsTimeVars()
-
-            timer.Adjust( "StormFox-tick", 1 / TIME_SPEED )
+            if TIME_SPEED <= 0 then
+                timer.Pause("StormFox-tick")
+            else
+                if tonumber( sOldValue ) <= 0 then
+                    timer.UnPause("StormFox-tick")
+                end
+                timer.Adjust( "StormFox-tick", 1 / TIME_SPEED,0)
+            end
         end
+        local flOldTime = StormFox.GetTime()
+        BASE_TIME = SysTime() - ( flOldTime / TIME_SPEED )
+        updateClientsTimeVars()
     end, "StormFox_TimeSpeedChanged" )
 
     -- Used to update the current stormfox time
@@ -118,7 +125,20 @@ local function StringToTime( str )
     if !str then return 0 end
     local a = string.Explode( ":", str )
     if #a < 2 then return 0 end
-    return ( tonumber( a[1] ) * 60 + tonumber( a[2] ) ) % 1440
+    local h,m = string.match(a[1],"%d+"),string.match(a[2],"%d+")
+    local ex = string.match(a[2]:lower(),"[ampm]+")
+    if not h or not m then return end
+        h,m = tonumber(h),tonumber(m)
+    if ex then
+        -- 12clock to 24clock
+        if ex == "am" and h == 12 then
+            h = h - 12
+        end
+        if h < 12 and ex == "pm" then
+            h = h + 12
+        end
+    end
+    return ( h * 60 + m ) % 1440
 end
 
 function StormFox.GetTime( bNearestSecond )

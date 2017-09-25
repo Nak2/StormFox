@@ -2,13 +2,6 @@
 local clamp = math.Clamp
 local min = math.min
 
-function StormFox.CalculateMapLight( flTime )
-	flTime = flTime or StormFox.GetTime()
-	-- Just a function to calc daylight amount based on time. See here https://www.desmos.com/calculator/842tvu0nvq
-	local flMapLight = -0.00058 * math.pow( flTime - 750, 2 ) + 100
-	return clamp( flMapLight, 1, 100 )
-end
-
 if SERVER then
 	util.AddNetworkString("StormFox-ForceWeather")
 
@@ -19,7 +12,6 @@ if SERVER then
 		net.Broadcast()
 	end
 
-
 	local skyUpdate = 0
 	local UPDATE_INTERVAL = 5
 	local function weatherThink()
@@ -28,10 +20,9 @@ if SERVER then
 		skyUpdate = SysTime() + UPDATE_INTERVAL / flTimeSpeed
 
 		local flTime = StormFox.GetTime() -- The UPDATE_INTERVAL seconds in the furture (Unless you speed up flTime)
-		flTime = flTime + UPDATE_INTERVAL / flTimeSpeed
 
 		StormFox.SetData("MapLight", StormFox.Weather:GetLerpedTimeValue( "MapLight", StormFox.GetData("MapLight", 1), flTime ))
-		MsgN(StormFox.GetData("MapLight", -1))
+		StormFox.SetMapLight( StormFox.GetData("MapLight", 1) )
 	end
 	hook.Add( "Think", "StormFox - WeatherThink", weatherThink )
 
@@ -39,18 +30,19 @@ end
 
 if CLIENT then
 
-	local LERP_AMOUNT = 0.1
-	local flStormMagnitude = 0.1
+	local LERP_AMOUNT = 0.02
+	local flStormMagnitude = 0
 	local tDailyWeatherForecast = {}
 	local tCurrentValues = StormFox.Weather:GetAllVariables( StormFox.GetTime(), 0 )
+	local tPreviousWeatherValues = tCurrentValues-- When the weather changes the previous values are set to this. We use this for time based lerps
 
 	function StormFox.SetWeather( sWeatherId, flMagnitude )
 		if not StormFox.GetWeatherType( sWeatherId ) then print( "[StormFox] Weather not found:", sWeatherId ) return end
 		StormFox.Weather = StormFox:GetWeatherType( sWeatherId )
-		flMagnitude = clamp( flMagnitude or 1, 0, 1 )
-
-		tCurrentValues = StormFox.Weather:GetAllVariables( StormFox.GetTime(), tCurrentValues, 0 )
-
+		flMagnitude = clamp( flMagnitude or 0, 0, 1 )
+		tPreviousWeatherValues = tCurrentValues
+		flStormMagnitude = 0
+		tCurrentValues = StormFox.Weather:GetAllVariables( StormFox.GetTime(), flMagnitude, tPreviousWeatherValues )
 	end
 
 
@@ -83,20 +75,25 @@ if CLIENT then
 
 	local skyUpdate = 0
 	local UPDATE_INTERVAL = 5
+	local sTimeIntervalEnum = StormFox.Weather:GetCurrentTimeInterval( StormFox.GetTime() )
 	local function weatherThink()
 		if skyUpdate > SysTime() then return end
 		local flTimeSpeed = StormFox.GetTimeSpeed()
 		skyUpdate = SysTime() + UPDATE_INTERVAL / flTimeSpeed
 
-		local flTime = StormFox.GetTime() -- The UPDATE_INTERVAL seconds in the furture (Unless you speed up flTime)
-		flTime = flTime + UPDATE_INTERVAL / flTimeSpeed
-
+		local flTime = StormFox.GetTime()
 		-- TODO: We need to check when storms start and then they do adjust the third param which is storm amount and also switch StormFox.Weather to that weather type
-		tCurrentValues = StormFox.Weather:GetAllVariables( StormFox.GetTime(), 0, tCurrentValues )
 
-		for index, value in pairs( tCurrentValues ) do -- update the internal variables @TODO: Maybe move this inside of the metatable itself?
+		if sTimeIntervalEnum != StormFox.Weather:GetCurrentTimeInterval( flTime ) then
+			tPreviousWeatherValues = tCurrentValues
+			sTimeIntervalEnum = StormFox.Weather:GetCurrentTimeInterval( flTime )
+		end
+
+		tCurrentValues = StormFox.Weather:GetAllVariables( flTime, 0, tPreviousWeatherValues )
+		for index, value in pairs( tCurrentValues ) do
 			StormFox.SetData( index, value )
 		end
+		
 		-- local daytime = StormFox.GetDaylightAmount( flTime )
 		--
 		-- local n = (CurrentWeatherData["StarFade"] or 1.5) * clamp(((1 - daytime) - 0.5) * 2,0,1)

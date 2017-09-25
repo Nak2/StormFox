@@ -1,4 +1,4 @@
-
+local max = math.max 
 
 local RainStorm = StormFox.WeatherType( "rain" )
 

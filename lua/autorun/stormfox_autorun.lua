@@ -1,6 +1,6 @@
 StormFox = {}
 StormFox.Version = 1.08
-StormFox.WorkShopVersion = true
+StormFox.WorkShopVersion = false
 
 if SERVER then
 	game.ConsoleCommand("sv_skyname painted\n")
@@ -45,7 +45,7 @@ end
 
 if SERVER then
 	if StormFox.WorkShopVersion then
-		--resource.AddWorkshop("1132466603")
+		resource.AddWorkshop("1132466603")
 	else
 	-- Add addon content
 		local i = 0

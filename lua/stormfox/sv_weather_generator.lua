@@ -103,7 +103,7 @@ function StormFox.GenerateNewDay(dont_update)
 	local next_weather_id = PickRandomWeather(lastWeather.name or "Clear")
 	local data = weatherdata[next_weather_id]
 
-	local d_length = data.lengthrange or {0,1440 * 0.8}
+	local d_length = data.lengthrange or { 50,1440 * 0.8 }
 	local length = math.random(d_length[1],d_length[2])
 
 	local d_timestart = data.clockrange or {0,1440}
