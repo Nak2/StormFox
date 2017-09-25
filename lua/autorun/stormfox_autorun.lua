@@ -118,6 +118,10 @@ for _,fil in ipairs(file.Find("stormfox/functions/*.lua","LUA")) do
 	HandleFile("stormfox/functions/" .. fil)
 end
 
+for _,fil in ipairs(file.Find("stormfox/weather_types/*.lua","LUA")) do
+	HandleFile("stormfox/weather_types/" .. fil)
+end
+
 
 if SERVER then
 	HandleFile("stormfox/" .. "sv_map_lights.lua")
