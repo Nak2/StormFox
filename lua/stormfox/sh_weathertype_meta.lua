@@ -108,16 +108,14 @@ function StormFox.WeatherType.__call( _, ... )
 end
 setmetatable( StormFox.WeatherType, { __call = StormFox.WeatherType.__call } )
 
--- When lerping the storm magnitude so that it gradually comes in the magnitude will increase till it reaches the max value
--- for the current storm and then it will slowly decline as the storm leaves
-function StormFox.WeatherType:UpdateCalculatedData( stormMagnitude )
-	stormMagnitude = math.Clamp( 0, 1 )
+-- Gets a stormMagnitude dependent variable. If a calculation function exists it uses that otherwise it returns the value in CalculatedData
+function StormFox.WeatherType:GetCalculatedData( sIndex, flStormMagnitude )
+	flStormMagnitude = flStormMagnitude or StormFox.StormMagnitude
+	flStormMagnitude = math.Clamp( flStormMagnitude, 0, 1 )
 
-	for index, func in pairs( self.DataCalculationFunctions ) do
-		if type( func ) == "function" then
-			self.CalculatedData[ index ] = func( stormMagnitude )
-		end
-	end
+	local fCalculationFunc = self.DataCalculationFunctions[ sIndex ]
+	if fCalculationFunc then return fCalculationFunc( flStormMagnitude ) end
+	return self.CalculatedData[ sIndex ]
 end
 
 -- if we are trying to get the value for a time that isn't set it will use this table to decide what value to use instead
@@ -145,8 +143,18 @@ local function timeToEnumeratedValue( flTime )
 	end
 end
 
+local tPreviousTimeIntervals = { TIME_SUNRISE = "TIME_NIGHT", TIME_NOON = "TIME_SUNRISE", TIME_SUNSET="TIME_NOON", TIME_NIGHT = "TIME_SUNSET" }
+
+-- Gets the current time enum, this may cause confusion because this is often the next time. Example at 2am the interval is SUNRISE
+-- But the current values are actually from NIGHT. If you want to get the last interval which values were lerped to use previousInterval
 function StormFox.WeatherType:GetCurrentTimeInterval( flTime )
 	return timeToEnumeratedValue( flTime )
+end
+
+-- Gets the last time interval passed that resulted in the current time values.
+-- Example: Before TIME_NIGHT but after TIME_SUNSET the previous interval would return TIME_SUNSET.
+function StormFox.WeatherType:GetPreviousTimeInterval( flTime )
+	return tPreviousTimeIntervals[ self:GetCurrentTimeInterval( flTime ) ]
 end
 
 -- The times of the previous intervals start times.
@@ -184,20 +192,35 @@ local function lerpAnyValue( amount, currentValue, targetValue )
 	return currentValue
 end
 
-function StormFox.WeatherType:GetLerpedTimeValue( sIndex, currentValue, flTime )
+-- Gets a time value in relation to the time passed, applies any applicable lerps
+function StormFox.WeatherType:GetLerpedTimeValue( sIndex, previousWeatherVal, flTime )
 
 	local targetValue = self:GetTimeBasedData( sIndex, flTime )
+	-- The value is static for this weather type and doesn't change based on time so we just return it
+	if type( self.TimeDependentData[ sIndex ] ) != "table" then return self.TimeDependentData[ sIndex ] end
+
 	local timeEnumeration = timeToEnumeratedValue( flTime )
 	local flTargetTime = self[ timeEnumeration ]
 	local lerpAmount = 0.01
-	if currentValue then
+	if previousWeatherVal then
 		local flStartTime = timeIntervalStarts[ timeEnumeration ]
-		lerpAmount = math.Clamp( ( flTime - flStartTime ) / ( flTargetTime - flStartTime ), 0, 1 )
+		local sPreviousTimeEnum = tPreviousTimeIntervals[ timeEnumeration ] -- Get the most recent passed interval to check what our values should be
+		if flStartTime > flTime then -- We are not within a lerp transition (see commend bellow).
+			local expectedValue = self.TimeDependentData[ sIndex ][ sPreviousTimeEnum ]
+			local currentValue = StormFox.GetData( index )
+			if currentValue and currentValue != expectedValue then
+				-- The weather may have been manually edited or we are transitioning from a storm. We need to lerp the current data to match the expectedValue
+				return lerpAnyValue( 0.1, currentValue, expectedValue )
+			end
+		else -- Lerp based on time, this slowly adjust values at given time intervals. For example 60 mins before sunset it starts to get lighter outside
+			lerpAmount = math.Clamp( ( flTime - flStartTime ) / ( flTargetTime - flStartTime ), 0, 1 )
+		end
 	end
 
-	return lerpAnyValue( lerpAmount, currentValue, targetValue )
+	return lerpAnyValue( lerpAmount, previousWeatherVal, targetValue )
 end
 
+-- Returns a table containing all time based data lerped in relation to the time passed
 function StormFox.WeatherType:GetTimeBasedData( sIndex, flTime )
 	local varTable = self.TimeDependentData[ sIndex ]
 	if not varTable then
@@ -210,6 +233,16 @@ function StormFox.WeatherType:GetTimeBasedData( sIndex, flTime )
 
 	local timeIndex =  timeToEnumeratedValue( flTime )
 	return varTable[ timeIndex ] or varTable[ timeValueNotFoundFallbacks[ timeIndex ] ]
+end
+
+-- When a user first joins or the time is set manually the lerping won't take effect until we get close to the next interval
+-- So this can be called to update all time based data instantly
+function StormFox.WeatherType:UpdateTimeBasedDataImmediate( flTime )
+	local sPreviousTimeEnum = self:GetPreviousTimeInterval( flTime )
+
+	for index, value in pairs( self.TimeDependentData ) do
+		StormFox.SetData( index, self:GetTimeBasedData( index, self[ sPreviousTimeEnum ] ) )
+	end
 end
 
 -- Gets a data member from TimeDependentData, CalculatedData, or StaticData. For TimeDependentData it takes the current time into consideration
@@ -234,9 +267,8 @@ function StormFox.WeatherType:GetAllVariables( flTime, flStormMagnitude, tCurren
 		if index == "MapLight" then MsgN( tValues[ index ] ) end
 	end
 	-- Get all storm magnitude variables
-	self:UpdateCalculatedData( flStormMagnitude or 0 )
 	for index, value in pairs( self.CalculatedData ) do
-		tValues[ index ] = value
+		tValues[ index ] = self:GetCalculatedData( index, flStormMagnitude )
 	end
 	-- Get all Static variables
 	for index, value in pairs( self.StaticData ) do
@@ -244,6 +276,25 @@ function StormFox.WeatherType:GetAllVariables( flTime, flStormMagnitude, tCurren
 	end
 	return tValues
 end
+
+-- Updates all variables in StormFox.Data with lerped data accurate to the current storm conditions, time and previous values
+function StormFox.WeatherType:UpdateAllVariables( flTime, flStormMagnitude, tPreviousWeatherValues )
+	tPreviousWeatherValues = tPreviousWeatherValues or StormFox.GetDataTable()
+	-- Get all time variables
+	for index, value in pairs( self.TimeDependentData ) do
+		StormFox.SetData( index, self:GetLerpedTimeValue( index, tPreviousWeatherValues and tPreviousWeatherValues[ index ] or nil, flTime ) )
+	end
+	-- Get all storm magnitude variables
+
+	for index, value in pairs( self.CalculatedData ) do
+		StormFox.SetData( index, self:GetCalculatedData( index, flStormMagnitude ) )
+	end
+	-- Get all Static variables
+	for index, value in pairs( self.StaticData ) do
+		StormFox.SetData( index, value )
+	end
+end
+
 
 -- The weather names change depending on the current conditions. We only use one weather type to describe multiple different subtypes of weather so we need this
 function StormFox.WeatherType:GetName( nTemperature, nWindSpeed, bThunder  )
@@ -272,20 +323,21 @@ end
 
 -- For managing the table of weather types. Not worth putting it in a new file cause its only 2 small funcs
 
-local WeatherTypes = {
-	clear = StormFox.WeatherType("clear")
+StormFox.WeatherTypes = StormFox.WeatherTypes or {
+	clear = StormFox.WeatherType.new("clear")
 }
-StormFox.Weather = StormFox.Weather or WeatherTypes[ "clear" ] -- Current weather
+
+StormFox.Weather = StormFox.Weather or StormFox.WeatherTypes[ "clear" ] -- Current weather
 
 function StormFox.AddWeatherType( metaWeatherType )
 	if not metaWeatherType.id then
 		error("Attempted to add invalid weather type. You must use an instance of the StormFox.WeatherType class")
 	end
 
-	WeatherTypes[ metaWeatherType.id ] = metaWeatherType
+	StormFox.WeatherTypes[ metaWeatherType.id ] = metaWeatherType
 	MsgN( "[StormFox] Weather Type: " .. metaWeatherType.id .. " initialized." )
 end
 
 function StormFox.GetWeatherType( sWeatherId )
-	return WeatherTypes[ sWeatherId ]
+	return StormFox.WeatherTypes[ sWeatherId ]
 end

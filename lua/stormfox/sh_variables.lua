@@ -17,6 +17,10 @@ function StormFox.SetData( sKey, anyValue )
 	StormFox.Data[ sKey ] = anyValue
 end
 
+function StormFox.GetDataTable()
+	return StormFox.Data
+end
+
 
 StormFox.SetData( "Temperature", 20 )
 StormFox.SetData( "Wind", 0 )

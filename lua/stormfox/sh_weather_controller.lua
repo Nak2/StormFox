@@ -5,15 +5,14 @@ local min = math.min
 local LERP_AMOUNT = 0.02
 local flStormMagnitude = 0
 StormFox.tDailyWeatherForecast = StormFox.tDailyWeatherForecast or {}
-local tCurrentValues = CLIENT and StormFox.Weather:GetAllVariables( StormFox.GetTime(), 0 ) or nil
-local tPreviousWeatherValues = tCurrentValues-- When the weather changes the previous values are set to this. We use this for time based lerps
+local tPreviousWeatherValues = StormFox.Weather:GetAllVariables( StormFox.GetTime(), 0 ) or nil-- When the weather changes the previous values are set to this. We use this for time based lerps
 local WEATHER_STOP = -1 -- The Systime the current weather type should stop at
 
 
 -- SHARED
 StormFox.StormMagnitude = 0
-hook.Add( "StormFox-Tick", "StormFox - WeatherUpdate", function( flTime )
-	
+hook.Add( "StormFox-Tick", "StormFox - StormUpdate", function( flTime )
+
 	if not StormFox.tDailyWeatherForecast then return end
 	if StormFox.tDailyWeatherForecast.name != "clear" and StormFox.Weather.id != "clear" and math.Round(flTime) > StormFox.tDailyWeatherForecast.trigger then -- Look to trigger a storm
 		StormFox.SetWeather( StormFox.tDailyWeatherForecast.name , 0 )
@@ -42,19 +41,20 @@ end )
 function StormFox.SetWeather( sWeatherId, flMagnitude )
 	if not StormFox.GetWeatherType( sWeatherId ) then print( "[StormFox] Weather not found:", sWeatherId ) return end
 	StormFox.Weather = StormFox.GetWeatherType( sWeatherId )
+	local flTime = StormFox.GetTime()
 
 	if flMagnitude != 0 then
 		StormFox.tDailyWeatherForecast.name = sWeatherId
-		StormFox.tDailyWeatherForecast.trigger = StormFox.GetTime() + 1
+		StormFox.tDailyWeatherForecast.trigger = flTime + 1
 		StormFox.tDailyWeatherForecast.length = 90
 		StormFox.tDailyWeatherForecast.percent = clamp( flMagnitude, 0, 1 )
 		WEATHER_STOP = -1
 	end
 
 	if CLIENT then
-		tPreviousWeatherValues = tCurrentValues
-		flStormMagnitude = 0
-		tCurrentValues = StormFox.Weather:GetAllVariables( StormFox.GetTime(), 0, tPreviousWeatherValues )
+		tPreviousWeatherValues = StormFox.GetDataTable()
+		StormFox.Weather:UpdateAllVariables( flTime, 0 )
+		StormFox.Weather:UpdateTimeBasedDataImmediate( flTime )
 	else
 		net.Start("StormFox-ForceWeather")
 			net.WriteString( sWeatherId )
@@ -65,7 +65,6 @@ end
 
 
 -- END SHARED
-
 if SERVER then
 	util.AddNetworkString("StormFox-ForceWeather")
 
@@ -108,7 +107,7 @@ if CLIENT then
 
 
 	local skyUpdate = 0
-	local UPDATE_INTERVAL = 5
+	local UPDATE_INTERVAL = 2
 	local sTimeIntervalEnum = StormFox.Weather:GetCurrentTimeInterval( StormFox.GetTime() )
 	local function weatherThink()
 		if skyUpdate > SysTime() then return end
@@ -118,29 +117,14 @@ if CLIENT then
 		local flTime = StormFox.GetTime()
 
 		if sTimeIntervalEnum != StormFox.Weather:GetCurrentTimeInterval( flTime ) then
-			tPreviousWeatherValues = tCurrentValues
+			tPreviousWeatherValues = StormFox.GetDataTable()
 			sTimeIntervalEnum = StormFox.Weather:GetCurrentTimeInterval( flTime )
 		end
 
-		tCurrentValues = StormFox.Weather:GetAllVariables( flTime, StormFox.StormMagnitude or 0, tPreviousWeatherValues )
-		for index, value in pairs( tCurrentValues ) do
-			StormFox.SetData( index, value )
-		end
-
-		-- local daytime = StormFox.GetDaylightAmount( flTime )
-		--
-		-- local n = (CurrentWeatherData["StarFade"] or 1.5) * clamp(((1 - daytime) - 0.5) * 2,0,1)
-		-- StormFox.SetData("StarFade",n)
-		-- if n > 0 then
-		-- 	StormFox.SetData("DrawStars",CurrentWeatherData["DrawStars"])
-		-- 	StormFox.SetData("StarTexture",CurrentWeatherData["StarTexture"])
-		-- 	StormFox.SetData("StarSpeed",CurrentWeatherData["StarSpeed"])
-		-- end
-		--
-		-- StormFox:SetData("MapLight", StormFox.CalculateMapLight( flTime ))
+		StormFox.Weather:UpdateAllVariables( flTime, StormFox.StormMagnitude or 0, tPreviousWeatherValues )
 
 	end
-	hook.Add( "Think", "StormFox - WeatherThink", weatherThink )
+	hook.Add( "StormFox-Tick", "StormFox - WeatherThink", weatherThink )
 
 
 end -- END CLIENT

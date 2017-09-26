@@ -32,10 +32,10 @@ RainStorm.TimeDependentData.HDRScale = {
 }
 
 RainStorm.TimeDependentData.MapLight = {
-	TIME_SUNRISE = 8,
-	TIME_NOON = 10,
-	TIME_SUNSET = 4,
-	TIME_NIGHT = 1
+	TIME_SUNRISE = 28,
+	TIME_NOON = 48,
+	TIME_SUNSET = 34,
+	TIME_NIGHT = 13
 }
 
 RainStorm.TimeDependentData.Fogdensity = {
