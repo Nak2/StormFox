@@ -38,10 +38,10 @@ Breath
 	local genabled = false
 	hook.Add("PostPlayerDraw","StormFox - Breath",function(ply)
 		if not genabled then return end
-		if (ply._sf_breath or 0) > SysTime() then return end
+		if (ply._sf_breath or 0) > CurTime() then return end
 		local len = ply:GetVelocity():Length()
 		local t = clamp(1 - (len / 100),0.2,1)
-			ply._sf_breath = math.Rand(t,t * 2) + SysTime()
+			ply._sf_breath = math.Rand(t,t * 2) + CurTime()
 		breath(ply,5 + (len / 100))
 
 	end)
@@ -51,9 +51,9 @@ Breath
 		if not LocalPlayer() then return end
 		if GetViewEntity() ~= LocalPlayer() then return end
 		local ply = LocalPlayer()
-		if (ply._sf_breath or 0) > SysTime() then return end
+		if (ply._sf_breath or 0) > CurTime() then return end
 		local len = ply:GetVelocity():Length()
 		local t = clamp(1 - (len / 400),0.2,1)
-			ply._sf_breath = math.Rand(t,t * 2) + SysTime()
+			ply._sf_breath = math.Rand(t,t * 2) + CurTime()
 		breath(ply,5 - (len / 50))
 	end)

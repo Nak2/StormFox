@@ -94,8 +94,8 @@ hook.Add("StormFox - EnvUpdate","StormFox - WindSounds",function()
 	else
 		windAmount = 0.5 * nearWindow
 	end
-	if windGust <= SysTime() then
-		windGust = SysTime() + math.random(10,30)
+	if windGust <= CurTime() then
+		windGust = CurTime() + math.random(10,30)
 		local lvl = math.floor(math.Round(Wind / 6))
 		if lvl < 1 then return end
 		if inWind then

@@ -199,10 +199,10 @@ timer.Simple(30,function()
 	end
 end)
 
-local ts = SysTime() + 30
+local ts = CurTime() + 30
 timer.Create("StormFox - Wizzardcheck",4,0,function()
 	-- Only do this after 10 seconds. Just in case.
-	if ts >= SysTime() or not system.HasFocus() then return end
+	if ts >= CurTime() or not system.HasFocus() then return end
 	-- Check FPS vs quality settings
 	if StormFox.GetAvageFPS() < 20 then
 		-- Damn that is a slow framerate

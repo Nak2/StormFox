@@ -1,15 +1,6 @@
 -- Disabled for now
 if true then return end
 
-
-local function sunAng(time)
-	time = time or StormFox.GetTime()
-	local pitch = ((time / 360) - 1) * 90
-	if pitch < 0 then pitch = pitch + 360 end
-	if pitch > 180 then pitch = pitch - 180 end
-	local a = StormFox.SunMoonAngle
-	return Angle(pitch,a, 0)
-end
 local BufferAngle = Angle(0,0,0)
 local sky_center = Vector(0,0,0)
 -- Debug Render
@@ -17,7 +8,6 @@ local sky_center = Vector(0,0,0)
 		if not LocalPlayer() then return end
 		if not StormFox.SkyboxOBBMaxs() then return end
 		if true then return end
-		--if true then return end
 		local myPos = StormFox.WorldToSkybox(LocalPlayer():GetPos() + Vector(0,0,30))
 
 		render.SetColorMaterial()
@@ -110,12 +100,6 @@ local Clouds = {}
 			}
 		table.insert(Clouds[ran(#Clouds)], t)
 	end
-	for i = 0,10 do
-	--	CreateCloud(i * 200 - 1000,0,300,1)
-	end
-	for i = 0,10 do
-	--	CreateCloud(0,i * 200 - 1000,300,1)
-	end
 
 -- Render clouds
 	-- Buffer the data
@@ -128,7 +112,7 @@ local Clouds = {}
 		local cPos = sky_center + Vector(CloudData.x,CloudData.y,-CloudData.z * StormFox.SkyboxScale() * 0.1)
 		mat:SetTranslation(cPos)
 		local s = CloudData.size / 2
-		--render.DrawSphere(cPos,10 + math.cos(SysTime()) * 10,30,30,Color(0,255,0))
+		--render.DrawSphere(cPos,10 + math.cos(CurTime()) * 10,30,30,Color(0,255,0))
 		local cloudColor = Color(83,85,123,255)
 		cam.PushModelMatrix( mat )
 			render.SetMaterial(CloudMaterials[CloudData.mat][1])
@@ -203,8 +187,10 @@ local Clouds = {}
 		cam.End3D2D()
 	end
 	hook.Add("Think","StormFox - CloudUpdate",function()
-		BufferAngle = sunAng()
 		if true then return end
+		local flTime = StormFox.GetTime()
+		BufferAngle = StormFox.GetMoonAngle( flTime )
+
 		local scale = StormFox.SkyboxScale()
 		sky_center = StormFox.SkyboxPos() + Vector(0,0,StormFox.SkyboxOBBMaxs().z - 300)
 		for layer,l_clouds in ipairs(Clouds) do

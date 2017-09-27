@@ -22,12 +22,13 @@ end
 
 local max,min,abs = math.max,math.min,math.abs
 local distance = 5000
+local cvShadowConvar = GetConVar("sf_allow_dynamicshadow")
+
 hook.Add("Think", "StormFox - Suntest", function()
 	if not LocalPlayer() then return end
 
-	local con = GetConVar("sf_allow_dynamicshadow")
 	local dla = StormFox.GetDaylightAmount()
-	if not con:GetBool() or (dla < 0.55 and dla > 0.45) then
+	if not cvShadowConvar:GetBool() or (dla < 0.55 and dla > 0.45) then
 		if STORMFOX_SUN then
 			STORMFOX_SUN:Remove()
 		end
@@ -36,7 +37,9 @@ hook.Add("Think", "StormFox - Suntest", function()
 		end
 		return
 	end
-	local sunAngle = GetMoonAngle()
+
+	local flTime = StormFox.GetTime() or flTime
+	local sunAngle = StormFox.GetMoonAngle( flTime )
 	local colA = abs(0.5 - dla) * 2
 	local eyepos = EyePos()
 	local tp,tsky = ET(eyepos,sunAngle:Forward() * -8000,MASK_SOLID_BRUSHONLY)

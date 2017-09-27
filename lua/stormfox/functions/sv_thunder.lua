@@ -1,8 +1,8 @@
 
 -- local nextHit = 0 TODO
 -- hook.Add("Think","StormFox - Thunder",function()
--- 	if nextHit > SysTime() then return end
--- 			nextHit = SysTime() + math.random(10,20)
+-- 	if nextHit > CurTime() then return end
+-- 			nextHit = CurTime() + math.random(10,20)
 -- 	if not StormFox.GetData("Thunder",false) then return end
 -- 	if math.random(10) < 4 then
 -- 		StormFox.CLEmitSound("ambient/atmosphere/thunder" .. math.random(3,4) .. ".wav",nil,0.5)

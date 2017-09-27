@@ -38,8 +38,8 @@ hook.Add( "PostDraw2DSkyBox", "StormFox - MoonRender", function()
 		local s = moonsize * 2 + (moonsize * 1.4) * (1.2-a)
 
 	local mirror = (ang.p >= 270 or ang.p < 90) and true or false
-	if m_update < SysTime() or not poly then
-		m_update = SysTime() + 1
+	if m_update < CurTime() or not poly then
+		m_update = CurTime() + 1
 
 	end
 	local eyeang = EyeAngles()

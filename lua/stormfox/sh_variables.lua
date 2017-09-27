@@ -5,10 +5,6 @@ StormFox.Data = StormFox.Data or {}
 
 
 function StormFox.GetData( sKey, anyFallback )
-	if not StormFox.GetTime then return anyFallback end
-	if not StormFox.Data[ sKey ] then return anyFallback end
-
-	local t = StormFox.GetTime()
 	return StormFox.Data[ sKey ] or anyFallback
 end
 

@@ -13,8 +13,8 @@
 		util.AddNetworkString("StormFox_Settings")
 		net.Receive("StormFox_Settings",function(len,ply)
 			if not ply then return end
-			if (ply.SF_LAST or 0) > SysTime() then return end
-				ply.SF_LAST = SysTime() + 0.2
+			if (ply.SF_LAST or 0) > CurTime() then return end
+				ply.SF_LAST = CurTime() + 0.2
 			local con = net.ReadString()
 			local arg = net.ReadString()
 			if not con then return end

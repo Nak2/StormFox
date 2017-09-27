@@ -5,8 +5,8 @@ if SERVER then
 	local l = 0
 	local old_lvl = -1
 	hook.Add("Think","StormFox - Snow Replacement",function()
-		if l > SysTime() then return end
-			l = SysTime() + 5
+		if l > CurTime() then return end
+			l = CurTime() + 5
 		local temp = StormFox.GetData("Temperature",20)
 		local Gauge = StormFox.GetData("Gauge",0)
 		local con = GetConVar("sf_sv_material_replacment")
@@ -206,8 +206,8 @@ end
 
 local l,lvl_old = 0,-1
 hook.Add("Think","StormFox - Snow Replacement",function()
-	if l > SysTime() then return end
-		l = SysTime() + 5
+	if l > CurTime() then return end
+		l = CurTime() + 5
 	local lvl = math.Clamp(StormFox.GetData("SnowMaterial",0),0,3)
 	local con = GetConVar("sf_material_replacment")
 	if not con:GetBool() then

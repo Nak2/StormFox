@@ -19,8 +19,8 @@ local LocalPlayer = LocalPlayer
 
 -- Do the math outside
 hook.Add("Think","StormFox - DownfallUpdater",function()
-	if uptimer > SysTime() then return end
-	uptimer = SysTime() + 1
+	if uptimer > CurTime() then return end
+	uptimer = CurTime() + 1
 	local Gauge = StormFox.GetData("Gauge",0)
 	if Gauge <= 0 then return end
 
@@ -120,7 +120,7 @@ hook.Add("Think","StormFox - RenderFalldownThink",function()
 		local l = 4 -- 4 tries .. after all this is in think
 		while l > 0 do
 			l = l - 1
-			skytrace = ET(skytrace.HitPos + Vector(0,0,1),Vector(0,0,9000),lp)
+			skytrace = ET(skytrace.HitPos + Vector(0, 0, 3),Vector(0,0,9000), lp)
 			if skytrace.HitSky then
 				mainpos.z = math.min(mainpos.z,skytrace.HitPos.z - 10)
 				break
@@ -141,7 +141,7 @@ hook.Add("Think","StormFox - RenderFalldownThink",function()
 	end
 
 	-- Calk max
-	local exp = StormFox.GetExspensive()
+	local exp = StormFox.GetExpensive()
 	local maxparticles = max(exp,1) * 64
 
 	local weight = IsRain and 1 or 0.2
@@ -260,10 +260,10 @@ local rain_particles = { (Material("stormfox/effects/raindrop")), (Material("sto
 			end
 			return
 		end
-		if l > SysTime() then return end
+		if l > CurTime() then return end
 		-- Bin old particles
 			for i = #screenParticles,1,-1 do
-				if screenParticles[i].life < SysTime() then
+				if screenParticles[i].life < CurTime() then
 					table.remove(screenParticles,i)
 				end
 			end
@@ -295,9 +295,9 @@ local rain_particles = { (Material("stormfox/effects/raindrop")), (Material("sto
 		if viewAmount <= 0 then viewAmount = 0 return end
 		rainAmount = max((10 - Gauge) / 10,0.1) -- 0 in heavy rain, 1 in light
 		-- Next rainrop
-			l = SysTime() + rand(rainAmount,rainAmount * 2) / viewAmount * 0.01
+			l = CurTime() + rand(rainAmount,rainAmount * 2) / viewAmount * 0.01
 		local drop = {}
-			drop.life = SysTime() + ran(0.4,1)
+			drop.life = CurTime() + ran(0.4,1)
 			drop.x = ran(ScrW())
 			drop.y = ran(ScrH())
 			drop.size = 25 + rand(2,3) * Gauge
@@ -397,7 +397,7 @@ local old_raindrop = Material("sprites/heatwave")
 				surface.DrawTexturedRect(d.x,d.y,d.size * ms,d.size * 1.2 * ms)
 				screenParticles[i].y = d.y + grav * d.weight * 100 * FrameTime()
 			else
-				local ll = d.life - SysTime()
+				local ll = d.life - CurTime()
 				surface.SetDrawColor(255,255,255,55 * ll)
 				surface.SetMaterial(snow_particles[d.p])
 				surface.DrawTexturedRectRotated(d.x,d.y,d.size + d.weight * 5,d.size + d.weight * 5,d.r)
@@ -417,16 +417,16 @@ local old_raindrop = Material("sprites/heatwave")
 -- Handle raindrops
 local rainsplash_w = Material("effects/splashwake3")
 local rainsplash = Material("effects/splash4")
-local last = SysTime()
+local last = CurTime()
 hook.Add("Think","StormFox - RenderFalldownHanlde",function()
-	local FT = (SysTime() - last) * 100
-		last = SysTime()
-	local exp = StormFox.GetExspensive()
+	local FT = (CurTime() - last) * 100
+		last = CurTime()
+	local exp = StormFox.GetExpensive()
 	local wind = StormFox.GetData("Wind",0)
 	local Gauge = StormFox.GetData("Gauge",0)
 	local eyepos = EyePos()
 	if LocalPlayer():WaterLevel() >= 3 then return end
-	
+
 	local sky_col = Color(255,255,255)
 	for id,data in ipairs(particles.main) do
 		if data.alive then
@@ -597,10 +597,7 @@ local RenderRain = function(depth, sky)
 	_STORMFOX_PEM2d:Draw()
 	local raindebug = StormFox.GetData("Raindebug",false)
 	local Gauge = StormFox.GetData("Gauge",0)
-	local alpha = 75 + min(Gauge * 10,150)
 
-	local sky_col = StormFox.GetData("Bottomcolor",Color(204,255,255))
-		sky_col = Color(max(sky_col.r,4),max(sky_col.g,55),max(sky_col.b,55),max(alpha,155))
 	for id,data in ipairs(particles.main) do
 		if data.rain then
 			render.SetMaterial(rainmat)
@@ -657,7 +654,7 @@ hook.Add("HUDPaint","StormFox - Debug Rain",function()
 	surface.SetFont("Default")
 	local temp = StormFox.GetData("Temperature",20)
 	local Gauge = StormFox.GetData("Gauge",0)
-	local exp = StormFox.GetExspensive()
+	local exp = StormFox.GetExpensive()
 	local maxparticles = max(exp,1) * 64
 	surface.SetTextColor(255,255,255)
 	surface.DrawText("Max particles: " .. maxparticles)

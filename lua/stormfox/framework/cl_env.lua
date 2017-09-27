@@ -18,7 +18,7 @@ Potato protection
 			bi = 0
 		end
 	end)
-	function StormFox.GetExspensive()
+	function StormFox.GetExpensive()
 		local con = GetConVar("sf_exspensive")
 		local n = con:GetFloat() or 3
 		if n <= 0 then
@@ -179,17 +179,17 @@ Outdoor varables
 		local lFilter,lEnv = 0,0
 		hook.Add("Think","StormFox - Outdoor Env",function()
 			-- Update the soundfilter. This can be a bit slow, so only every 5th second.
-				if lFilter <= SysTime() then
-					lFilter = SysTime() + 5
+				if lFilter <= CurTime() then
+					lFilter = CurTime() + 5
 					UpdateFilter()
 				end
 			-- Scan the enviroment
-				if lEnv > SysTime() then return end
+				if lEnv > CurTime() then return end
 				local eyepos,eyeang = EyePos(),EyeAngles()
-				local exp = StormFox.GetExspensive()
-				lEnv = SysTime() + clamp( 1 - exp * 0.1,0.2,2)
+				local exp = StormFox.GetExpensive()
+				lEnv = CurTime() + clamp( 1 - exp * 0.1,0.2,2)
 				table.Empty(enviroment)
-				--debugoverlay.Line(eyepos,eyepos + -GetDFn() * 100,lEnv - SysTime(),Color( 255, 255, 255 ),false)
+				--debugoverlay.Line(eyepos,eyepos + -GetDFn() * 100,lEnv - CurTime(),Color( 255, 255, 255 ),false)
 				-- Check the players head
 					local overhead,_,underglass = HandleSkyPillar(nil)
 					if not overhead then
@@ -267,8 +267,8 @@ Non light_env support
 local t,oml = 0,-1
 local abs = math.abs
 hook.Add("Think","StormFox - light_env support",function()
-	if t > SysTime() then return end
-		t = SysTime() + 15
+	if t > CurTime() then return end
+		t = CurTime() + 15
 	local con = GetConVar("sf_redownloadlightmaps")
 	if con and not con:GetBool() then return end
 	local ml = StormFox.GetData("MapLight",0)
@@ -282,5 +282,5 @@ hook.Add("HUDPaint","RainDebug2",function()
 	surface.SetFont("default")
 	surface.SetTextPos(24,120)
 	surface.SetTextColor(255,255,255)
-	--surface.DrawText("HQ: "..StormFox.GetExspensive())
+	--surface.DrawText("HQ: "..StormFox.GetExpensive())
 end)]]

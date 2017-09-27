@@ -3,8 +3,8 @@ Source is reaaaalllly bad with realtime shadows .. so we gotta update them our s
 ---------------------------------------------------------------------------]]
 local last = 0
 hook.Add("Think","StormFox - ShadowUpdate",function()
-	if SysTime() < last then return end
-	last = SysTime() + 10
+	if CurTime() < last then return end
+	last = CurTime() + 10
 	for _,ent in ipairs(ents.GetAll()) do
 		ent:MarkShadowAsDirty()
 	end

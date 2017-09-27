@@ -17,21 +17,21 @@ hook.Add( "StormFox-Tick", "StormFox - StormUpdate", function( flTime )
 	if StormFox.tDailyWeatherForecast.name != "clear" and StormFox.Weather.id != "clear" and math.Round(flTime) > StormFox.tDailyWeatherForecast.trigger then -- Look to trigger a storm
 		StormFox.SetWeather( StormFox.tDailyWeatherForecast.name , 0 )
 		StormFox.SetData( "Thunder", StormFox.tDailyWeatherForecast.thunder )
-		WEATHER_STOP = SysTime() + StormFox.tDailyWeatherForecast.length - ( flTime - StormFox.tDailyWeatherForecast.trigger ) -- Keeps it consistent for clients that join in the middle
+		WEATHER_STOP = CurTime() + StormFox.tDailyWeatherForecast.length - ( flTime - StormFox.tDailyWeatherForecast.trigger ) -- Keeps it consistent for clients that join in the middle
 		StormFox.tDailyWeatherForecast.trigger = 1600 -- So it never triggers again for this day
 	elseif WEATHER_STOP != -1  then -- Handle the current active storm, adjusting its magnitude or ending it
-		if SysTime() >= WEATHER_STOP then
+		if CurTime() >= WEATHER_STOP then
 			StormFox.Weather = StormFox.GetWeatherType( "clear" )
 			WEATHER_STOP = -1
 			StormFox.StormMagnitude = 0
 			MsgN("Storm over...")
 		else
-			if WEATHER_STOP - SysTime() <= 30 then -- ending the storm slowly
-				StormFox.StormMagnitude = StormFox.tDailyWeatherForecast.percent * ( (WEATHER_STOP - SysTime()) / 30 )
+			if WEATHER_STOP - CurTime() <= 30 then -- ending the storm slowly
+				StormFox.StormMagnitude = StormFox.tDailyWeatherForecast.percent * ( (WEATHER_STOP - CurTime()) / 30 )
 				MsgN("Winding the storm down")
-			elseif SysTime() - (WEATHER_STOP - StormFox.tDailyWeatherForecast.length) <= 30 then
+			elseif CurTime() - (WEATHER_STOP - StormFox.tDailyWeatherForecast.length) <= 30 then
 				MsgN("Winding the storm up")
-				StormFox.StormMagnitude = (SysTime() - (WEATHER_STOP - StormFox.tDailyWeatherForecast.length)) / 30
+				StormFox.StormMagnitude = (CurTime() - (WEATHER_STOP - StormFox.tDailyWeatherForecast.length)) / 30
 			end
 		end
 	end
@@ -71,17 +71,16 @@ if SERVER then
 	local skyUpdate = 0
 	local UPDATE_INTERVAL = 5
 
-	local function weatherThink()
-		if skyUpdate > SysTime() then return end
+	local function weatherThink( flTime )
+		flTime = flTime or StormFox.GetTime()
+		if skyUpdate > CurTime() then return end
 		local flTimeSpeed = StormFox.GetTimeSpeed()
-		skyUpdate = SysTime() + UPDATE_INTERVAL / flTimeSpeed
-
-		local flTime = StormFox.GetTime() -- The UPDATE_INTERVAL seconds in the furture (Unless you speed up flTime)
+		skyUpdate = CurTime() + UPDATE_INTERVAL / flTimeSpeed
 
 		StormFox.SetData("MapLight", StormFox.Weather:GetLerpedTimeValue( "MapLight", StormFox.GetData("MapLight", 1), flTime ))
 		StormFox.SetMapLight( StormFox.GetData("MapLight", 1) )
 	end
-	hook.Add( "Think", "StormFox - WeatherThink", weatherThink )
+	hook.Add( "StormFox-Tick", "StormFox - WeatherThink", weatherThink )
 
 end
 
@@ -109,12 +108,11 @@ if CLIENT then
 	local skyUpdate = 0
 	local UPDATE_INTERVAL = 2
 	local sTimeIntervalEnum = StormFox.Weather:GetCurrentTimeInterval( StormFox.GetTime() )
-	local function weatherThink()
-		if skyUpdate > SysTime() then return end
+	local function weatherThink( flTime )
+		if skyUpdate > CurTime() then return end
+		flTime = flTime or StormFox.GetTime()
 		local flTimeSpeed = StormFox.GetTimeSpeed()
-		skyUpdate = SysTime() + UPDATE_INTERVAL / flTimeSpeed
-
-		local flTime = StormFox.GetTime()
+		skyUpdate = CurTime() + UPDATE_INTERVAL / flTimeSpeed
 
 		if sTimeIntervalEnum != StormFox.Weather:GetCurrentTimeInterval( flTime ) then
 			tPreviousWeatherValues = StormFox.GetDataTable()

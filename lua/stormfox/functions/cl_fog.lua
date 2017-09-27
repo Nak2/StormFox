@@ -1,13 +1,17 @@
 local app = math.Approach
 local max = math.max
 local smoothe,smooths = 10000, 10000
+
+local bFogEnabled = GetConVar("sf_disablefog"):GetBool()
+
+cvars.AddChangeCallback( "sf_disablefog",function( sConvarName, sOldValue, sNewValue )
+	bFogEnabled = GetConVar("sf_disablefog"):GetBool()
+end , "StormFox-FogDisabledStateChanged" )
+
 local SkyFog = function(scale)
 	if not scale then scale = 1 end
 	if not StormFox.GetData then return end
-	local con = GetConVar("sf_disablefog")
-	if con and con:GetBool() then
-		return
-	end
+	if not bFogEnabled then return end
 	local col = StormFox.GetData("SkyBottomColor",Color(255,255,255))
 	local outside = StormFox.Env.IsOutside() or StormFox.Env.NearOutside()
 
