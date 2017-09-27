@@ -38,38 +38,42 @@ function StormFox.SkyPaint.GetHDRScale() return flHDRScale end
 
 
 -- This overrides the matproxy used by g_SkyPaint. Since g_SkyPaint uses entity datatables that are reset by the server every tick or something.
-matproxy.Add( {
-	name = "SkyPaint",
+local function overrideMatProxy()
+	matproxy.Add( {
+		name = "SkyPaint",
 
-	init = function( self, mat, values )
-	end,
+		init = function( self, mat, values )
+		end,
 
-	bind = function( self, mat, ent )
+		bind = function( self, mat, ent )
 
-		if not StormFox.SkyPaint then return end
+			if not StormFox.SkyPaint then return end
 
-		mat:SetVector( "$TOPCOLOR",		StormFox.SkyPaint.GetTopColor() )
-		mat:SetVector( "$BOTTOMCOLOR",	StormFox.SkyPaint.GetBottomColor() )
-		mat:SetVector( "$SUNNORMAL",	StormFox.SkyPaint.GetSunNormal() )
-		mat:SetVector( "$SUNCOLOR",		StormFox.SkyPaint.GetSunColor() )
-		mat:SetVector( "$DUSKCOLOR",	StormFox.SkyPaint.GetDuskColor() )
-		mat:SetFloat( "$FADEBIAS",		StormFox.SkyPaint.GetFadeBias() )
-		mat:SetFloat( "$HDRSCALE",		StormFox.SkyPaint.GetHDRScale() )
-		mat:SetFloat( "$DUSKSCALE",		StormFox.SkyPaint.GetDuskScale() )
-		mat:SetFloat( "$DUSKINTENSITY",	StormFox.SkyPaint.GetDuskIntensity() )
-		mat:SetFloat( "$SUNSIZE",		StormFox.SkyPaint.GetSunSize() )
+			mat:SetVector( "$TOPCOLOR",		StormFox.SkyPaint.GetTopColor() )
+			mat:SetVector( "$BOTTOMCOLOR",	StormFox.SkyPaint.GetBottomColor() )
+			mat:SetVector( "$SUNNORMAL",	StormFox.SkyPaint.GetSunNormal() )
+			mat:SetVector( "$SUNCOLOR",		StormFox.SkyPaint.GetSunColor() )
+			mat:SetVector( "$DUSKCOLOR",	StormFox.SkyPaint.GetDuskColor() )
+			mat:SetFloat( "$FADEBIAS",		StormFox.SkyPaint.GetFadeBias() )
+			mat:SetFloat( "$HDRSCALE",		StormFox.SkyPaint.GetHDRScale() )
+			mat:SetFloat( "$DUSKSCALE",		StormFox.SkyPaint.GetDuskScale() )
+			mat:SetFloat( "$DUSKINTENSITY",	StormFox.SkyPaint.GetDuskIntensity() )
+			mat:SetFloat( "$SUNSIZE",		StormFox.SkyPaint.GetSunSize() )
 
-		if ( StormFox.SkyPaint.GetDrawStars() ) then
-			mat:SetInt( "$STARLAYERS",		StormFox.SkyPaint.GetStarLayers() )
-			mat:SetFloat( "$STARSCALE",		StormFox.SkyPaint.GetStarScale() )
-			mat:SetFloat( "$STARFADE",		StormFox.SkyPaint.GetStarFade() )
-			mat:SetFloat( "$STARPOS",		RealTime() * StormFox.SkyPaint.GetStarSpeed() )
-			mat:SetTexture( "$STARTEXTURE",	StormFox.SkyPaint.GetStarTexture() )
-		else
-			mat:SetInt( "$STARLAYERS", 0 )
+			if ( StormFox.SkyPaint.GetDrawStars() ) then
+				mat:SetInt( "$STARLAYERS",		StormFox.SkyPaint.GetStarLayers() )
+				mat:SetFloat( "$STARSCALE",		StormFox.SkyPaint.GetStarScale() )
+				mat:SetFloat( "$STARFADE",		StormFox.SkyPaint.GetStarFade() )
+				mat:SetFloat( "$STARPOS",		RealTime() * StormFox.SkyPaint.GetStarSpeed() )
+				mat:SetTexture( "$STARTEXTURE",	StormFox.SkyPaint.GetStarTexture() )
+			else
+				mat:SetInt( "$STARLAYERS", 0 )
+			end
 		end
-	end
-} )
+	} )
+end
+timer.Simple( 0.5, overrideMatProxy ) -- for lua refreshing
+--hook.Add("InitPostEntity", "StormFox-OverrideMatProxy", overrideMatProxy )
 
 
 

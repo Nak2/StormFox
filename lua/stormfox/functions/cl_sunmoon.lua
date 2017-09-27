@@ -22,7 +22,7 @@ local poly
 local m_update = 0
 local sunMat = Material("engine/lightsprite")
 hook.Add( "PostDraw2DSkyBox", "StormFox - MoonRender", function()
-
+	
 	if not StormFox.GetMoonAngle then return end
 	if not StormFox.GetTime then return end
 	local ang = StormFox.GetMoonAngle()

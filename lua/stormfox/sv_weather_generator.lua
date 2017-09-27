@@ -40,7 +40,7 @@ StormFox.AddWeatherCondition("rain",nil,{0.2,1},{240,720})
 
 --StormFox.AddWeatherCondition("Cloudy",nil,{0.2,1},{240,960})
 
-StormFox.AddWeatherCondition("Fog",{335,400},{0.1,0.8},{180,200},function() return math.random(1,3) >= 2 end)
+-- StormFox.AddWeatherCondition("Fog",{335,400},{0.1,0.8},{180,200},function() return math.random(1,3) >= 2 end)
 
 local function PickRandomWeather(exclude)
 	if math.random(0,3) >= 3 and false then

@@ -80,7 +80,7 @@ if SERVER then
 		StormFox.SetData("MapLight", StormFox.Weather:GetLerpedTimeValue( "MapLight", StormFox.GetData("MapLight", 1), flTime ))
 		StormFox.SetMapLight( StormFox.GetData("MapLight", 1) )
 	end
-	hook.Add( "StormFox-Tick", "StormFox - WeatherThink", weatherThink )
+	hook.Add( "StormFox-Tick", "StormFox - WeatherThinkServer", weatherThink )
 
 end
 

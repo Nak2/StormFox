@@ -33,13 +33,13 @@ StormFox.WeatherType.TimeDependentData = {
 		TIME_NIGHT = 0.06
 	},
 	DuskColor = { -- The color of the skybox at dusk
-		 TIME_SUNRISE = Color(255, 255, 255),
-		 TIME_SUNSET = Color(255, 204, 0),
+		 TIME_SUNRISE = Color(140, 80, 120),
+		 TIME_SUNSET = Color(170, 70, 90),
 		 TIME_NIGHT = Color(0, 0, 0)
 	},
 	DuskIntensity = { -- How intense the sunset/sunrise is
-		 TIME_SUNRISE = 1,
-		 TIME_SUNSET = 0.7,
+		 TIME_SUNRISE = 0.3,
+		 TIME_SUNSET = 0.2,
 		 TIME_NIGHT = 0
 	},
 	HDRScale = { -- TODO: Nak, what is this? Please add a comment
@@ -50,8 +50,8 @@ StormFox.WeatherType.TimeDependentData = {
 	MapLight = { -- The amount of daylight ( suns brightness )
 		 TIME_SUNRISE = 35,
 		 TIME_NOON = 100,
-		 TIME_SUNSET = 45,
-		 TIME_NIGHT = 17
+		 TIME_SUNSET = 30,
+		 TIME_NIGHT = 6
 	},
 	Fogdensity = { -- TODO: Nak, what is this? Please add a comment
 		 TIME_SUNRISE = 0.8,
@@ -194,14 +194,14 @@ end
 
 -- Gets a time value in relation to the time passed, applies any applicable lerps
 function StormFox.WeatherType:GetLerpedTimeValue( sIndex, previousWeatherVal, flTime )
-
+	flTime = flTime or StormFox.GetTime()
 	local targetValue = self:GetTimeBasedData( sIndex, flTime )
 	-- The value is static for this weather type and doesn't change based on time so we just return it
 	if type( self.TimeDependentData[ sIndex ] ) != "table" then return self.TimeDependentData[ sIndex ] end
 
 	local timeEnumeration = timeToEnumeratedValue( flTime )
 	local flTargetTime = self[ timeEnumeration ]
-	local lerpAmount = 0.01
+	local lerpAmount = 0
 	if previousWeatherVal then
 		local flStartTime = timeIntervalStarts[ timeEnumeration ]
 		local sPreviousTimeEnum = tPreviousTimeIntervals[ timeEnumeration ] -- Get the most recent passed interval to check what our values should be
@@ -216,7 +216,6 @@ function StormFox.WeatherType:GetLerpedTimeValue( sIndex, previousWeatherVal, fl
 			lerpAmount = math.Clamp( ( flTime - flStartTime ) / ( flTargetTime - flStartTime ), 0, 1 )
 		end
 	end
-
 	return lerpAnyValue( lerpAmount, previousWeatherVal, targetValue )
 end
 
@@ -264,7 +263,6 @@ function StormFox.WeatherType:GetAllVariables( flTime, flStormMagnitude, tCurren
 	-- Get all time variables
 	for index, value in pairs( self.TimeDependentData ) do
 		tValues[ index ] = self:GetLerpedTimeValue( index, tCurrentValues and tCurrentValues[ index ] or nil, flTime )
-		if index == "MapLight" then MsgN( tValues[ index ] ) end
 	end
 	-- Get all storm magnitude variables
 	for index, value in pairs( self.CalculatedData ) do

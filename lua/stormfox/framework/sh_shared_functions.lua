@@ -97,7 +97,7 @@ if SERVER then
             NEWDAY_CALLED = true
         end
 
-        hook.Call( "StormFox-Tick", nil, StormFox.GetTime() )
+        hook.Call( "StormFox-Tick", nil, StormFox.GetTime and StormFox.GetTime() )
     end
     timer.Create( "StormFox-tick", 1, 0, timerfunction )
 
