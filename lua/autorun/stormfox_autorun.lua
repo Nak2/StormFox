@@ -124,17 +124,15 @@ end
 HandleFile("stormfox/" .. "sh_weathertype_meta.lua")
 HandleFile("stormfox/" .. "sh_weather_controller.lua")
 HandleFile("stormfox/" .. "sh_options.lua")
-HandleFile("stormfox/" .. "cl_wizard.lua")
 if SERVER then
 	HandleFile("stormfox/" .. "sv_map_lights.lua")
 	HandleFile("stormfox/" .. "sv_weather_generator.lua")
 end
-
 for _,fil in ipairs(file.Find("stormfox/weather_types/*.lua","LUA")) do
 	if SERVER then
 		AddCSLuaFile("stormfox/weather_types/" .. fil)
 	end
 	include("stormfox/weather_types/" .. fil)
 end
-
+HandleFile("stormfox/" .. "cl_wizard.lua")
 hook.Call("StormFox - PostInit")

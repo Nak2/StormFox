@@ -14,14 +14,15 @@ local g_SkyPaint_tab = {}
 local g_datacache = {}
 local function AddDataCache(name,defaultdata)
 	g_datacache[name] = defaultdata
-	g_SkyPaint_tab["Set" .. name] = function(self,var)
-		g_datacache[name] = var
-	end
 	g_SkyPaint_tab["Get" .. name] = function()
 		return g_datacache[name]
 	end
+	g_SkyPaint_tab["Set" .. name] = function(self,var)
+		g_datacache[name] = var
+	end
+	return g_SkyPaint_tab["Set" .. name]
 end
-AddDataCache("TopColor", Vector( 0.2, 0.5, 1.0 ) )
+_STORMFOX_TOPCOLOROR = AddDataCache("TopColor", Vector( 0.2, 0.5, 1.0 ) )
 AddDataCache("BottomColor", Vector( 0.8, 1.0, 1.0 ) )
 AddDataCache("FadeBias", 1 )
 
