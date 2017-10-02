@@ -7,3 +7,7 @@ You can find it on Steam Workshop here: http://steamcommunity.com/sharedfiles/fi
 ## License
 
 This project is licensed under the Apache License 2.0
+
+
+## Early beta
+Just pushed v 1.1 out .. please report any bugs
