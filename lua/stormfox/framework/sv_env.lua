@@ -41,55 +41,60 @@ local round,clamp = math.Round,math.Clamp
 		return ent
 	end
 
-	local env_sun = nil
-	local env_skypaint = nil
-	local env_fog_controller = nil
-	local shadow_control = nil
-	local env_tonemap_controller = nil
-	local light_environment = nil
-
-	local function p(d,s)
-		if d then
-			MsgC("	",Color(255,255,255),s," ",Color(0,255,0),"OK",Color(255,255,255),"\n")
-			StormFox.SetData("has_" .. s,true)
-		else
-			MsgC("	",Color(255,255,255),s," ",Color(255,0,0),"Not found",Color(255,255,255),"\n")
-			StormFox.SetData("has_" .. s,false)
-		end
+	local function printEntFoundStatus( bFound, sEntClass )
+		local sStatus = bFound and "OK" or "Not Found"
+		local cStatusColor = bFound and Color( 0, 255, 0 ) or Color( 255, 0, 0 )
+	 	MsgC( "	", Color(255,255,255), sEntClass, " ", cStatusColor, sStatus, Color( 255, 255, 255), "\n" )
+		StormFox.SetData( "has_" .. sEntClass, bFound )
 	end
+
 	local function FindEntities()
-		print("[StormFox] Scanning mapentities ...")
-		local sunlist = ents.FindByClass("env_sun")
-		if #sunlist > 1 then -- What .. why?
-			for i = 2,#sunlist do
-				sunlist[i]:Remove()
+		print( "[StormFox] Scanning mapentities ..." )
+		local con = GetConVar("sf_disable_mapsupport")
+		if not con:GetBool() then
+			local tSunlist = ents.FindByClass( "env_sun" )
+			for i = 1, #tSunlist do -- Remove any env_suns there should be only one but who knows
+				tSunlist[ i ]:Fire( "TurnOff" )
+				SafeRemoveEntity( tSunlist[ i ] )
 			end
 		end
-		env_sun = 				env_sun 			or sunlist[1] or nil
-		env_tonemap_controller = env_tonemap_controller or ents.FindByClass("env_tonemap_controller")[1] or nil
-		light_environment = 	light_environment 	or ents.FindByClass("light_environment")[1] or nil
-		env_fog_controller = 	env_fog_controller 	or GetOrCreate("env_fog_controller") or nil
-		env_skypaint = 			env_skypaint 		or GetOrCreate("env_skypaint") or nil
-		shadow_control = 		shadow_control 		or ents.FindByClass("shadow_control")[1] or nil
 
+		StormFox.light_environment = StormFox.light_environment or ents.FindByClass( "light_environment" )[1] or nil
+		StormFox.env_fog_controller = StormFox.env_fog_controller or GetOrCreate( "env_fog_controller" ) or nil
+		StormFox.shadow_control = StormFox.shadow_control or ents.FindByClass( "shadow_control" )[1] or nil
+		StormFox.env_tonemap_controller = StormFox.env_tonemap_controller or ents.FindByClass("env_tonemap_controller")[1] or nil
+		StormFox.env_skypaint = StormFox.env_skypaint or GetOrCreate("env_skypaint") or nil
 
-		p(env_tonemap_controller,"env_tonemap_controller")
-		p(light_environment,"light_environment")
-		p(env_fog_controller,"env_fog_controller")
-		p(env_sun,"env_sun")
-		p(env_skypaint,"env_skypaint")
-		p(shadow_control,"shadow_control")
-		hook.Call("StormFox - PostEntityScan")
+		printEntFoundStatus( StormFox.light_environment, "light_environment" )
+		printEntFoundStatus( StormFox.env_fog_controller, "env_fog_controller" )
+		printEntFoundStatus( StormFox.shadow_control, "shadow_control" )
+		hook.Call( "StormFox - PostEntityScan" )
 	end
-hook.Add("StormFox - PostEntity","StormFox - FindEntities",FindEntities)
+	hook.Add( "StormFox - PostEntity", "StormFox - FindEntities", FindEntities )
 
--- Get Entities
-	function StormFox.GetSkyPaint()
-		return env_skypaint
+
+-- Shadow
+	function StormFox.SetShadowColor( cColor )
+		if not IsValid(StormFox.shadow_control) then return end
+		StormFox.shadow_control:SetKeyValue( "color", cColor.r .. " " .. cColor.g .. " " .. cColor.b )
 	end
 
-	function StormFox.GetSun()
-		return env_sun
+	function StormFox.SetShadowAngle( nShadowPitch )
+		if not StormFox.shadow_control then return end
+		nShadowPitch = (nShadowPitch + 180) % 360
+		-- min 190 max 350
+		local sAngleString = ( nShadowPitch + 180 ) .. " " .. StormFox.SunMoonAngle .. " " .. 0 .. " "
+		StormFox.shadow_control:Fire( "SetAngles" , sAngleString , 0 )
+	end
+
+	function StormFox.SetShadowDistance( dis )
+		if not StormFox.shadow_control then return end
+		StormFox.shadow_control:SetKeyValue( "SetDistance", dis )
+	end
+
+	function StormFox.SetShadowDisable( bool )
+		if not StormFox.shadow_control then return end
+		StormFox.shadow_control:SetKeyValue( "SetShadowsDisabled", bool and 1 or 0 )
 	end
 
 -- MapBloom
@@ -99,8 +104,8 @@ hook.Add("StormFox - PostEntity","StormFox - FindEntities",FindEntities)
 			return
 		end
 		nbloom = n
-		if not IsValid(env_tonemap_controller) then return end
-		env_tonemap_controller:Fire("SetBloomScale",n)
+		if not IsValid(StormFox.env_tonemap_controller) then return end
+		StormFox.env_tonemap_controller:Fire("SetBloomScale",n)
 	end
 	local nbloom
 	function StormFox.SetMapBloomAutoExposureMin(n)
@@ -108,8 +113,8 @@ hook.Add("StormFox - PostEntity","StormFox - FindEntities",FindEntities)
 			return
 		end
 		nbloom = n
-		if not IsValid(env_tonemap_controller) then return end
-		env_tonemap_controller:Fire("SetAutoExposureMin",n)
+		if not IsValid(StormFox.env_tonemap_controller) then return end
+		StormFox.env_tonemap_controller:Fire("SetAutoExposureMin",n)
 	end
 	local nbloom
 	function StormFox.SetMapBloomAutoExposureMax(n)
@@ -117,17 +122,17 @@ hook.Add("StormFox - PostEntity","StormFox - FindEntities",FindEntities)
 			return
 		end
 		nbloom = n
-		if not IsValid(env_tonemap_controller) then return end
-		env_tonemap_controller:Fire("SetAutoExposureMax",n)
+		if not IsValid(StormFox.env_tonemap_controller) then return end
+		StormFox.env_tonemap_controller:Fire("SetAutoExposureMax",n)
 	end
 	local nbloom2
 	function StormFox.SetBlendTonemapScale(target,duration)
-		local str = target.. " " ..duration
+		local str = target .. " " .. duration
 		if nbloom2 and nbloom2 == str then
 			return
 		end
-		if not IsValid(env_tonemap_controller) then return end
-		env_tonemap_controller:Fire("BlendTonemapScale",str)
+		if not IsValid(StormFox.env_tonemap_controller) then return end
+		StormFox.env_tonemap_controller:Fire("BlendTonemapScale",str)
 	end
 	local nscale
 	function StormFox.SetTonemapScale(n,dur)
@@ -135,101 +140,15 @@ hook.Add("StormFox - PostEntity","StormFox - FindEntities",FindEntities)
 			return
 		end
 		nscale = n
-		if not IsValid(env_tonemap_controller) then return end
-		env_tonemap_controller:Fire("SetTonemapScale","n "..(dur or 0))
-	end
-
--- Shadow
-	function StormFox.SetShadowColor(col)
-		if not shadow_control then return end
-		shadow_control:SetKeyValue( "color", col.r .. " " .. col.g .. " " .. col.b )
-	end
-	function StormFox.SetShadowAngle(ang,forceday)
-		if not shadow_control then return end
-		if ang.p < 180 and not forceday then -- night
-			ang.p = ang.p + 180
-		end
-		if ang.p > 350 or ang.p < 90 then
-			ang.p = 350
-		end
-		if ang.p < 190 then
-			ang.p = 190
-		end
-		-- min 190 max 350
-		local SAngle = (ang.p + 180) .. " " .. ang.y .. " " .. ang.r .. " "
-		shadow_control:Fire( "SetAngles" , SAngle , 0 )
-	end
-	function StormFox.SetShadowDistance(dis)
-		if !shadow_control then return end
-		shadow_control:SetKeyValue( "SetDistance", dis )
-	end
-	function StormFox.SetShadowDisable(bool)
-		if !shadow_control then return end
-		local int = 0
-		if bool then int = 1 end
-		shadow_control:SetKeyValue( "SetShadowsDisabled", int )
-	end
-
--- Sun (w skypaint)
-	function StormFox.SetSunAngle(ang,setShadow,forceday)
-		if not ang then return end
-		local env_sun = StormFox.GetSun()
-		if not IsValid(env_sun) then return end
-		ang.p = (ang.p + 180) % 360 -- Make the angle point up at 90.
-		if ang.p == 270 then ang.p = 271 end -- Somehow the sun gets disabled at this angle.
-		env_sun:SetKeyValue( "sun_dir" ,  tostring( ang:Forward() ) )
-		if env_skypaint then
-			-- Best serverside .. with the sun vars and all
-			env_skypaint:SetSunNormal(ang:Forward())
-		end
-		if setShadow then
-			StormFox.SetShadowAngle(ang,forceday)
-		end
-		return true, ang
-	end
-
-	local nold = -1
-	function StormFox.SetSunSize(n)
-		if not env_sun then return end
-		if nold == n then return end
-		nold = n
-		env_sun:SetKeyValue( "size", round(math.Clamp(n,0,100) ))
-	end
-
-	local nold = -1
-	function StormFox.SetSunOverlaySize(n)
-		if not env_sun then return end
-		if nold == n then return end
-		nold = n
-		env_sun:SetKeyValue( "overlaysize", round(math.Clamp(n,0,100)) )
-	end
-
-	local nold
-	function StormFox.SetSunColor(col)
-		local env_sun = StormFox.GetSun()
-		if not env_sun then return end
-		if nold == col then return end
-		nold = col
-		env_sun:SetKeyValue( "suncolor", (col.r / 255) .. " " .. (col.g / 255) .. " " .. (col.b / 255) )
-	end
-
-	local nold
-	function StormFox.SetSunOverlayColor(col)
-		local env_sun = StormFox.GetSun()
-		if not env_sun then return end
-		if nold == col then return end
-		nold = col
-		env_sun:SetKeyValue( "overlaycolor", (col.r / 255) .. " " .. (col.g / 255) .. " " .. (col.b / 255) )
-	end
-
-	function StormFox.DebugSun()
-		return env_sun:GetInternalVariable( "m_vDirection" )
+		if not IsValid(StormFox.env_tonemap_controller) then return end
+		StormFox.env_tonemap_controller:Fire("SetTonemapScale",n .. " " .. (dur or 0))
 	end
 
 -- Maplight
 	local oldls = "-"
 	function StormFox.SetMapLight(light) -- 0-100
-		if not IsValid(light_environment) then
+		if not light then return end
+		if not IsValid(StormFox.light_environment) then
 			light = 15 + (light * 0.7)
 			local s = string.char(97 + clamp(light / 4,0,25))
 			if s == oldls then return end
@@ -240,7 +159,7 @@ hook.Add("StormFox - PostEntity","StormFox - FindEntities",FindEntities)
 		local s = string.char(97 + clamp(light / 4,0,25))
 		if s == oldls then return end
 		oldls = s
-		light_environment:Fire("FadeToPattern", s ,0)
+		StormFox.light_environment:Fire("FadeToPattern", s ,0)
 	end
 
 -- Support for envcitys sky-entity

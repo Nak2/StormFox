@@ -46,7 +46,7 @@ Breath
 
 	end)
 	hook.Add("Think","StormFox - CBreath",function()
-		genabled = StormFox.GetData("Temperature",20) < 4 and (StormFox.Env.IsInRain() or StormFox.Env.IsOutside() or StormFox.Env.NearOutside())
+		genabled = StormFox.GetNetworkData("Temperature",20) < 4 and (StormFox.Env.IsInRain() or StormFox.Env.IsOutside() or StormFox.Env.NearOutside())
 		if not genabled then return end
 		if not LocalPlayer() then return end
 		if GetViewEntity() ~= LocalPlayer() then return end

@@ -18,11 +18,13 @@ if SERVER then
 	StormFox_DATA = StormFox_DATA or {} -- Not sure what runs first .. but this table is global
 	local function scan()
 		local l = ents.FindByClass("sky_camera")
-		if #l < 1 then return end
-		sky_cam = l[1]
-		sky_scale = l[1]:GetSaveTable().scale
-		StormFox_DATA["skybox_pos"] = sky_cam:GetSaveTable()["m_skyboxData.origin"] or sky_cam:GetPos()
-		StormFox_DATA["skybox_scale"] = sky_scale
+		if #l > 1 then
+			sky_cam = l[1]
+			sky_scale = l[1]:GetSaveTable().scale
+			StormFox_DATA["skybox_pos"] = sky_cam:GetSaveTable()["m_skyboxData.origin"] or sky_cam:GetPos()
+			
+			StormFox_DATA["skybox_scale"] = sky_scale
+		end
 
 		StormFox_DATA["mapobbmaxs"] =  game.GetWorld():GetSaveTable().m_WorldMaxs or Vector(0, 0, 0)
 		StormFox_DATA["mapobbmins"] =  game.GetWorld():GetSaveTable().m_WorldMins or Vector(0, 0, 0)

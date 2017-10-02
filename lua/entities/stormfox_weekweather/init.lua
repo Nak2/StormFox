@@ -8,9 +8,17 @@ function ENT:Initialize()
 	self:PhysicsInit( SOLID_VPHYSICS )      -- Make us work with physics,
 	self:SetMoveType( MOVETYPE_VPHYSICS )   -- after all, gmod is a physics
 	self:SetSolid( SOLID_VPHYSICS )         -- Toolbox
-
+	self:SetNWBool("Freedom",false)
+	self._Freedom = false
+	self:SetUseType( SIMPLE_USE )
 	self:SetRenderMode(RENDERMODE_TRANSALPHA)
 end
+function ENT:Use()
+	self._Freedom = not self._Freedom
+	self:SetNWBool("Freedom",self._Freedom)
+	self:EmitSound("buttons/button14.wav")
+end
+
 function ENT:SpawnFunction( ply, tr, ClassName )
 
 	if ( !tr.Hit ) then return end

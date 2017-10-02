@@ -37,7 +37,7 @@ hook.Add("StormFox - EnvUpdate","StormFox - RainSounds",function()
 	local con = GetConVar("sf_allow_rainsound")
 	-- Don't play any sound if con is set
 	local Gauge = StormFox.GetData("Gauge",0) -- How much rain
-	local temp = StormFox.GetData("Temperature",20) -- Is snow
+	local temp = StormFox.GetNetworkData("Temperature",20) -- Is snow
 
 	if not con:GetBool() or Gauge <= 0 then
 		playSound("Windows",0,snd_glass)
@@ -50,7 +50,7 @@ hook.Add("StormFox - EnvUpdate","StormFox - RainSounds",function()
 	local soundAmmount = Gauge / 10 * tempamount
 	playSound("DirectRain",soundAmmount * (StormFox.Env.IsInRain() and 1 or 0),snd_direct)
 
-	playSound("Window",min(StormFox.Env.FadeDistanceToWindow() * soundAmmount * 0.3,0.3),snd_glass)
+	playSound("Window",min(StormFox.Env.FadeDistanceToWindow() * soundAmmount * 0.4,0.4),snd_glass)
 
 	local next_to = 0
 	if StormFox.Env.NearOutside() then
@@ -62,17 +62,18 @@ hook.Add("StormFox - EnvUpdate","StormFox - RainSounds",function()
 	elseif StormFox.Env.IsOutside() then
 		next_ro = 1
 	end
-	playSound("Nextto",next_to * soundAmmount * 0.3,snd_nextto)
+	playSound("Nextto",next_to * soundAmmount * 0.5,snd_nextto)
 
-	playSound("Roof",StormFox.Env.FadeDistanceToRoof() * soundAmmount * 0.1,snd_roof)
+	playSound("Roof",StormFox.Env.FadeDistanceToRoof() * soundAmmount * 0.2,snd_roof)
 end)
 
 local windGust = 0
+local clamp = math.Clamp
 hook.Add("StormFox - EnvUpdate","StormFox - WindSounds",function()
 	if not LocalPlayer() then return end
 	local con = GetConVar("sf_allow_windsound")
 	-- Don't play any sound if con is set
-	local Wind = math.floor(StormFox.GetData("Wind",0)) -- How much rain
+	local Wind = math.floor(StormFox.GetNetworkData("Wind",0)) -- How much rain
 	local temp = StormFox.GetData("Temperature",20) -- Is snow
 
 	if not con:GetBool() or Wind <= 0 then
@@ -98,6 +99,7 @@ hook.Add("StormFox - EnvUpdate","StormFox - WindSounds",function()
 		windGust = SysTime() + math.random(10,30)
 		local lvl = math.floor(math.Round(Wind / 6))
 		if lvl < 1 then return end
+		lvl = clamp(lvl,1,#snd_windgustlvl)
 		if inWind then
 			LocalPlayer():EmitSound(table.Random(snd_windgustlvl[lvl]),75,100,Wind / 20 * windAmount * 0.2)
 		elseif nearOutside then

@@ -1,19 +1,13 @@
 include("shared.lua")
 
 function ENT:Initialize()
-	self.sw = 1
+	self.sw = StormFox.GetWeathersDefaultNumber()
 	self.swp = 0.5
 end
 
 local cos,sin,rad,min,max = math.cos,math.sin,math.rad,math.min,math.max
 local mat = Material("models/props_combine/combine_intmonitor001_disp_off")
-local weathers = {}
-	weathers.Clear = Material("stormfox/symbols/Sunny.png")
-	weathers.Rain = Material("stormfox/symbols/Raining.png")
-	weathers.Cloudy = Material("stormfox/symbols/Cloudy.png")
-	weathers.Fog = Material("stormfox/symbols/Fog.png")
 
-local wkey = table.GetKeys(weathers)
 
 -- Thanks wiki
 local function WorldToScreen(vWorldPos,vPos,vScale,aRot)
@@ -59,19 +53,16 @@ local env_fog_controller = false
 local env_sun = false
 local env_skypaint = false
 local shadow_control = false
-local env_light_environment = false
 
 local l = 0
 function ENT:Think()
 	if l > SysTime() then return end
 		l = SysTime() + 1
-	env_tonemap_controller = StormFox.GetData("has_env_tonemap_controller",false)
-	light_environment = StormFox.GetData("has_light_environment",false)
-	env_fog_controller = StormFox.GetData("has_env_fog_controller",false)
-	env_sun = StormFox.GetData("has_env_sun",false)
-	env_skypaint = StormFox.GetData("has_env_skypaint",false)
-	shadow_control = StormFox.GetData("has_shadow_control",false)
-	env_light_environment = StormFox.GetData("has_light_environment",false)
+	env_tonemap_controller = StormFox.GetNetworkData("has_env_tonemap_controller",false)
+	light_environment = StormFox.GetNetworkData("has_light_environment",false)
+	env_fog_controller = StormFox.GetNetworkData("has_env_fog_controller",false)
+	env_skypaint = StormFox.GetNetworkData("has_env_skypaint",false)
+	shadow_control = StormFox.GetNetworkData("has_shadow_control",false)
 end
 
 local function drawdebug(x,y,str,var,disabled)
@@ -98,6 +89,7 @@ function ENT:Draw()
 	local campos = self:LocalToWorld(Vector(30,-12,45))
 	cam.Start3D2D(campos,self:LocalToWorldAngles(Angle(0,90,90)),0.1)
 		-- Debug values
+		local weathers = StormFox.GetWeathers()
 		local x = -80
 		draw.RoundedBox(3,x - 110,40,114,138,col)
 		draw.RoundedBox(3,x - 150,40,152,138,Color(0,0,0,255))
@@ -106,10 +98,9 @@ function ENT:Draw()
 			drawdebug(x,54,"tonemap_controller",env_tonemap_controller,not light_environment)
 			drawdebug(x,54 + 18,"light_environment",light_environment)
 			drawdebug(x,54 + 36,"env_fog_controller",env_fog_controller)
-			drawdebug(x,54 + 54,"env_sun",env_sun)
-			drawdebug(x,54 + 72,"env_skypaint",env_skypaint)
-			drawdebug(x,54 + 90,"shadow_control",shadow_control)
-			drawdebug(x,54 + 108,"3D skybox",StormFox.Is3DSkybox())
+			drawdebug(x,54 + 54,"env_skypaint",env_skypaint)
+			drawdebug(x,54 + 72,"shadow_control",shadow_control)
+			drawdebug(x,54 + 90,"3D skybox",StormFox.Is3DSkybox())
 
 		local ax,ay = 0,0
 		if LocalPlayer():GetEyeTrace().Entity == self then
@@ -134,11 +125,11 @@ function ENT:Draw()
 		surface.SetFont("SkyFox-Console_B")
 		surface.DrawText("Set Weather")
 
-		local t = wkey[self.sw or 1]
-		surface.SetMaterial(weathers[t])
+		local t = weathers[self.sw or 1]
+		surface.SetMaterial(StormFox.GetWeatherType(t):GetStaticIcon( ))
 		surface.SetDrawColor(col)
 		surface.DrawTexturedRect(100,40,40,40)
-		surface.SetMaterial(StormFox.GetWeatherSymbol())
+		surface.SetMaterial(StormFox.Weather:GetIcon())
 		surface.DrawTexturedRect(-10,40,50,50)
 
 		draw.DrawText( t, "SkyFox-Console", 120, 80, col, 1 )
@@ -159,7 +150,7 @@ function ENT:Draw()
 		surface.DrawRect(60,115,120,2)
 		surface.DrawRect(60 + 120 * (self.swp or 0.5),111,2,10)
 
-		local thunder = StormFox.GetData("Thunder",false)
+		local thunder = StormFox.GetNetworkData("Thunder",false)
 		local tl = StormFox.GetData("ThunderLight",0)
 		local m = Material("stormfox/symbols/cloudy.png")
 		if thunder then
@@ -181,7 +172,7 @@ function ENT:Draw()
 			surface.SetDrawColor(col)
 		end
 		surface.DrawRect(60,205,120,2)
-		local temp = StormFox.GetData("Temperature",20)
+		local temp = StormFox.GetNetworkData("Temperature",20)
 		surface.DrawRect(100 + temp * 4,201,2,10)
 		draw.DrawText( round(temp,1) .. "°C - " .. round(StormFox.CelsiusToFahrenheit(temp),1) .. "°F", "SkyFox-Console", 120, 180, col, 1 )
 
@@ -193,7 +184,7 @@ function ENT:Draw()
 			surface.SetDrawColor(col)
 		end
 		surface.DrawRect(60,255,120,2)
-		local wind = StormFox.GetData("Wind",0)
+		local wind = StormFox.GetNetworkData("Wind",0)
 		surface.DrawRect(60 + wind * 6,251,2,10)
 		local b,str = StormFox.GetBeaufort(wind)
 		draw.DrawText( "Wind speed:" .. str, "SkyFox-Console", 120, 230, col, 1 )
@@ -206,23 +197,23 @@ function ENT:Draw()
 			surface.SetDrawColor(col)
 		end
 		surface.DrawRect(60,300,120,2)
-		local windang = StormFox.GetData("WindAngle",0)
+		local windang = StormFox.GetNetworkData("WindAngle",0)
 		surface.DrawRect(60 + windang * 0.33,296,2,10)
 		draw.DrawText( "Wind angle:" .. round(windang,1) .. "°", "SkyFox-Console", 120, 275, col, 1 )
 
 		if input.IsKeyDown(KEY_E) and not E then
 			E = true
 			if selected == 0 then
-				self:SetWeather(wkey[self.sw],self.swp)
+				self:SetWeather(weathers[self.sw],self.swp)
 			elseif selected == 1 then
 				self.sw = self.sw - 1
 				if self.sw <= 0 then
-					self.sw = #wkey
+					self.sw = #weathers
 				end
 				self:EmitSound("common/wpn_moveselect.wav")
 			elseif selected == 2 then
 				self.sw = self.sw + 1
-				if self.sw > #wkey then
+				if self.sw > #weathers then
 					self.sw = 1
 				end
 				self:EmitSound("common/wpn_moveselect.wav")

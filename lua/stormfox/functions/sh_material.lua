@@ -1,17 +1,17 @@
 
 if SERVER then
-	StormFox.SetData("SnowMaterial",0)
+	StormFox.SetNetworkData("SnowMaterial_Amount",0)
 
 	local l = 0
 	local old_lvl = -1
 	hook.Add("Think","StormFox - Snow Replacement",function()
 		if l > SysTime() then return end
 			l = SysTime() + 5
-		local temp = StormFox.GetData("Temperature",20)
+		local temp = StormFox.GetNetworkData("Temperature",20)
 		local Gauge = StormFox.GetData("Gauge",0)
 		local con = GetConVar("sf_sv_material_replacment")
 		if temp > -2 or not con:GetBool() then
-			StormFox.SetData("SnowMaterial",0)
+			StormFox.SetNetworkData("SnowMaterial_Amount",0)
 			old_lvl = 0
 		elseif Gauge > 0 then -- is cold and snowing
 			local lvl = math.Clamp(math.Round((Gauge - 2) / 2),0,4)
@@ -20,7 +20,7 @@ if SERVER then
 			end
 			if old_lvl < lvl then
 				old_lvl = lvl
-				StormFox.SetData("SnowMaterial",lvl)
+				StormFox.SetNetworkData("SnowMaterial_Amount",lvl)
 			end
 		end
 	end)
@@ -208,7 +208,7 @@ local l,lvl_old = 0,-1
 hook.Add("Think","StormFox - Snow Replacement",function()
 	if l > SysTime() then return end
 		l = SysTime() + 5
-	local lvl = math.Clamp(StormFox.GetData("SnowMaterial",0),0,3)
+	local lvl = math.Clamp(StormFox.GetNetworkData("SnowMaterial_Amount",0),0,3)
 	local con = GetConVar("sf_material_replacment")
 	if not con:GetBool() then
 		lvl = 0
@@ -224,7 +224,7 @@ end)
 hook.Add("PlayerFootstep","StormFox - Material Footstep",function( ply, pos, foot, sound, volume, rf )
 	local con = GetConVar("sf_material_replacment")
 	if not con:GetBool() then return end
-	local lvl = math.Clamp(StormFox.GetData("SnowMaterial",0),0,3)
+	local lvl = math.Clamp(StormFox.GetNetworkData("SnowMaterial_Amount",0),0,3)
 	if lvl <= 0 then return end
 	if table.Count(_STORMFOX_REPLACETEX_STR) <= 0 then return end
 	local mz = ply:OBBMins().z

@@ -15,31 +15,6 @@ function ENT:Initialize()
 	self:SetNWBool("24Clock",true)
 	self.t = SysTime() + 5
 	self.w = false
-
-	if WireAddon then
-		self.Outputs = Wire_CreateOutputs(self, {
-			"Temperature",
-			"Temperature_F",
-			"Rain_gauge",
-			"Wind",
-			"WindAngle",
-			"Thunder",
-			"Weather [STRING]"
-		})
-		Wire_TriggerOutput(self, "Temperature", StormFox.GetData("Temperature",20))
-		Wire_TriggerOutput(self, "Temperature_F", StormFox.CelsiusToFahrenheit(StormFox.GetData("Temperature",20)))
-		Wire_TriggerOutput(self, "Rain_gauge", StormFox.GetData("Gauge",0))
-		Wire_TriggerOutput(self, "Wind", StormFox.GetData("Wind",0))
-		Wire_TriggerOutput(self, "WindAngle", StormFox.GetData("WindAngle",0))
-		Wire_TriggerOutput(self, "Thunder", StormFox.GetData("Thunder",false) and 1 or 0)
-		Wire_TriggerOutput(self, "Weather", StormFox.GetWeatherName())
-	end
-end
-
-local function SetWire(self,data,value)
-	if self.Outputs[data].Value != value then
-		Wire_TriggerOutput(self, data, value)
-	end
 end
 
 local l = 0
@@ -47,13 +22,6 @@ function ENT:Think()
 	if not WireAddon then return end
 	if l > SysTime() then return end
 		l = SysTime() + 1
-	SetWire(self, "Temperature", StormFox.GetData("Temperature",20))
-	SetWire(self, "Temperature_F", StormFox.CelsiusToFahrenheit(StormFox.GetData("Temperature",20)))
-	SetWire(self, "Rain_gauge", StormFox.GetData("Gauge",0))
-	SetWire(self, "Wind", StormFox.GetData("Wind",0))
-	SetWire(self, "WindAngle", StormFox.GetData("WindAngle",0))
-	SetWire(self, "Thunder", StormFox.GetData("Thunder",false) and 1 or 0)
-	SetWire(self, "Weather", StormFox.GetWeatherName())
 end
 
 function ENT:Use()

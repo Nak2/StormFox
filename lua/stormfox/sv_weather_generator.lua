@@ -1,7 +1,8 @@
 assert(StormFox,"Missing everything")
 assert(StormFox.SetWeather,"Missing weather controller")
 
---[[ 
+
+--[[
 Data
 	Thunder: boolean
 	Temperature: number
@@ -27,10 +28,10 @@ Statments:
 ]]
 local weatherdata = {}
 --[[
-	funccondition(weatherprocent,currentweather)
+	funccondition(weatherpercent,currentweather)
 ]]
-function StormFox.AddWeatherCondition(name,clockrange,procentrange,lengthrange,canPick)
-	table.insert(weatherdata,{name = name,clockrange = clockrange,procentrange = procentrange,lengthrange = lengthrange,canPick = canPick})
+function StormFox.AddWeatherCondition(name,clockrange,percentrange,lengthrange,canPick)
+	table.insert(weatherdata,{name = name,clockrange = clockrange,percentrange = percentrange,lengthrange = lengthrange,canPick = canPick})
 end
 
 StormFox.AddWeatherCondition("Clear") -- Always
@@ -40,21 +41,26 @@ StormFox.AddWeatherCondition("Rain",nil,{0.2,1},{240,720})
 
 StormFox.AddWeatherCondition("Fog",{335,400},{0.1,0.8},{180,200},function() return math.random(1,3) >= 2 end)
 
-local function PickRandomWeather(exclude)
-	if math.random(0,3) >= 3 and false then
-		return 1
+function PickRandomWeather(current)
+	current = current or StormFox.Weather.id or "clear"
+	if math.random(0,3) >= 3 then
+		return "clear"
 	else
-		local i = math.random(#weatherdata)
-		local s = weatherdata[i].name
-		if exclude and s == exclude then
-			return PickRandomWeather(exclude)
-		end
-		if weatherdata[i].canPick then
-			if not weatherdata[i].canPick() then
-				return PickRandomWeather(exclude)
+		local pickable = {}
+		local weathers = StormFox.GetWeathers()
+		for i,id in ipairs(weathers) do
+			if id ~= "clear" and StormFox.GetWeatherType(id).CanGenerate and id ~= current then
+				local tfunc = StormFox.GetWeatherType(id).GenerateCondition
+				if not tfunc or tfunc() then
+					table.insert(pickable,id)
+				end
 			end
 		end
-		return i
+		local selected_weather = "clear"
+		if #pickable > 0 then
+			selected_weather = table.Random(pickable)
+		end
+		return selected_weather
 	end
 end
 
@@ -71,12 +77,13 @@ local week = {}
 function StormFox.GenerateNewDay(dont_update)
 	-- Delete last weather
 	if #week >= 7 then
+		week["ot"] = week[1].temp
 		table.remove(week,1)
 	end
 	local lastWeather = week[#week] or {}
 	-- Calc temperature change
 		local last_tempacc = lastWeather.tempacc or math.random(-7,7)
-		local last_temp = lastWeather.temp or StormFox.GetData("Temperature",20)
+		local last_temp = lastWeather.temp or StormFox.GetNetworkData("Temperature",20)
 
 		local tempacc = GetDataAcceleration(last_temp,last_tempacc,math.random(-10,5),20,math.random(2,7))
 		local con = GetConVar("sf_disable_autoweather_cold")
@@ -89,34 +96,27 @@ function StormFox.GenerateNewDay(dont_update)
 		end
 
 	-- Wind windmax = math.max(temp,3)
-
-		local last_wind = temp >= 7 and (lastWeather.wind or StormFox.GetData("Wind",0)) or math.min(lastWeather.wind or StormFox.GetData("Wind",0),1.5)
+		local last_wind = temp >= 7 and (lastWeather.wind or StormFox.GetNetworkData("Wind",0)) or math.min(lastWeather.wind or StormFox.GetData("Wind",0),1.5)
 		local last_windacc = lastWeather.windacc or 0
 		local windacc = GetDataAcceleration(last_wind,last_windacc,0,math.max(temp,3),5)
 		local wind = clamp(last_wind + windacc,0,20)
 
-		local windangle = ((lastWeather.windangle or StormFox.GetData("WindAngle",math.random(0,360))) + math.random(-50,50)) % 360
-
+		local windangle = ((lastWeather.windangle or StormFox.GetNetworkData("WindAngle",math.random(0,360))) + math.random(-50,50)) % 360
+		windangle = windangle < 0 and windangle + 360 or windangle
 	-- Pick a random weather
-		local next_weather_id = PickRandomWeather(lastWeather.name or "Clear")
-		local data = weatherdata[next_weather_id]
 
-		local d_length = data.lengthrange or {0,1440 * 0.8}
-		local length = math.random(d_length[1],d_length[2])
+	local id = PickRandomWeather(lastWeather.name)
+	local length = math.random(1440 / 6,StormFox.GetWeatherType(id).MaxLength or 1440 / 3)
 
-		local d_timestart = data.clockrange or {0,1440}
-		local timestart = math.random(d_timestart[1],d_timestart[2])
+	local d_timestart = StormFox.GetWeatherType(id).TimeDependentGenerate or {0,1339}
+	local timestart = math.random(d_timestart[1],d_timestart[2])
 
-		local d_procent = data.procentrange or {0.1,1}
-		local procent = math.Rand(d_procent[1], d_procent[2])
-		local thunder = false
-		if procent >= 0.8 and wind >= 10 and data.name == "Rain" then
-			thunder = true
-		end
-	table.insert(week,{name = data.name,
+	local percent = math.Rand(StormFox.GetWeatherType(id).StormMagnitudeMin or 0, StormFox.GetWeatherType(id).StormMagnitudeMax or 1)
+	local thunder = StormFox.GetWeatherType(id):GetData("EnableThunder") and math.random(10) > 6 and wind >=14 or false
+	table.insert(week,{name = id,
 					trigger = timestart,
-					length = length,
-					procent = procent,
+					stoptime = math.max(timestart + length),
+					percent = percent,
 					temp = temp,
 					tempacc = tempacc,
 					wind = wind,
@@ -125,81 +125,63 @@ function StormFox.GenerateNewDay(dont_update)
 					thunder = thunder
 					})
 	if dont_update then return end
-	--print("New day",#week + 1)
-	StormFox.SetData("WeekWeather",week)
+	StormFox.SetNetworkData("WeekWeather",week)
 end
-
-for i = 1,7 do
-	StormFox.GenerateNewDay(true)
-end
-StormFox.SetData("WeekWeather",week)
-StormFox.SetData("Temperature",week[1].temp or 20)
-
-local clearWeather = nil
-local middayset = nil
-hook.Add("StormFox-Tick","StormFox - WeatherChange",function(tick)
-	local currentWeather = week[1] or {}
-	local con = GetConVar("sf_disable_autoweather")
-	if con and con:GetBool() then
-		return
+hook.Add("StormFox - PostInit","StormFox - GenerateFirstWeather",function()
+	for i = 1,6 do
+		StormFox.GenerateNewDay( true )
 	end
-	if clearWeather and tick == clearWeather then
-		-- Clear weather
-		StormFox.SetWeather("Clear")
-		StormFox.SetData("Thunder",	false)
-		clearWeather = nil
-	end
-	if tick == 0 then
-		-- Create next weather that gets set at midnight
-		if middayset then
-			--print("Midnight set",middayset.wind or 0,		middayset.time)
-			StormFox.SetData("Wind",		middayset.wind or 0,		middayset.time)
-			StormFox.SetData("WindAngle",	middayset.windangle or 0,	middayset.time)
-			StormFox.SetData("Temperature",	middayset.temp or 20,		middayset.time)
-		end
-		StormFox.GenerateNewDay(false)
-		return
-	end
-
-	-- Wait for new weather data
-	if tick ~= currentWeather.trigger then return end
-	--print("SetWeather")
-	-- Setup clearweather
-		clearWeather = ((currentWeather.length or 1440) + tick) % 1440
-
-	-- Set the weather now
-	if currentWeather.name then
-		StormFox.SetWeather(currentWeather.name,currentWeather.procent or 0)
-	end
-	StormFox.SetData("Thunder",	currentWeather.thunder or false)
-
-	local nextWeather = week[2] or {}
-
-	-- make the vars smooth to next weather
-	-- Calc the vars for when its midnight
-	local timeLeft = 1339 - tick
-	local timeTilNext = timeLeft + nextWeather.trigger
-		local currentwind,nextwind = currentWeather.wind or 0, nextWeather.wind or 0
-		local currenttemp,nexttemp = currentWeather.temp or 20,nextWeather.temp or 20
-
-		local wind = currentwind + (nextwind - currentwind) / timeTilNext * timeLeft
-		local temp = currenttemp + (nexttemp - currenttemp) / timeTilNext * timeLeft
-
-	--print("timeLeft",timeLeft,"Total til next",timeTilNext)
-	--print("MIDNIGHT WIND",wind,"CURRENT",currentwind,"NEXT",nextwind)
-	StormFox.SetData("Wind",		wind,	1339)
-	StormFox.SetData("Temperature",	temp,	1339)
-	week["ot"] = temp or 20
-	StormFox.SetData("WindAngle", nextWeather.windangle)
---	StormFox.SetData("WindAngle",	nextWeather.windangle or 0,	time_til_next_weather)
---	StormFox.SetData("Temperature",	nextWeather.temp or 20,		time_til_next_weather)
-
-	-- Set midnight vars
-	middayset = {}
-		middayset.time = nextWeather.trigger
-		middayset.wind = nextwind
-		middayset.windangle = nextWeather.windangle
-		middayset.temp = nextWeather.temp
+	StormFox.GenerateNewDay( false )
 end)
 
---timer.Create("StormFoxThingy",0.1,0,function() end)--StormFox.GenerateNewDay)
+local autoWeatherConvar = GetConVar("sf_disable_autoweather")
+local bAutoWeatherOn = autoWeatherConvar and autoWeatherConvar:GetBool() or true
+
+cvars.AddChangeCallback( "sf_disable_autoweather", function( sConvar, sOldValue, sNewValue )
+	MsgN("[StormFox] Auto Weather " .. ( sNewValue == "1" and "enabled" or "disabled" ) )
+	StormFox.SetWeather("clear",0)
+	bAutoWeatherOn = false
+end, "StormFox-AutoWeatherChanged")
+
+local selected,clearWD = false
+hook.Add("StormFox-NewDay", "StormFox-SendNextDay", function()
+	if not bAutoWeatherOn then return end
+	StormFox.GenerateNewDay( )
+	if clearWD and clearWD >= 1440 then
+		clearWD = clearWD - 1339
+	end
+	selected = false
+end )
+
+local max = math.max
+local IsDisabled = (GetConVar("sf_disable_autoweather") and GetConVar("sf_disable_autoweather"):GetBool() or false)
+	cvars.AddChangeCallback( "sf_disable_autoweather", function( _,_, sNewValue )
+	    IsDisabled = sNewValue == 1
+	end, "StormFox_DisableWeather" )
+
+hook.Add("StormFox-Tick", "StormFox - WeatherAIThink",function(n)
+	if IsDisabled then return end
+	if #week < 1 then return end
+	if clearWD and clearWD <= n then
+		StormFox.SetWeather("clear",0)
+		clearWD = nil
+	end
+	if selected then return end -- Days job done
+	if week[1].trigger > n then return end
+	local currentWD = week[1]
+	-- Set the weather data
+		local weather_length = currentWD.stoptime - currentWD.trigger
+		local weather_smooth = weather_length / math.random(8,16)
+	if weather_smooth <= 0 then print("Error .. tiny weather" .. weather_length) return end -- That weather is old
+	clearWD = n + weather_length
+		StormFox.SetWeather(currentWD.name,max(currentWD.percent,0.1))
+
+	if #week <= 1 then return end -- Ehhh ..
+	local timeBetween = (1400 - currentWD.trigger) + week[2].trigger
+	print(timeBetween)
+	StormFox.SetNetworkData("Wind",week[2].wind,timeBetween)
+	StormFox.SetNetworkData("WindAngle",week[1].windangle)
+	StormFox.SetNetworkData("Thunder",week[1].thunder or false)
+	StormFox.SetNetworkData("Temperature",week[2].temp,timeBetween)
+	selected = true
+end)

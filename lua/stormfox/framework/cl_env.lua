@@ -7,6 +7,7 @@ Potato protection
 	local bi,buffer = 0,0
 	local conDetect = 1
 	timer.Create("StormFox - PotatoSupport",0.5,0,function()
+		if not system.HasFocus() then return end
 		if bi < 10 then
 			buffer = buffer + 1 / RealFrameTime()
 			bi = bi + 1
@@ -78,7 +79,7 @@ Outdoor varables
 			return downfallNorm
 		end
 	-- Calculate sky "pillars" to determine the environment by tracing up and down
-		--[[Returns: 
+		--[[Returns:
 				vector 	The positions if its not free
 				Is it glass it hit?
 		]]

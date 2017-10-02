@@ -1,10 +1,9 @@
 
 local clamp,min,max,ran,sin,cos,rad,ran,abs = math.Clamp,math.min,math.max,math.random,math.sin,math.cos,math.rad,math.random,math.abs
-local rainmat = Material("stormfox/raindrop.png","noclamp smooth")
-local rainmat_multi = Material("stormfox/raindrop-multi.png","noclamp smooth")
-local snowmat_multi = Material("stormfox/snow-multi.png","noclamp smooth")
-local snowmat = Material("particle/snow")
-local rainmat_smoke = Material("particle/smokesprites_000"..ran(1,5))
+local rainmat_smoke = {}
+for i = 1,5 do
+	table.insert(rainmat_smoke,(Material("particle/smokesprites_000" .. i)))
+end
 
 local particles = {}
 	particles.main = {}
@@ -24,8 +23,8 @@ local LocalPlayer = LocalPlayer
 		local Gauge = StormFox.GetData("Gauge",0)
 		if Gauge <= 0 then return end
 
-		local wind = StormFox.GetData("Wind",0)
-		local windangle = StormFox.GetData("WindAngle",0)
+		local wind = StormFox.GetNetworkData("Wind",0)
+		local windangle = StormFox.GetNetworkData("WindAngle",0)
 
 		local downspeed = -max(1.56 * Gauge + 1.22,10) -- Base on realworld stuff .. and some tweaking (Was too slow)
 		downfallNorm = Angle(0,windangle,0):Forward() * wind
@@ -97,9 +96,9 @@ local LocalPlayer = LocalPlayer
 	local canSnow = 0
 	local FrameTime = FrameTime
 	hook.Add("Think","StormFox - RenderFalldownThink",function()
-		local temp = StormFox.GetData("Temperature",20)
+		local temp = StormFox.GetNetworkData("Temperature",20)
 		local Gauge = StormFox.GetData("Gauge",0)
-		local raindebug = StormFox.GetData("Raindebug",false)
+		local raindebug = StormFox.GetNetworkData("Raindebug",false)
 		if Gauge <= 0 then return end
 
 		local lp = LocalPlayer()
@@ -275,7 +274,7 @@ local rain_particles = { (Material("stormfox/effects/raindrop")), (Material("sto
 		-- Are you standing in the rain?
 			if not StormFox.Env.IsInRain() then return end
 		-- Get the temp and type
-			local temp = StormFox.GetData("Temperature",20)
+			local temp = StormFox.GetNetworkData("Temperature",20)
 			local rain = true
 			if temp < 5 then
 				if temp < -2 then
@@ -300,7 +299,7 @@ local rain_particles = { (Material("stormfox/effects/raindrop")), (Material("sto
 			drop.life = SysTime() + ran(0.4,1)
 			drop.x = ran(ScrW())
 			drop.y = ran(ScrH())
-			drop.size = 25 + rand(2,3) * Gauge
+			drop.size = 25 + rand(2,3) * Gauge * (rain and 1 or 2)
 			drop.weight = ran(0,1)
 			drop.rain = rain
 			drop.r = ran(360)
@@ -346,7 +345,7 @@ local old_raindrop = Material("sprites/heatwave")
 		local Gauge = StormFox.GetData("Gauge",20)
 		if LocalPlayer():WaterLevel() >= 3 then rainscreen_alpha = 0.8 return end
 		local ft = RealFrameTime()
-		local temp = StormFox.GetData("Temperature",20)
+		local temp = StormFox.GetNetworkData("Temperature",20)
 		
 		local acc = (viewAmount * clamp(temp - 4,0,(Gauge / 200))) * ft * 10
 		if acc <= 0 or not StormFox.Env.IsInRain() or Gauge <= 0 then
@@ -422,13 +421,14 @@ hook.Add("Think","StormFox - RenderFalldownHanlde",function()
 	local FT = (SysTime() - last) * 100
 		last = SysTime()
 	local exp = StormFox.GetExspensive()
-	local wind = StormFox.GetData("Wind",0)
+	local wind = StormFox.GetNetworkData("Wind",0)
 	local Gauge = StormFox.GetData("Gauge",0)
 	local eyepos = EyePos()
 	if LocalPlayer():WaterLevel() >= 3 then return end
 	--local sky_col = StormFox.GetData("Bottomcolor",Color(204,255,255))
 	--	sky_col = Color(max(sky_col.r,24),max(sky_col.g,155),max(sky_col.b,155),155)
 	local sky_col = Color(255,255,255)
+	local snowmat = StormFox.GetData("SnowTexture",Material("particle/snow"))
 	for id,data in ipairs(particles.main) do
 		if data.alive then
 			local speed = data.norm * -FT
@@ -510,13 +510,13 @@ hook.Add("Think","StormFox - RenderFalldownHanlde",function()
 					-- Splash
 					if data.rain then
 						if true then
-							local p = _STORMFOX_PEM2d:Add(rainmat_smoke,data.endpos + Vector(0,0,ran(30,40)))
+							local p = _STORMFOX_PEM2d:Add(table.Random(rainmat_smoke),data.endpos + Vector(0,0,ran(30,40)))
 									p:SetAngles(data.hitnorm:Angle())
 									p:SetStartSize(50)
 									p:SetEndSize(60)
 									p:SetDieTime(ran(2,5))
 									p:SetEndAlpha(0)
-									p:SetStartAlpha( max(1000 / _STORMFOX_PEM2d:GetNumActiveParticles(),6) )
+									p:SetStartAlpha( max(1000 / _STORMFOX_PEM2d:GetNumActiveParticles(),2) )
 									p:SetColor(255,255,255)
 									p:SetGravity(Vector(0,0,ran(4)))
 									p:SetCollide(true)
@@ -596,12 +596,14 @@ local RenderRain = function(depth, sky)
 	if depth or sky then return end
 	_STORMFOX_PEM:Draw()
 	_STORMFOX_PEM2d:Draw()
-	local raindebug = StormFox.GetData("Raindebug",false)
+	local raindebug = StormFox.GetNetworkData("Raindebug",false)
 	local Gauge = StormFox.GetData("Gauge",0)
 	local alpha = 75 + min(Gauge * 10,150)
 
 	local sky_col = StormFox.GetData("Bottomcolor",Color(204,255,255))
 		sky_col = Color(max(sky_col.r,4),max(sky_col.g,55),max(sky_col.b,55),max(alpha,155))
+	local rainmat = StormFox.GetData("RainTexture") or Material("stormfox/raindrop.png","noclamp smooth")
+	local snowmat = StormFox.GetData("SnowTexture") or Material("particle/snow")
 	for id,data in ipairs(particles.main) do
 		if data.rain then
 			render.SetMaterial(rainmat)
@@ -620,6 +622,8 @@ local RenderRain = function(depth, sky)
 			render.DrawSprite(data.endpos, 10,10,Color(0,255,0))
 		end
 	end
+	local rainmat_multi = StormFox.GetData("RainMultiTexture") or Material("stormfox/raindrop-multi.png","noclamp smooth")
+	local snowmat_multi = StormFox.GetData("SnowMultiTexture") or Material("stormfox/snow-multi.png","noclamp smooth")
 	for id,data in ipairs(particles.bg) do
 		if data.rain then
 			render.SetMaterial(rainmat_multi)

@@ -3,7 +3,7 @@ function StormFox.GetMoonAngle(time) -- Same as the sun .. tbh
 	time = time or StormFox.GetTime()
 	local pitch = ((time / 360) - 1) * 90
 	if pitch < 0 then pitch = pitch + 360 end
-	local ang = Angle(pitch,StormFox.GetData("SunMoonAngle",0), 0)
+	local ang = Angle(pitch,StormFox.SunMoonAngle, 0)
 	return ang
 end
 
@@ -20,7 +20,7 @@ local MoonGlow = Material("stormfox/moon_glow")
 local m = Material( "stormfox/moon_fix" );
 local poly
 local m_update = 0
-local sunMat = Material("engine/lightsprite")
+local sunMat = Material("stormfox/moon_glow")
 hook.Add( "PostDraw2DSkyBox", "StormFox - MoonRender", function()
 
 	if not StormFox.GetMoonAngle then return end
@@ -33,10 +33,9 @@ hook.Add( "PostDraw2DSkyBox", "StormFox - MoonRender", function()
 	local pos2 = eyepos + (N * 15500)
 	local moonsize = 256 * MoonScale()
 
-		local a = StormFox.GetData("MoonLight",100) / 100
+		local a = StormFox.GetData("MoonVisibility",100) / 100
 		local c = StormFox.GetData("MoonColor",Color(205,205,205))
 		local s = moonsize * 2 + (moonsize * 1.4) * (1.2-a)
-
 	local mirror = (ang.p >= 270 or ang.p < 90) and true or false
 	if m_update < SysTime() or not poly then
 		m_update = SysTime() + 1
@@ -44,13 +43,12 @@ hook.Add( "PostDraw2DSkyBox", "StormFox - MoonRender", function()
 	end
 	local eyeang = EyeAngles()
 	cam.Start3D( Vector( 0, 0, 0 ), eyeang ) -- 2d maps fix
-		render.SuppressEngineLighting( true )
 		--	cam.Start3D(EyePos(),ea) -- Start the 3D function so we can draw onto the screen.
 				render.OverrideDepthEnable( true, false )
 				render.SuppressEngineLighting(true)
 				render.SetLightingMode( 2 )
 
-				local gda = 1 - StormFox.GetDaylightAmount()
+				local gda = 1 - StormFox.CalculateMapLight(StormFox.GetTime() + 200) / 90
 				render.SetMaterial( MoonGlow )
 				--render.DrawSprite( pos2 , s, s, Color(c.r,c.g,c.b,a * 25)) -- Draw the sprite in the middle of the map, at 16x16 in it's original colour with full alpha.
 				local nn = 60
@@ -58,19 +56,19 @@ hook.Add( "PostDraw2DSkyBox", "StormFox - MoonRender", function()
 				render.DrawQuadEasy( N * 200, -N, moonsize / nn, moonsize / nn, Color(c.r,c.g,c.b, glow * 255), (ang.p >= 270 or ang.p < 90) and 180 or 0 )
 
 				render.SetMaterial( m )
-				
+
 				--render.DrawQuadEasy( pos, -N, moonsize, moonsize, Color(c.r,c.g,c.b, clamp((a - 0.3) * 255,0,255)),(ang.p >= 270 or ang.p < 90) and 180 or 0 )
-				local moonalpha = clamp((a * 1.1) - 0.2,0,1) * 255 * gda
+				local moonalpha = clamp((a * 1.3) - 0.4,0,1) * 255 * gda
 
 				render.DrawQuadEasy( N * 200, -N, moonsize / 100, moonsize / 100, Color(c.r,c.g,c.b, moonalpha), (ang.p >= 270 or ang.p < 90) and 180 or 0 )
 
 				render.SetMaterial(sunMat)
 				local sunSize = StormFox.GetData("SunSize", 30) or 30
-				if sunSize <= 15 then
-					local sunColor_b = StormFox.GetData("SunColor",Color(255,255,255))
-					local n = sunSize / 5
-					local sunColor = Color(255 * n,255 * n,255 * n)
-					render.DrawQuadEasy( N * -200, N, 30, 30, sunColor, 0 )
+				local sc = StormFox.GetData("SunColor", Color(255,255,255))
+					sc.a = clamp(sunSize / 20,0,1) * 255
+				render.DrawQuadEasy( N * -200, N, 30, 30, sc, 0 )
+				if IsValid(g_SkyPaint) then
+					g_SkyPaint:SetSunNormal( -N)
 				end
 
 				render.SuppressEngineLighting(false)
@@ -79,7 +77,6 @@ hook.Add( "PostDraw2DSkyBox", "StormFox - MoonRender", function()
 				render.SetColorMaterial()
 
 		--	cam.End3D()
-		render.SuppressEngineLighting( false )
 	cam.End3D()
 end )
 -- Sunbeam
@@ -93,7 +90,7 @@ end )
 		local con = GetConVar("sf_allow_sunbeams")
 		if not con or not con:GetBool() then return end
 		local ang = StormFox.GetMoonAngle()
-		local lam = StormFox.GetDaylightAmount() - 0.5
+		local lam = StormFox.CalculateMapLight() / 100 - 0.5
 
 		if ang.p > 180 then ang.p = ang.p - 180 end
 		local direciton = -ang:Forward()
@@ -109,15 +106,16 @@ end )
 
 		local suna = StormFox.GetData("SunColor",Color(255,255,255,255)).a
 		local slam = max((suna - 155) / 100,0)
+		if slam >= 0 then
+			render.UpdateScreenEffectTexture()
 
-		render.UpdateScreenEffectTexture()
+				matSunbeams:SetFloat( "$darken", 0.95 )
+				matSunbeams:SetFloat( "$multiply", abs(lam) * dot * pix * slam )
+				matSunbeams:SetFloat( "$sunx", scrpos.x / ScrW() )
+				matSunbeams:SetFloat( "$suny", scrpos.y / ScrH() )
+				matSunbeams:SetFloat( "$sunsize", 0.075 )
 
-			matSunbeams:SetFloat( "$darken", 0.95 )
-			matSunbeams:SetFloat( "$multiply", abs(lam) * dot * pix * slam )
-			matSunbeams:SetFloat( "$sunx", scrpos.x / ScrW() )
-			matSunbeams:SetFloat( "$suny", scrpos.y / ScrH() )
-			matSunbeams:SetFloat( "$sunsize", 0.075 )
-
-			render.SetMaterial( matSunbeams )
-		render.DrawScreenQuad()
+				render.SetMaterial( matSunbeams )
+			render.DrawScreenQuad()
+		end
 	end )

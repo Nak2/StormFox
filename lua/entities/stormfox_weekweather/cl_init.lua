@@ -38,11 +38,12 @@ end
 local mat = Material("gui/arrow")
 function ENT:DrawTranslucent()
 	self:DrawModel()
+	local Freedom = self:GetNWBool("Freedom",false)
 	cam.Start3D2D(self:LocalToWorld(Vector(6.4,-28,35)),self:LocalToWorldAngles(Angle(0,90,90)),0.1)
 		surface.SetDrawColor(Color(155,155,255))
 		local w,h = 564,325
 		surface.DrawRect(0,0,w,h)
-		local w_data = StormFox.GetData("WeekWeather",{})
+		local w_data = StormFox.GetNetworkData("WeekWeather",{})
 		if #w_data < 1 then return end
 		local wd = (w - 100) / 7
 		surface.SetDrawColor(255,255,255,55)
@@ -57,66 +58,47 @@ function ENT:DrawTranslucent()
 
 		local lasty,lastx,lasta
 		for i = 1,#w_data do
+			local data = w_data[i]
 			local x = (i - 1) * wd + 50
 			
-			local weather = w_data[i].procent > 0.2 and w_data[i].name or "Clear"
-			local windy = w_data[i].wind > 10
-			local p = w_data[i].procent or 0
-			if weather == "Rain" and p > 0 then
+			local weather = (data.percent or 0) > 0.2 and data.name or "clear"
+			local p = data.percent or 0
+			if weather == "rain" and p > 0 then
 				surface.SetDrawColor(0,0,255,155)
-				local xx = 50 + wd * (i - 1) + (wd / 1440 * w_data[i].trigger)
+				local xx = 50 + wd * (i - 1) + (wd / 1440 * data.trigger)
 				local h = math.floor(p * 45)
-				local l = wd / 1440 * w_data[i].length
+				local l = wd / 1440 * (data.stoptime - data.trigger)
 				surface.DrawRect(xx,210 - h,l,h)
 			end
 
 			surface.SetDrawColor(255,255,255)
-			local temp = w_data[i].temp
-			if weather == "Clear" then
-				if windy then
-					surface.SetMaterial(Material("stormfox/symbols/Windy.png"))
-				elseif w_data[i].temp < -2 then
-					surface.SetMaterial(Material("stormfox/symbols/Icy.png"))
-				else
-					surface.SetMaterial(Material("stormfox/symbols/Sunny.png"))
-				end
-			elseif weather == "Cloudy" then
-				surface.SetMaterial(Material("stormfox/symbols/Cloudy.png"))
-			elseif weather == "Rain" then
-				if w_data[i].thunder then
-					surface.SetMaterial(Material("stormfox/symbols/Raining - Thunder.png"))
-				elseif temp < -4 then
-					surface.SetMaterial(Material("stormfox/symbols/Snowing.png"))
-				elseif temp >= -4 and temp < 4 then
-					surface.SetMaterial(Material("stormfox/symbols/RainingSnowing.png"))
-				elseif windy then
-					surface.SetMaterial(Material("stormfox/symbols/Raining - Windy.png"))
-				else
-					surface.SetMaterial(Material("stormfox/symbols/Raining.png"))
-				end
-			elseif weather == "Fog" then
-				surface.SetMaterial(Material("stormfox/symbols/Fog.png"))
-			elseif w_data[i].thunder then
-				surface.SetMaterial(Material("stormfox/symbols/Thunder.png"))
-			end
+			local temp = data.temp
+			local name = StormFox.GetWeatherType(data.name):GetName( temp, data.wind, data.thunder  )
+			local wmat = StormFox.GetWeatherType(data.name):GetIcon(  temp, data.wind, data.thunder )
+			surface.SetMaterial(wmat)
 
-
+			surface.SetTextColor(255,255,255)
+			draw.SimpleText(name,"SkyFox-Console",x + wd / 2,80,Color(255,255,255),1,0)
+			
 			surface.DrawTexturedRect(x,100,wd,50)
 			surface.SetDrawColor(0,0,0)
 
-			local temp_x = x + (wd / 1440 * w_data[i].trigger)
-			local temp_y = 170 - w_data[i].temp * 2 + 40
+			local temp_x = x + (wd / 1440 * data.trigger)
+			local temp_y = 170 - data.temp * 2 + 40
 			surface.DrawCircle(temp_x,temp_y,1,Color(255,255,255))
 			surface.SetTextPos(temp_x,temp_y)
 			surface.SetFont("default")
 			surface.SetTextColor(0,0,0)
-			surface.DrawText(round(w_data[i].temp,1) .. "c")
+			surface.DrawText(Freedom and (StormFox.CelsiusToFahrenheit(round(data.temp,1)) .. "°F") or (round(data.temp,1) .. "°C"))
 
 			surface.SetMaterial(mat)
-			local wind = w_data[i].wind
-			surface.DrawTexturedRectRotated(x + wd / 2,260,10 + wind,10 + wind,w_data[i].windangle)
-			draw.DrawText(math.Round(wind,1) .. "m/s","default",x + wd / 2,270,Color(0,0,0),1)
-			lasta = w_data[i].tempacc or 0
+			local wind = data.wind
+			surface.DrawTexturedRectRotated(x + wd / 2,260,10 + wind,10 + wind,data.windangle)
+			if Freedom then
+				wind = wind * 2.236936
+			end
+			draw.DrawText(math.Round(wind,1) .. (Freedom and "mph" or "m/s"),"default",x + wd / 2,270,Color(0,0,0),1)
+			lasta = data.tempacc or 0
 			if lasty then
 				surface.DrawLine(temp_x,temp_y,lastx,lasty)
 			else

@@ -2,10 +2,14 @@
 -- SpawnMenu
 	if SERVER then
 		local whitelist = {}
+			whitelist["sf_timespeed"] = true
 			whitelist["sf_moonscale"] = true
 			whitelist["sf_sv_material_replacment"] = true
 			whitelist["sf_replacment_dirtgrassonly"] = true
 			whitelist["sf_disablefog"] = true
+			whitelist["sf_disableweatherdebuffs"] = true
+			whitelist["sf_disable_windpush"] = true
+			whitelist["sf_disablelightningbolts"] = true
 			whitelist["sf_disable_autoweather"] = true
 			whitelist["sf_disable_mapsupport"] = true
 			whitelist["sf_disable_autoweather_cold"] = true
@@ -15,7 +19,8 @@
 		net.Receive("StormFox_Settings",function(len,ply)
 			if not ply then return end
 			if (ply.SF_LAST or 0) > SysTime() then return end
-				ply.SF_LAST = SysTime() + 0.2
+				ply.SF_LAST = SysTime() + 0.
+			print(ply,"request")
 			local con = net.ReadString()
 			local arg = net.ReadString()
 			if not con then return end
@@ -24,6 +29,7 @@
 		end)
 	else
 		local function requestSetting(con,arg)
+			print("Request setting to " .. arg)
 			if type(arg) == "boolean" then
 				arg = arg and "1" or "0"
 			end
@@ -198,6 +204,12 @@
 				adminTrickBox(panel,"sf_replacment_dirtgrassonly")
 			-- Disable fog
 				adminTrickBox(panel,"sf_disablefog")
+			-- Disable windpush
+				adminTrickBox(panel,"sf_disable_windpush")
+			-- Disable damage and debuffs
+				adminTrickBox(panel,"sf_disableweatherdebuffs")
+			-- Disable lightning bolts
+				adminTrickBox(panel,"sf_disablelightningbolts")
 			-- Disable autoweather
 				adminTrickBox(panel,"sf_disable_autoweather")
 			-- Disable autoweather
@@ -244,9 +256,9 @@
 				if msg == false then
 					StormFox.SetWeather(str,var)
 				elseif type(var) == "number" and str ~= "WindAngle" then
-					StormFox.SetData(str,var,StormFox.GetTime(true) + StormFox.GetTimeSpeed() * 2)
+					StormFox.SetNetworkData(str,var,StormFox.GetTimeSpeed() * 2)
 				else
-					StormFox.SetData(str,var)
+					StormFox.SetNetworkData(str,var)
 				end
 			end,str,var,msg)
 		end)
@@ -309,12 +321,16 @@
 			colors[3] = Color(51,56,60)
 			colors[4] = Color(47,50,55)
 		local weathers = {}
-			weathers.Clear = "stormfox/symbols/Sunny.png"
-			weathers.Rain = "stormfox/symbols/Raining.png"
-			weathers.Cloudy = "stormfox/symbols/Cloudy.png"
-			weathers.Fog = "stormfox/symbols/Fog.png"
-		local tweathers = table.GetKeys(weathers)
-		local tselected = table.KeyFromValue(tweathers,"Clear")
+		local tselected = 1
+		hook.Add("StormFox - PostInit","StormFox - MenuInit",function()
+			for _,key in pairs(StormFox.GetWeathers()) do
+				if key == "clear" then
+					tselected = table.insert(weathers,key)
+				else
+					table.insert(weathers,key)
+				end
+			end
+		end)
 		local tselectedamount = 0.8
 		local clamp,round,floor,cos,sin,rad = math.Clamp,math.Round,math.floor,math.cos,math.sin,math.rad
 
@@ -433,10 +449,10 @@
 			-- Select Weather
 				local SetWeather = CreateButton(panel,"Set Weather")
 				SetWeather:SetPos(pw / 2 - 60,28)
-
+				local mat = StormFox.GetWeatherType(weathers[tselected]):GetStaticIcon( )
 				local selectedweather = vgui.Create("DImage",panel)
 					selectedweather:SetSize(32,32)
-					selectedweather:SetImage(weathers[tweathers[tselected]])
+					selectedweather:SetMaterial(mat)
 					selectedweather:SetPos(pw / 2 - 16,58)
 
 				local prev = vgui.Create("DButton",panel)
@@ -469,21 +485,23 @@
 				function prev:DoClick()
 					tselected = tselected - 1
 					if tselected <= 0 then
-						tselected = #tweathers
+						tselected = #weathers
 					end
-					selectedweather:SetImage(weathers[tweathers[tselected]])
+					local mat = StormFox.GetWeatherType(weathers[tselected]):GetStaticIcon( )
+					selectedweather:SetMaterial(mat)
 				end
 				function _next:DoClick()
 					tselected = tselected + 1
-					if tselected > #tweathers then
+					if tselected > #weathers then
 						tselected = 1
 					end
-					selectedweather:SetImage(weathers[tweathers[tselected]])
+					local mat = StormFox.GetWeatherType(weathers[tselected]):GetStaticIcon( )
+					selectedweather:SetMaterial(mat)
 				end
 				function SetWeather:DoClick()
 					net.Start("StormFox - WeatherC")
 						net.WriteBool(false)
-						net.WriteString(tweathers[tselected])
+						net.WriteString(weathers[tselected])
 						net.WriteType(tselectedamount)
 					net.SendToServer()
 				end
@@ -493,9 +511,9 @@
 				function slider:DoClick()
 					local w,h = self:GetSize()
 					local x,y = self:CursorPos()
-					local procent = clamp((x - w * 0.05) / (w * 0.9),0,1) -- w * 0.9
-					tselectedamount = procent
-					self.var = procent
+					local percent = clamp((x - w * 0.05) / (w * 0.9),0,1) -- w * 0.9
+					tselectedamount = percent
+					self.var = percent
 				end
 			-- Thunder
 				local thunder = CreateButton(panel,"")
@@ -503,14 +521,14 @@
 					thunder:SetSize(32,32)
 					thunder:SetPos(pw - (pw / 4) + 8,58)
 					function thunder:PaintOver(w,h)
-						local thunder = StormFox.GetData("Thunder",false)
+						local thunder = StormFox.GetNetworkData("Thunder",false)
 						if not thunder then
 							surface.SetDrawColor(Color(0,0,0))
 						else
 							surface.SetDrawColor(Color(255,255,255))
 						end
 						
-						local tl = StormFox.GetData("ThunderLight",0)
+						local tl = StormFox.GetNetworkData("ThunderLight",0)
 						surface.SetMaterial(m_thunder)
 						surface.DrawTexturedRect(w * 0.1,h * 0.1,w * 0.8,h * 0.8)
 
@@ -522,7 +540,7 @@
 					net.Start("StormFox - WeatherC")
 						net.WriteBool(true)
 						net.WriteString("Thunder")
-						local thunder = StormFox.GetData("Thunder",false)
+						local thunder = StormFox.GetNetworkData("Thunder",false)
 						net.WriteType(not thunder)
 					net.SendToServer()
 				end
@@ -531,10 +549,10 @@
 					label:SetText("")
 					label:SetSize(160,20)
 					label:SetPos(pw / 2 - 80,106)
-					local n = round(StormFox.GetData("Temperature",20),1)
+					local n = round(StormFox.GetNetworkData("Temperature",20),1)
 					label.text = "Temperature: " .. n .. "°C - " .. round(StormFox.CelsiusToFahrenheit(n),1) .. "°F"
 					function label:Paint(w,h)
-						local n = round(StormFox.GetData("Temperature",20),1)
+						local n = round(StormFox.GetNetworkData("Temperature",20),1)
 						label.text = "Temperature: " .. n .. "°C - " .. round(StormFox.CelsiusToFahrenheit(n),1) .. "°F"
 						surface.SetTextColor(colors[1])
 						surface.SetFont("SkyFox-Console_Small")
@@ -544,29 +562,29 @@
 					end
 				local tslider = CreateSlider(panel,140,14)
 					tslider:SetPos(pw / 2 - 70,122)
-					tslider.var = (10 + StormFox.GetData("Temperature",0)) / 30
+					tslider.var = (10 + StormFox.GetNetworkData("Temperature",0)) / 50
 					function tslider:DoClick()
 						local w,h = self:GetSize()
 						local x,y = self:CursorPos()
-						local procent = clamp((x - w * 0.05) / (w * 0.9),0,1) -- w * 0.9
+						local percent = clamp((x - w * 0.05) / (w * 0.9),0,1) -- w * 0.9
 						net.Start("StormFox - WeatherC")
 							net.WriteBool(true)
 							net.WriteString("Temperature")
-							net.WriteType(procent * 30 - 10)
+							net.WriteType(percent * 50 - 10)
 						net.SendToServer()
 					end
 					function tslider:Think()
-						self.var = (10 + StormFox.GetData("Temperature",0)) / 30
+						self.var = (10 + StormFox.GetNetworkData("Temperature",0)) / 50
 					end
 			-- Wind
 				local label = vgui.Create("DLabel",panel)
 					label:SetText("")
 					label:SetSize(160,20)
 					label:SetPos(pw / 2 - 80,134)
-					local n = round(StormFox.GetData("Wind",0),1)
+					local n = round(StormFox.GetNetworkData("Wind",0),1)
 					label.text = "Wind: " .. n
 					function label:Paint(w,h)
-						local n = round(StormFox.GetData("Wind",0),1)
+						local n = round(StormFox.GetNetworkData("Wind",0),1)
 						local b,str = StormFox.GetBeaufort(n)
 						label.text = "Wind: " .. n .. " " .. str
 						surface.SetTextColor(colors[1])
@@ -577,19 +595,19 @@
 					end
 				local tslider = CreateSlider(panel,140,14)
 					tslider:SetPos(pw / 2 - 70,150)
-					tslider.var = StormFox.GetData("Wind",0) / 20
+					tslider.var = StormFox.GetNetworkData("Wind",0) / 20
 					function tslider:DoClick()
 						local w,h = self:GetSize()
 						local x,y = self:CursorPos()
-						local procent = clamp((x - w * 0.05) / (w * 0.9),0,1) -- w * 0.9
+						local percent = clamp((x - w * 0.05) / (w * 0.9),0,1) -- w * 0.9
 						net.Start("StormFox - WeatherC")
 							net.WriteBool(true)
 							net.WriteString("Wind")
-							net.WriteType(procent * 20)
+							net.WriteType(percent * 20)
 						net.SendToServer()
 					end
 					function tslider:Think()
-						self.var = StormFox.GetData("Wind",0) / 20
+						self.var = StormFox.GetNetworkData("Wind",0) / 20
 					end
 			-- WindAngle
 				local windang = vgui.Create("DButton",panel)
@@ -602,9 +620,9 @@
 					surface.SetMaterial(m_cir)
 					surface.DrawTexturedRect(0,0,w,h)
 
-					local windang = EyeAngles().y - StormFox.GetData("WindAngle",0)
+					local windang = EyeAngles().y - StormFox.GetNetworkData("WindAngle",0)
 					local t = {{x = w / 2,y = h / 2}}
-					local l = clamp(StormFox.GetData("Wind",0),0,40) / 2
+					local l = clamp(StormFox.GetNetworkData("Wind",0),0,40) / 2
 					if l < 1 then
 						surface.SetDrawColor(155,255,155)
 						l = 2
@@ -786,7 +804,6 @@
 			--panel:MakePopup()
 			STORMFOX_WPANEL = panel
 		end
-		StormFox.OpenWeatherMenu()
 		concommand.Add("sf_menu",StormFox.OpenWeatherMenu)
 		hook.Add("OnPlayerChat","StormFox - Menu",function(pl,text)
 			if pl ~= LocalPlayer() then return end

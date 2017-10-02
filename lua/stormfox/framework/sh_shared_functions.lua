@@ -7,9 +7,9 @@
 		StormFox.GetRealTime()	Gets the time in a string-format
 		StormFox.GetDaylightAmount(num) Returns the day/night amount from 1-0
  ---------------------------------------------------------------------------]]
-local mmin = math.min
+local mmin,clamp = math.min,math.Clamp
 local BASE_TIME = SysTime() -- The base time we will use to calculate current time with.
-local TIME_SPEED = SERVER and ( GetConVar("sf_timespeed") and GetConVar("sf_timespeed"):GetFloat() or 1 ) or 1
+local TIME_SPEED = ( GetConVar("sf_timespeed") and GetConVar("sf_timespeed"):GetFloat() or 1 ) or 1
 
 -- Local functions
 local function StringToTime( str )
@@ -54,18 +54,29 @@ if SERVER then
     -- Update our local TIME_SPEED variable if the convar is changed
     cvars.AddChangeCallback( "sf_timespeed", function( sConvarName, sOldValue, sNewValue )
         local flNewValue = tonumber( sNewValue )
-        if flNewValue <= 0 or flNewValue >= 20 then
-            MsgN( "[StormFox] WARNING: Timespeed was set to invalid value. Reverting to a value of 1.0")
-            GetConVar( "sf_timespeed" ):SetFloat( 1.0 )
+        if flNewValue < 0 or flNewValue > 66 then
+            if flNewValue > 66 then
+                MsgN( "[StormFox] WARNING: Timespeed was set to higer than 66.0. Reverting to a value of 66.0")
+                GetConVar( "sf_timespeed" ):SetFloat( 66.0 )
+            else
+                MsgN( "[StormFox] WARNING: Timespeed was invalid. Reverting to the default value of 1.0")
+                GetConVar( "sf_timespeed" ):SetFloat( 1.0 )
+            end
             TIME_SPEED = 1
         else
-            MsgN( "[StormFox] Timespeed changed to: " .. sNewValue )
+            MsgN( "[StormFox] Timespeed changed to: " .. flNewValue )
             local flOldTime = StormFox.GetTime()
-            TIME_SPEED = flNewValue
+            TIME_SPEED = math.max(flNewValue,0.00001)
             BASE_TIME = SysTime() - ( flOldTime / TIME_SPEED )
             updateClientsTimeVars()
-
-            timer.Adjust( "StormFox-tick", 1 / TIME_SPEED, 0, timerfunction )
+            if TIME_SPEED <= 0 then
+                timer.Pause("StormFox-tick")
+            else
+                if tonumber(sOldValue) <= 0 then
+                    timer.UnPause("StormFox-tick")
+                end
+                timer.Adjust( "StormFox-tick", 1 / TIME_SPEED,0)
+            end
         end
     end, "StormFox_TimeSpeedChanged" )
 
@@ -87,12 +98,14 @@ if SERVER then
 
         return flNewTime
     end
+    timer.Simple(1,updateClientsTimeVars)
 
 
     local SUN_RISE = 360
     local SUN_SET = 1160
     local SUNRISE_CALLED = false
     local SUNSET_CALLED = false
+    local NEWDAY_CALLED = false
 
     local timerfunction = function()
         if StormFox.GetTimeSpeed() <= 0 then return end
@@ -105,12 +118,18 @@ if SERVER then
             hook.Call( "StormFox-Sunset" )
             SUNRISE_CALLED = false
             SUNSET_CALLED = true
+            NEWDAY_CALLED = false
+        elseif time < StormFox.GetTimeSpeed() and not NEWDAY_CALLED then
+            hook.Call( "StormFox-NewDay" )
+            NEWDAY_CALLED = true
         end
 
         hook.Call( "StormFox-Tick", nil, StormFox.GetTime() )
     end
     timer.Create( "StormFox-tick", 1, 0, timerfunction )
-
+    hook.Add("StormFox - Timeset","StormFox-Newdayfix",function()
+        NEWDAY_CALLED = false
+    end)
 else -- CLIENT
 
     net.Receive( "StormFox_SetTimeData", function()
@@ -119,11 +138,10 @@ else -- CLIENT
         BASE_TIME = SysTime() - ( flCurrentTime / TIME_SPEED )
         hook.Call( "StormFox - Timeset")
     end )
-
 end
 
 function StormFox.GetTimeSpeed()
-	return TIME_SPEED
+    return TIME_SPEED
 end
 
 function StormFox.GetTime( bNearestSecond )
@@ -132,7 +150,7 @@ function StormFox.GetTime( bNearestSecond )
 end
 
 function StormFox.GetRealTime(num, _12clock )
-	local var = num or StormFox.GetTime()
+    local var = num or StormFox.GetTime()
     local h = math.floor(var / 60)
     local m = math.floor(var - (h * 60))
     if not _12clock then return h .. ":" .. (m < 10 and "0" or "") .. m end
@@ -149,14 +167,10 @@ function StormFox.GetRealTime(num, _12clock )
     return h .. ":" .. (m < 10 and "0" or "") .. m .. " " .. e
 end
 
-function StormFox.GetDaylightAmount( num )
-	local t = num or StormFox.GetTime()
-	if t <= 320 or t >= 1120 then return 0 end -- Night
-	if t >= 400 and t <= 1040 then return 1 end -- Day
-	if t < 400 then
-		-- sun rise
-		return (t - 320) / 80
-	else
-		return 1 - (t - 1040) / 80
-	end
+function StormFox.CalculateMapLight( flTime, nMin, nMax )
+    nMax = nMax or 100
+    flTime = flTime or StormFox.GetTime()
+    -- Just a function to calc daylight amount based on time. See here https://www.desmos.com/calculator/842tvu0nvq
+    local flMapLight = -0.00058 * math.pow( flTime - 750, 2 ) + nMax
+    return clamp( flMapLight, nMin or 1, nMax )
 end

@@ -51,16 +51,18 @@ if SERVER then
 	end
 	StormFox_DATA = StormFox_DATA or {} -- Not sure what runs first .. but this table is global
 	local function scan()
-		local l = ents.FindByClass("sky_camera")
-		if #l < 1 then print("[StormFox] Not a 3D skybox. Clouds disabled!") return end
-		sky_cam = l[1]
-		sky_scale = l[1]:GetSaveTable().scale
-		StormFox_DATA["skybox_pos"] = sky_cam:GetSaveTable()["m_skyboxData.origin"] or sky_cam:GetPos()
-		StormFox_DATA["skybox_scale"] = sky_scale
-
 		StormFox_DATA["mapobbmaxs"] =  game.GetWorld():GetSaveTable().m_WorldMaxs or Vector(0, 0, 0)
 		StormFox_DATA["mapobbmins"] =  game.GetWorld():GetSaveTable().m_WorldMins or Vector(0, 0, 0)
 		StormFox_DATA["mapobbcenter"] = StormFox_DATA["mapobbmins"] + (StormFox_DATA["mapobbmaxs"] - StormFox_DATA["mapobbmins"]) / 2
+
+		local l = ents.FindByClass("sky_camera")
+
+		if #l < 1 then print("[StormFox] Not a 3D skybox. Clouds disabled!") return end
+		sky_cam = l[1]
+		sky_scale = l[1]:GetSaveTable().scale
+		
+		StormFox_DATA["skybox_scale"] = sky_scale
+		StormFox_DATA["skybox_pos"] = sky_cam:GetSaveTable()["m_skyboxData.origin"] or sky_cam:GetPos()
 
 		-- Scan the skybox for its size
 		local c = StormFox_DATA["skybox_pos"]

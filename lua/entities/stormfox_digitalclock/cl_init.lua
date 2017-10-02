@@ -67,7 +67,9 @@ function ENT:Draw()
 	if ( halo.RenderedEntity() == self ) then return end
 	if not StormFox then return end
 	if not StormFox.GetRealTime then return end
-	if not StormFox.GetWeatherSymbol then return end
+	if not StormFox.Weather then return end
+	if not StormFox.Weather.GetIcon then return end
+
 
 	local a = self:GetAngles()
 	local f = math.random(78,80)
@@ -90,7 +92,7 @@ function ENT:Draw()
 	cam.Start3D2D(self:GetPos(),Angle(180,EyeAngles().y + 90,-a.p -90),0.07)
 		if self:GetNWBool("showWeather",false) then
 			surface.SetDrawColor(col)
-			surface.SetMaterial(StormFox.GetWeatherSymbol())
+			surface.SetMaterial(StormFox.Weather:GetIcon())
 			surface.SetTextColor(col)
 			surface.SetFont("SkyFox-DigitalClock")
 			local temp = round(StormFox.GetData("Temperature",20),1)

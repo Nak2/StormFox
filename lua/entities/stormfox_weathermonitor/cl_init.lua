@@ -35,10 +35,11 @@ function ENT:Draw()
 
 	if not StormFox then return end
 	if not StormFox.GetRealTime then return end
-	if not StormFox.GetWeatherSymbol then return end
+	if not StormFox.Weather then return end
+	if not StormFox.Weather.GetIcon then return end
 
-	local temp = round(StormFox.GetData("Temperature",20),1 )
-	local wind = round(StormFox.GetData("Wind",0) , 2)
+	local temp = round(StormFox.GetNetworkData("Temperature",20),1 )
+	local wind = round(StormFox.GetNetworkData("Wind",0) , 2)
 	local Gauge = round(StormFox.GetData("Gauge",0), 2)
 	local _24clock = self:GetNWBool("24Clock",true)
 	cam.Start3D2D(self:LocalToWorld(Vector(3.3,-10.4,24.6)),self:LocalToWorldAngles(Angle(0,90,90)),0.1)
@@ -48,13 +49,17 @@ function ENT:Draw()
 
 		surface.SetTextColor(255,255,255)
 		surface.SetFont("SkyFox-Console_B")
+		local text = StormFox.Weather.GetName()
+		local text_length,text_height = surface.GetTextSize(text)
+		surface.SetTextPos(w / 2 - text_length / 2,h / 4 - text_height)
+		surface.DrawText(text)
 		local text = _24clock and (temp .. "°C") or (StormFox.CelsiusToFahrenheit(temp) .. "°F")
 		local text_length,text_height = surface.GetTextSize(text)
 		surface.SetTextPos(w / 2 - text_length / 2 - 20,h / 4)
 		surface.DrawText(text)
 
 		surface.SetDrawColor(Color(255,255,255))
-		surface.SetMaterial(StormFox.GetWeatherSymbol())
+		surface.SetMaterial(StormFox.Weather:GetIcon())
 		surface.DrawTexturedRect(w / 2 + text_length / 2 - text_height / 2,h / 4,text_height,text_height)
 
 		--Gauge

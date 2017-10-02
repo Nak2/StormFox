@@ -1,6 +1,7 @@
 StormFox = {}
-StormFox.Version = 1.09
-StormFox.WorkShopVersion = true
+StormFox.Version = 1.10
+StormFox.WorkShopVersion = false
+StormFox.SunMoonAngle = 270
 
 if SERVER then
 	game.ConsoleCommand("sv_skyname painted\n")
@@ -32,6 +33,15 @@ end
 	end
 	if not ConVarExists("sf_disablefog") then
 		CreateConVar("sf_disablefog",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Disable the fog.")
+	end
+	if not ConVarExists("sf_disableweatherdebuffs") then
+		CreateConVar("sf_disableweatherdebuffs",game.IsDedicated() and 1 or 0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Disable weather debuffs/damage/impact.")
+	end
+	if not ConVarExists("sf_disable_windpush") then
+		CreateConVar("sf_disable_windpush",game.IsDedicated() and 1 or 0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Disable wind-push on props (Careful on servers).")
+	end
+	if not ConVarExists("sf_disablelightningbolts") then
+		CreateConVar("sf_disablelightningbolts",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Disable lightning strikes.")
 	end
 	if not ConVarExists("sf_disable_autoweather") then
 		CreateConVar("sf_disable_autoweather",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Disable the automatic weather-generator.")
@@ -103,19 +113,28 @@ end
 		end
 	end
 
---print("Framework")
 for _,fil in ipairs(file.Find("stormfox/framework/*.lua","LUA")) do
 	HandleFile("stormfox/framework/" .. fil)
 end
---print("Functions")
+
 for _,fil in ipairs(file.Find("stormfox/functions/*.lua","LUA")) do
 	HandleFile("stormfox/functions/" .. fil)
 end
---print("Rest")
+
+HandleFile("stormfox/" .. "sh_weathertype_meta.lua")
+HandleFile("stormfox/" .. "sh_weather_controller.lua")
 HandleFile("stormfox/" .. "sh_options.lua")
 HandleFile("stormfox/" .. "cl_wizard.lua")
 if SERVER then
 	HandleFile("stormfox/" .. "sv_map_lights.lua")
-	HandleFile("stormfox/" .. "sv_weather_controller.lua")
 	HandleFile("stormfox/" .. "sv_weather_generator.lua")
 end
+
+for _,fil in ipairs(file.Find("stormfox/weather_types/*.lua","LUA")) do
+	if SERVER then
+		AddCSLuaFile("stormfox/weather_types/" .. fil)
+	end
+	include("stormfox/weather_types/" .. fil)
+end
+
+hook.Call("StormFox - PostInit")
