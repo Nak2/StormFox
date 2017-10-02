@@ -98,10 +98,9 @@ hook.Add( "StormFox-Tick", "StormFox - SkyThink", function( flTime )
 	vBottomColor = ColorToVector( StormFox.GetData("SkyBottomColor", Color(204,255,255)) )
 	flFadeBias = StormFox.GetData( "FadeBias", 1 )
 	flHDRScale = StormFox.GetData("HDRScale",0.66)
-	vSunColor = ColorToVector( StormFox.GetData("SunColor", Color(255,255,255) ) )
+	vSunColor = Vector(0,0,0)
 
-	local s = StormFox.GetData("SunSize",20) / 500
-	flSetSunSize = StormFox.GetDaylightAmount() * s
+	flSetSunSize = StormFox.GetData("SunSize",20) / 500
 
 
 	vSetDuskColor = ColorToVector( StormFox.GetData( "DuskColor", Color(255,51,0) ))

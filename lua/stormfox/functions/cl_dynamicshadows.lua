@@ -1,13 +1,4 @@
 
-local function GetMoonAngle(time) -- Same as the sun .. tbh
-	time = time or StormFox.GetTime()
-	local pitch = ((time / 360) - 1) * 90
-	if pitch < 0 then pitch = pitch + 360 end
-	local n = 0
-	if pitch > 180 then pitch = pitch - 180 n = 1 end
-	local ang = Angle(pitch, StormFox.SunMoonAngle, 0)
-	return ang,n
-end
 
 local function ET(pos,pos2,mask)
 	local t = util.TraceLine( {
@@ -26,9 +17,9 @@ local cvShadowConvar = GetConVar("sf_allow_dynamicshadow")
 
 hook.Add("Think", "StormFox - Suntest", function()
 	if not LocalPlayer() then return end
+	local flTime = StormFox.GetTime() or flTime
 
-	local dla = StormFox.GetDaylightAmount()
-	if not cvShadowConvar:GetBool() or (dla < 0.55 and dla > 0.45) then
+	if not cvShadowConvar:GetBool() or (flTime < 350 or flTime > 1300 ) then
 		if STORMFOX_SUN then
 			STORMFOX_SUN:Remove()
 		end
@@ -38,16 +29,15 @@ hook.Add("Think", "StormFox - Suntest", function()
 		return
 	end
 
-	local flTime = StormFox.GetTime() or flTime
-	local sunAngle = StormFox.GetMoonAngle( flTime )
-	local colA = abs(0.5 - dla) * 2
+	local sunAngle = StormFox.GetSunAngle( flTime )
+
 	local eyepos = EyePos()
-	local tp,tsky = ET(eyepos,sunAngle:Forward() * -8000,MASK_SOLID_BRUSHONLY)
-	if tsky then
-		distance = max(tp:Distance(eyepos) + 2000,5000)
-	else
+	--local tp,tsky = ET(eyepos,sunAngle:Forward() * -8000,MASK_SOLID_BRUSHONLY)
+	--if tsky then
+	--	distance = max(tp:Distance(eyepos) + 2000,5000)
+	--else
 		distance = 5000
-	end
+	--end
 	local lppos,isday = eyepos + sunAngle:Forward() * -distance
 	if not STORMFOX_SUN or not IsValid(STORMFOX_SUN) then
 		STORMFOX_SUN = ProjectedTexture()
@@ -59,7 +49,7 @@ hook.Add("Think", "StormFox - Suntest", function()
 		STORMFOX_SUN:SetNearZ( 10 )
 
 		STORMFOX_SUN:SetFarZ( 14000 )
-		STORMFOX_SUN:SetColor( Color(127.5 + 27.5 * colA,255,255 * colA) )
+		STORMFOX_SUN:SetColor( Color(127.5 + 27.5,255,255) )
 
 		STORMFOX_SUN:SetTexture("engine/depthwrite")
 		STORMFOX_SUN:Update()
@@ -75,7 +65,7 @@ hook.Add("Think", "StormFox - Suntest", function()
 		STORMFOX_SUN_distance:SetFOV( 80 )
 
 		STORMFOX_SUN_distance:SetFarZ( 4000 )
-		STORMFOX_SUN_distance:SetColor( Color(127.5 + 27.5 * colA,255,255 * colA) )
+		STORMFOX_SUN_distance:SetColor( Color(127.5 + 27.5,255,255) )
 
 		STORMFOX_SUN_distance:SetTexture("lights/white003_nochop")
 		STORMFOX_SUN_distance:Update()
@@ -85,11 +75,11 @@ hook.Add("Think", "StormFox - Suntest", function()
 	STORMFOX_SUN:SetTexture("stormfox/small_shadow_sprite")
 	local l = 500
 	if isday then
-		local c = Color(127.5 + 127.5 * colA,255,255 * colA)
+		local c = Color(127.5 + 127.5,255,255)
 		STORMFOX_SUN:SetColor(c)
 		STORMFOX_SUN_distance:SetColor(c)
 	else
-		local c =  Color(63.5 + 63.5 * colA,155,255 * colA)
+		local c =  Color(63.5 + 63.5,155,255)
 		STORMFOX_SUN:SetColor(c)
 		STORMFOX_SUN_distance:SetColor(c)
 	end

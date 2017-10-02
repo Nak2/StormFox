@@ -10,21 +10,21 @@ StormFox.WeatherType.StormMagnitudeMax = 1
 -- Time enumerations
 StormFox.WeatherType.TIME_SUNRISE = 360
 StormFox.WeatherType.TIME_NOON = 750
-StormFox.WeatherType.TIME_SUNSET = 1140
+StormFox.WeatherType.TIME_SUNSET = 1260
 StormFox.WeatherType.TIME_NIGHT = 1440
 
 -- Data having to do with skybox color, lighting etc that is more dependent on the time of day then the storm conditions
 StormFox.WeatherType.TimeDependentData = {
 	SkyTopColor = { -- The top color painted in the skybox
-		TIME_SUNRISE = Color(91, 127.5, 255),
-		TIME_NOON = Color(51, 127.5, 255),
-		TIME_SUNSET = Color(130, 130, 180),
-		TIME_NIGHT = Color( 0, 30, 30 )
+		TIME_SUNRISE = Color(43, 142, 196),
+		TIME_NOON = Color(6, 146, 221),
+		TIME_SUNSET = Color(6, 105, 130),
+		TIME_NIGHT = Color( 1, 19, 31 )
 	},
 	SkyBottomColor = { -- The bottom color painted in the skybox
-		TIME_SUNRISE = Color(91, 127.5, 255),
-		TIME_NOON = Color(51, 127.5, 255),
-		TIME_SUNSET = Color(0, 1.5, 5.25),
+		TIME_SUNRISE = Color(244, 122, 60),
+		TIME_NOON = Color(56, 174, 255),
+		TIME_SUNSET = Color(255, 171, 150),
 		TIME_NIGHT = Color( 0, 0, 0 )
 	},
 	FadeBias = { -- TODO: Nak, what is this? Please add a comment
@@ -48,9 +48,9 @@ StormFox.WeatherType.TimeDependentData = {
 		 TIME_SUNSET = 0.1
 	},
 	MapLight = { -- The amount of daylight ( suns brightness )
-		 TIME_SUNRISE = 35,
-		 TIME_NOON = 100,
-		 TIME_SUNSET = 30,
+		 TIME_SUNRISE = 20,
+		 TIME_NOON = 80,
+		 TIME_SUNSET = 20,
 		 TIME_NIGHT = 6
 	},
 	Fogdensity = { -- TODO: Nak, what is this? Please add a comment
@@ -69,7 +69,7 @@ StormFox.WeatherType.TimeDependentData = {
 StormFox.WeatherType.CalculatedData = {
 	StarFade = 1,
 	StarSpeed = 0.001,
-	SunSize = 20,
+	SunSize = 35,
 	SunColor = Color( 255, 255, 255 ),
 	MoonLight = 100,
 	MoonColor = Color( 205, 205, 205 ),
@@ -160,7 +160,7 @@ end
 -- The times of the previous intervals start times.
 local timeIntervalStarts = {
 	TIME_SUNRISE = StormFox.WeatherType.TIME_SUNRISE - 60,
-	TIME_NOON = StormFox.WeatherType.TIME_NOON - 60,
+	TIME_NOON = StormFox.WeatherType.TIME_SUNRISE + 50,
 	TIME_SUNSET = StormFox.WeatherType.TIME_SUNSET - 60,
 	TIME_NIGHT = StormFox.WeatherType.TIME_SUNSET + 30
 }
@@ -210,7 +210,7 @@ function StormFox.WeatherType:GetLerpedTimeValue( sIndex, previousWeatherVal, fl
 			local currentValue = StormFox.GetData( index )
 			if currentValue and currentValue != expectedValue then
 				-- The weather may have been manually edited or we are transitioning from a storm. We need to lerp the current data to match the expectedValue
-				return lerpAnyValue( 0.1, currentValue, expectedValue )
+				return lerpAnyValue( 0.07, currentValue, expectedValue )
 			end
 		else -- Lerp based on time, this slowly adjust values at given time intervals. For example 60 mins before sunset it starts to get lighter outside
 			lerpAmount = math.Clamp( ( flTime - flStartTime ) / ( flTargetTime - flStartTime ), 0, 1 )

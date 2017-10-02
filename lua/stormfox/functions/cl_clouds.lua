@@ -189,7 +189,7 @@ local Clouds = {}
 	hook.Add("Think","StormFox - CloudUpdate",function()
 		if true then return end
 		local flTime = StormFox.GetTime()
-		BufferAngle = StormFox.GetMoonAngle( flTime )
+		BufferAngle = StormFox.GetMoonAngle( flTime ) -- When we fix clouds we also need to update this because moon and sun angles were changed
 
 		local scale = StormFox.SkyboxScale()
 		sky_center = StormFox.SkyboxPos() + Vector(0,0,StormFox.SkyboxOBBMaxs().z - 300)

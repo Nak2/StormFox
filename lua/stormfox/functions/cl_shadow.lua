@@ -31,17 +31,9 @@ hook.Add( "RenderScreenspaceEffects", "stormFox - screenmodifier", function()
 		tab[ "$pp_colour_addr" ] = 0
 		tab[ "$pp_colour_addg" ] = 0
 		tab[ "$pp_colour_addb" ] = 0
-		tab[ "$pp_colour_brightness" ] = 0
-
-		local con = GetConVar("sf_redownloadlightmaps")
-		if con and con:GetBool() then
-			tab[ "$pp_colour_brightness" ] = -darkalpha * 0.05 * ml
-		else
-			tab[ "$pp_colour_brightness" ] = -darkalpha * 0.10 * ml
-		end
-
+		tab[ "$pp_colour_brightness" ] = -darkalpha * 0.028 * ml
 		tab[ "$pp_colour_contrast" ] = 1
-		tab[ "$pp_colour_colour" ] = 1 - darkalpha * 0.4 * ml
+		tab[ "$pp_colour_colour" ] = 1 - darkalpha * 0.34 * ml
 		tab[ "$pp_colour_mulr" ] = 0
 		tab[ "$pp_colour_mulg" ] = 0
 		tab[ "$pp_colour_mulb" ] = 0

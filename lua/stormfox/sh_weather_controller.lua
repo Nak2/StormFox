@@ -15,13 +15,13 @@ hook.Add( "StormFox-Tick", "StormFox - StormUpdate", function( flTime )
 
 	if not StormFox.tDailyWeatherForecast then return end
 	if StormFox.tDailyWeatherForecast.name != "clear" and StormFox.Weather.id != "clear" and math.Round(flTime) > StormFox.tDailyWeatherForecast.trigger then -- Look to trigger a storm
-		StormFox.SetWeather( StormFox.tDailyWeatherForecast.name , 0 )
+		StormFox.SetWeather( StormFox.tDailyWeatherForecast.name, 0 )
 		StormFox.SetData( "Thunder", StormFox.tDailyWeatherForecast.thunder )
 		WEATHER_STOP = CurTime() + StormFox.tDailyWeatherForecast.length - ( flTime - StormFox.tDailyWeatherForecast.trigger ) -- Keeps it consistent for clients that join in the middle
 		StormFox.tDailyWeatherForecast.trigger = 1600 -- So it never triggers again for this day
 	elseif WEATHER_STOP != -1  then -- Handle the current active storm, adjusting its magnitude or ending it
 		if CurTime() >= WEATHER_STOP then
-			StormFox.Weather = StormFox.GetWeatherType( "clear" )
+			StormFox.SetWeather( "clear", 0 )
 			WEATHER_STOP = -1
 			StormFox.StormMagnitude = 0
 			MsgN("Storm over...")

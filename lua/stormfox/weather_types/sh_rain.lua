@@ -5,19 +5,23 @@ local RainStorm = StormFox.WeatherType.new( "rain" )
 RainStorm.StormMagnitudeMin = 0.2
 
 RainStorm.TimeDependentData.SkyTopColor = {
-	TIME_SUNRISE = Color(3.0, 2.9, 3.5),
-	TIME_SUNSET = Color(0.4, 0.2, 0.54),
+	TIME_SUNRISE = Color(15, 32, 109),
+	TIME_NOON = Color(6, 85, 127),
+	TIME_SUNSET = Color(1, 51, 79),
+	TIME_NIGHT = Color( 1, 16, 25 )
 }
 
 RainStorm.TimeDependentData.SkyBottomColor = {
-	TIME_SUNRISE = Color(3.0, 2.9, 3.5),
-	TIME_SUNSET = Color(0, 0.15, 0.525),
+	TIME_SUNRISE = Color(12, 24, 76),
+	TIME_NOON = Color(6, 38, 76),
+	TIME_SUNSET = Color(1, 30, 69),
+	TIME_NIGHT = Color( 0, 0, 0 )
 }
 
 RainStorm.TimeDependentData.DuskColor = {
 	TIME_SUNRISE = Color(3, 2.9, 3.5),
-	TIME_SUNSET = Color(3, 2.5, .54),
-	TIME_NIGHT = Color(.4, .2, .54)
+	TIME_SUNSET = Color(3, 2.5, 0.54),
+	TIME_NIGHT = Color(0.4, 0.2, 0.54)
 }
 
 RainStorm.TimeDependentData.DuskScale = {
@@ -33,9 +37,9 @@ RainStorm.TimeDependentData.HDRScale = {
 
 RainStorm.TimeDependentData.MapLight = {
 	TIME_SUNRISE = 28,
-	TIME_NOON = 48,
-	TIME_SUNSET = 34,
-	TIME_NIGHT = 13
+	TIME_NOON = 65,
+	TIME_SUNSET = 18,
+	TIME_NIGHT = 4
 }
 
 RainStorm.TimeDependentData.Fogdensity = {
