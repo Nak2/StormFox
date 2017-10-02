@@ -48,7 +48,7 @@ hook.Add( "PostDraw2DSkyBox", "StormFox - MoonRender", function()
 				render.SuppressEngineLighting(true)
 				render.SetLightingMode( 2 )
 
-				local gda = 1 - StormFox.CalculateMapLight(StormFox.GetTime() + 200) / 90
+				local gda = clamp(1 - StormFox.CalculateMapLight(StormFox.GetTime() + 200) / 99,0,1)
 				render.SetMaterial( MoonGlow )
 				--render.DrawSprite( pos2 , s, s, Color(c.r,c.g,c.b,a * 25)) -- Draw the sprite in the middle of the map, at 16x16 in it's original colour with full alpha.
 				local nn = 60
@@ -65,7 +65,7 @@ hook.Add( "PostDraw2DSkyBox", "StormFox - MoonRender", function()
 				render.SetMaterial(sunMat)
 				local sunSize = StormFox.GetData("SunSize", 30) or 30
 				local sc = StormFox.GetData("SunColor", Color(255,255,255))
-					sc.a = clamp(sunSize / 20,0,1) * 255
+					sc.a = clamp(sunSize / 20,0,1) * 255 * StormFox.CalculateMapLight(StormFox.GetTime()) / 255
 				render.DrawQuadEasy( N * -200, N, 30, 30, sc, 0 )
 				if IsValid(g_SkyPaint) then
 					g_SkyPaint:SetSunNormal( -N)
