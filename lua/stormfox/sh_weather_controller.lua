@@ -55,7 +55,6 @@ hook.Add("StormFox - NetDataChange","StormFox - WeatherLogic",function(var,weath
 	local sWeatherID = StormFox.GetNetworkData( "Weather", "clear" )
 	local flMagnitude = StormFox.GetNetworkData( "WeatherMagnitude") or 0
 	if not StormFox.GetWeatherType( sWeatherID ) then print( "[StormFox] Weather not found:", sWeatherId ) return end
-	print("Changing weather data: " .. sWeatherID .. ": " .. flMagnitude)
 	StormFox.Weather = StormFox.GetWeatherType( sWeatherID )
 	skyUpdate = 0 -- update now
 end)

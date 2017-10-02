@@ -178,7 +178,6 @@ hook.Add("StormFox-Tick", "StormFox - WeatherAIThink",function(n)
 
 	if #week <= 1 then return end -- Ehhh ..
 	local timeBetween = (1400 - currentWD.trigger) + week[2].trigger
-	print(timeBetween)
 	StormFox.SetNetworkData("Wind",week[2].wind,timeBetween)
 	StormFox.SetNetworkData("WindAngle",week[1].windangle)
 	StormFox.SetNetworkData("Thunder",week[1].thunder or false)
