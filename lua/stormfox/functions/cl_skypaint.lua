@@ -7,6 +7,49 @@
 		return Vector(col.r / div,col.g / div,col.b / div)
 	end
 
+-- Override skypaint problems
+local g_SkyPaint_tab = {}
+	function g_SkyPaint_tab.IsValid() return true end
+
+local g_datacache = {}
+local function AddDataCache(name,defaultdata)
+	g_datacache[name] = defaultdata
+	g_SkyPaint_tab["Set" .. name] = function(self,var)
+		g_datacache[name] = var
+	end
+	g_SkyPaint_tab["Get" .. name] = function()
+		return g_datacache[name]
+	end
+end
+AddDataCache("TopColor", Vector( 0.2, 0.5, 1.0 ) )
+AddDataCache("BottomColor", Vector( 0.8, 1.0, 1.0 ) )
+AddDataCache("FadeBias", 1 )
+
+AddDataCache("SunNormal", Vector( 0.4, 0.0, 0.01 ) )
+AddDataCache("SunColor", Vector( 0.2, 0.1, 0.0 ) )
+AddDataCache("SunSize", 2.0 )
+
+AddDataCache("DuskColor", Vector( 1.0, 0.2, 0.0 ) )
+AddDataCache("DuskScale", 1 )
+AddDataCache("DuskIntensity", 1 )
+
+AddDataCache("DrawStars", true )
+AddDataCache("StarLayers", 1 )
+AddDataCache("StarSpeed", 0.01 )
+AddDataCache("StarScale", 0.5 )
+AddDataCache("StarFade", 1.5 )
+AddDataCache("StarTexture", "skybox/starfield" )
+
+AddDataCache("HDRScale", 0.66 )
+
+hook.Add("Think","StormFox - SkyPaintFix",function()
+	if not IsValid(g_SkyPaint) then return end
+	if type(g_SkyPaint) ~= "Entity" then return end
+	if g_SkyPaint:GetClass() == "env_skypaint" then
+		-- We'll hande it from here
+		g_SkyPaint = g_SkyPaint_tab
+	end
+end)
 
 -- SkyPaint Main
 local max,round,clamp = math.max,math.Round,math.Clamp
