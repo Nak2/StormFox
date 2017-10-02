@@ -8,7 +8,7 @@
 		StormFox.GetDaylightAmount(num) Returns the day/night amount from 1-0
  ---------------------------------------------------------------------------]]
 local mmin,clamp = math.min,math.Clamp
-local BASE_TIME = SysTime() -- The base time we will use to calculate current time with.
+local BASE_TIME = CurTime() -- The base time we will use to calculate current time with.
 local TIME_SPEED = ( GetConVar("sf_timespeed") and GetConVar("sf_timespeed"):GetFloat() or 1 ) or 1
 
 -- Local functions
@@ -67,7 +67,7 @@ if SERVER then
             MsgN( "[StormFox] Timespeed changed to: " .. flNewValue )
             local flOldTime = StormFox.GetTime()
             TIME_SPEED = math.max(flNewValue,0.00001)
-            BASE_TIME = SysTime() - ( flOldTime / TIME_SPEED )
+            BASE_TIME = CurTime() - ( flOldTime / TIME_SPEED )
             updateClientsTimeVars()
             if TIME_SPEED <= 0 then
                 timer.Pause("StormFox-tick")
@@ -95,7 +95,7 @@ if SERVER then
             return false
         end
 
-        BASE_TIME = SysTime() - ( flNewTime / TIME_SPEED )
+        BASE_TIME = CurTime() - ( flNewTime / TIME_SPEED )
         hook.Call( "StormFox - Timechange", nil, flNewTime )
         hook.Call( "StormFox - Timeset")
         updateClientsTimeVars()
@@ -139,7 +139,7 @@ else -- CLIENT
     net.Receive( "StormFox_SetTimeData", function()
         local flCurrentTime = net.ReadFloat()
         TIME_SPEED = net.ReadFloat()
-        BASE_TIME = SysTime() - ( flCurrentTime / TIME_SPEED )
+        BASE_TIME = CurTime() - ( flCurrentTime / TIME_SPEED )
         hook.Call( "StormFox - Timeset")
     end )
 end
@@ -149,7 +149,7 @@ function StormFox.GetTimeSpeed()
 end
 
 function StormFox.GetTime( bNearestSecond )
-    local flTime = ( ( SysTime() - BASE_TIME ) * TIME_SPEED ) % 1440
+    local flTime = ( ( CurTime() - BASE_TIME ) * TIME_SPEED ) % 1440
     return bNearestSecond and math.Round( flTime ) or flTime
 end
 
@@ -177,4 +177,8 @@ function StormFox.CalculateMapLight( flTime, nMin, nMax )
     -- Just a function to calc daylight amount based on time. See here https://www.desmos.com/calculator/842tvu0nvq
     local flMapLight = -0.00058 * math.pow( flTime - 750, 2 ) + nMax
     return clamp( flMapLight, nMin or 1, nMax )
+end
+
+if SERVER then
+    StormFox.SetTime( os.time() % 1440 )
 end
