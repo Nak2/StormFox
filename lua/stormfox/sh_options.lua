@@ -323,13 +323,8 @@
 		local weathers = {}
 		local tselected = 1
 		hook.Add("StormFox - PostInit","StormFox - MenuInit",function()
-			for _,key in pairs(StormFox.GetWeathers()) do
-				if key == "clear" then
-					tselected = table.insert(weathers,key)
-				else
-					table.insert(weathers,key)
-				end
-			end
+			weathers = StormFox.GetWeathers()
+			tselected = StormFox.GetWeathersDefaultNumber()
 		end)
 		local tselectedamount = 0.8
 		local clamp,round,floor,cos,sin,rad = math.Clamp,math.Round,math.floor,math.cos,math.sin,math.rad

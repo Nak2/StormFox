@@ -105,6 +105,7 @@
 	-- Data that is set once and remains the same value. No lerping or time interpolation or anything. The values don't change
 	StormFox.WeatherType.StaticData = {
 		StarSpeed = 0.001,
+		StarScale = 0.5,
 		StarTexture = "skybox/starfield",
 		MoonTexture = "stormfox/moon_fix",
 		GaugeColor = Color(255,255,255),

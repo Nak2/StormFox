@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.10
+StormFox.Version = 1.101
 StormFox.WorkShopVersion = false
 StormFox.SunMoonAngle = 270
 

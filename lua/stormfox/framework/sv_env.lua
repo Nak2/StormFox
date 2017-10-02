@@ -58,7 +58,7 @@ local round,clamp = math.Round,math.Clamp
 				SafeRemoveEntity( tSunlist[ i ] )
 			end
 		end
-
+		RunConsoleCommand("sv_skyname", "painted")
 		StormFox.light_environment = StormFox.light_environment or ents.FindByClass( "light_environment" )[1] or nil
 		StormFox.env_fog_controller = StormFox.env_fog_controller or GetOrCreate( "env_fog_controller" ) or nil
 		StormFox.shadow_control = StormFox.shadow_control or ents.FindByClass( "shadow_control" )[1] or nil

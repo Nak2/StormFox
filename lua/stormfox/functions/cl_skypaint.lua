@@ -14,14 +14,14 @@ local oldSunSize
 local max = math.max
 hook.Add("Think","StormFox - SkyThink",function()
 	if not IsValid(g_SkyPaint) then return end
-		local tl = StormFox.GetData("ThunderLight",0)
-		local topColor = StormFox.GetData("SkyTopColor",Color(51,127.5,255))
+		local tl = StormFox.GetData("ThunderLight") or 0
+		local topColor = StormFox.GetData("SkyTopColor") or Color(51,127.5,255)
 		g_SkyPaint:SetTopColor(ColVec(Color(max(topColor.r,tl),max(topColor.g,tl),max(topColor.b,tl)),255))
-		g_SkyPaint:SetBottomColor(ColVec(StormFox.GetData("SkyBottomColor",Color(204,255,255)),255))
-		g_SkyPaint:SetFadeBias(StormFox.GetData("FadeBias",1))
-		g_SkyPaint:SetHDRScale(StormFox.GetData("HDRScale",0.66))
-		local sunsize = StormFox.GetData("SunSize", 30) or 30
-		local sc = StormFox.GetData("SunColor", Color(255,255,255))
+		g_SkyPaint:SetBottomColor(ColVec(StormFox.GetData("SkyBottomColor") or Color(204,255,255),255))
+		g_SkyPaint:SetFadeBias(StormFox.GetData("FadeBias") or 1)
+		g_SkyPaint:SetHDRScale(StormFox.GetData("HDRScale") or 0.66)
+		local sunsize = StormFox.GetData("SunSize") or 30
+		local sc = StormFox.GetData("SunColor") or Color(255,255,255)
 			sc.a = clamp(sunsize / 20,0,1) * 255
 		g_SkyPaint:SetSunColor(ColVec(sc,255))
 
@@ -31,18 +31,19 @@ hook.Add("Think","StormFox - SkyThink",function()
 		if sunsize <= 0 then
 			g_SkyPaint:SetDuskColor(ColVec(Color(0,0,0),255))
 		else
-			g_SkyPaint:SetDuskColor(ColVec(StormFox.GetData("DuskColor",Color(255,51,0)),255))
+			g_SkyPaint:SetDuskColor(ColVec(StormFox.GetData("DuskColor") or Color(255,51,0),255))
 		end
-		g_SkyPaint:SetDuskIntensity(StormFox.GetData("DuskIntensity",1))
-		g_SkyPaint:SetDuskScale(StormFox.GetData("DuskScale",1))
+		g_SkyPaint:SetDuskIntensity(StormFox.GetData("DuskIntensity") or 1)
+		g_SkyPaint:SetDuskScale(StormFox.GetData("DuskScale") or 1)
 
-		local n = StormFox.GetData("StarFade",1.5)
+		local n = StormFox.GetData("StarFade") or 1.5
 		if n <= 0 then
 			g_SkyPaint:SetDrawStars(false)
 		else
 			g_SkyPaint:SetDrawStars(true)
-			g_SkyPaint:SetStarSpeed(StormFox.GetData("StarSpeed",0.001))
+			g_SkyPaint:SetStarSpeed((StormFox.GetData("StarSpeed") or 0.001) * StormFox.GetTimeSpeed())
 			g_SkyPaint:SetStarFade(n)
+			g_SkyPaint:SetStarScale(StormFox.GetData("StarScale") or 0.5)
 			g_SkyPaint:SetStarTexture(StormFox.GetData("StarTexture","skybox/starfield"))
 		end
 
