@@ -82,12 +82,16 @@ if SERVER then
 
     -- Used to update the current stormfox time
     function StormFox.SetTime( var )
+        if not var then return false end
         local flNewTime = nil
         if type( var ) == "string" then
             flNewTime = StringToTime( var )
         elseif type( var ) == "number" then
             flNewTime = var
         else
+            return false
+        end
+        if type(flNewTime) == "nil" then
             return false
         end
 
