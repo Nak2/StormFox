@@ -119,11 +119,6 @@ local function weatherThink()
 		
 		local mapLight = StormFox.CalculateMapLight(flTime,StormFox.Weather:GetData("MapNightLight"),StormFox.Weather:GetData("MapDayLight"))
 		StormFox.SetData("MapLight",mapLight,dataUpdate)
-	-- Generate maplight
-		if SERVER then
-			-- StormFox.CalculateMapLight(flTime, 0, 1)
-			StormFox.SetMapLight(mapLight)
-		end
 	-- Calc weather and day data
 
 
@@ -177,6 +172,14 @@ local function weatherThink()
 					end
 				end
 			end
+			-- Generate maplight
+		if SERVER then
+			-- StormFox.CalculateMapLight(flTime, 0, 1)
+			StormFox.SetMapBloom(StormFox.GetData("MapBloom") or 0.2)
+			StormFox.SetMapBloomAutoExposureMin(StormFox.GetData("MapBloomMin") or 0.7)
+			StormFox.SetMapBloomAutoExposureMax(StormFox.GetData("MapBloomMax") or 1)
+			StormFox.SetMapLight(mapLight)
+		end
 end
 hook.Add( "Think", "StormFox - WeatherThink", weatherThink )
 

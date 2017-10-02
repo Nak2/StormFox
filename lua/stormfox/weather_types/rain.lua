@@ -47,6 +47,15 @@ RainStorm.TimeDependentData.Fogend = {
 	TIME_SUNRISE = 54000,
 	TIME_SUNSET = 30000
 }
+RainStorm.TimeDependentData.MapBloom = {
+	TIME_SUNRISE = 1.2,
+	TIME_SUNSET = 1.4
+}
+RainStorm.TimeDependentData.MapBloomMax = {
+	TIME_SUNRISE = 0.4,
+	TIME_SUNSET = 1.4
+}
+
 RainStorm.CalculatedData = {
 	MapDayLight = 10,
 	MapNightLight = 1,

@@ -22,7 +22,7 @@ end
 
 local max,min,abs = math.max,math.min,math.abs
 local distance = 5000
-hook.Add("Think","StormFox - Suntest",function()
+hook.Add("RenderScene","StormFox - Suntest",function(eyepos,eyeang)
 	if not LocalPlayer() then return end
 	local con = GetConVar("sf_allow_dynamicshadow")
 	local dla = StormFox.CalculateMapLight() / 100
@@ -44,7 +44,6 @@ hook.Add("Think","StormFox - Suntest",function()
 		sunAngle = GetMoonAngle()
 	end
 	local colA = abs(0.5 - dla) * 2
-	local eyepos = EyePos()
 	local tp,tsky = ET(eyepos,sunAngle:Forward() * -8000,MASK_SOLID_BRUSHONLY)
 	if tsky then
 		distance = max(tp:Distance(eyepos) + 2000,5000)

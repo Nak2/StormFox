@@ -95,7 +95,6 @@ hook.Add("RenderScreenspaceEffects","StormFox - Toxxeffect",function()
 		toxamount = max(toxamount - FrameTime(),0)
 	end
 	if toxamount <= 0 then return end
-	print(toxamount)
 	local tab = {}
 	tab[ "$pp_colour_addr" ] = 0
 	tab[ "$pp_colour_addg" ] = 0.1 * toxamount

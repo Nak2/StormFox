@@ -59,7 +59,6 @@ local function ShowMessageBox(title,problem,dontshow_option,yesnooption,snd)
 	if options[title] then return end
 	if occurred[problem] then return end
 	if snd then
-		print(snd)
 		LocalPlayer():EmitSound(snd)
 	end
 		occurred[problem] = true -- Error protection

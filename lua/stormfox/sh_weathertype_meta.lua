@@ -75,6 +75,15 @@
 				TIME_SUNSET = 0.2,
 				TIME_NIGHT = 1
 		},
+		MapBloom = {
+				TIME_SUNRISE = 0.2,
+				TIME_SUNSET = 0.4
+			},
+		MapBloomMin = 0.7,
+		MapBloomMax = {
+				TIME_SUNRISE = 1,
+				TIME_SUNSET = 1
+			},
 		Fogstart = 0, -- TODO: Nak, what is this? Please add a comment
 		Fogcolor = nil -- TODO: Nak, what is this? Please add a comment
 	}
@@ -86,7 +95,7 @@
 		MoonColor = Color( 205, 205, 205 ),
 		Gauge = 0,
 		MapDayLight = 100,
-		MapNightLight = 10
+		MapNightLight = 10,
 	}
 	-- Here you can add functions that update any of the values in CalculatedData when the storm magnitude changes.
 	StormFox.WeatherType.DataCalculationFunctions = {
