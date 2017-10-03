@@ -1,6 +1,6 @@
 StormFox = {}
 StormFox.Version = 1.108
-StormFox.WorkShopVersion = game.IsDedicated()
+StormFox.WorkShopVersion = false--game.IsDedicated()
 
 if SERVER then
 	game.ConsoleCommand("sv_skyname painted\n")
