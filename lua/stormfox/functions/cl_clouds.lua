@@ -1,64 +1,6 @@
--- Disabled for now
-if true then return end
 
 local BufferAngle = Angle(0,0,0)
 local sky_center = Vector(0,0,0)
--- Debug Render
-	local function DebugRender()
-		if not LocalPlayer() then return end
-		if not StormFox.SkyboxOBBMaxs() then return end
-		if true then return end
-		local myPos = StormFox.WorldToSkybox(LocalPlayer():GetPos() + Vector(0,0,30))
-
-		render.SetColorMaterial()
-		local max = StormFox.SkyboxOBBMaxs()
-		local min = StormFox.SkyboxOBBMins()
-
-		local p1 = StormFox.SkyboxPos() + Vector(max.x,max.y,0)
-		render.DrawSphere(p1 + Vector(0,0,min.z),10,30,30,Color(255,255,255))
-		render.DrawSphere(p1 + Vector(0,0,max.z),10,30,30,Color(255,255,255))
-
-		local p2 = StormFox.SkyboxPos() + Vector(max.x,min.y,0)
-		render.DrawSphere(p2 + Vector(0,0,min.z),10,30,30,Color(255,255,255))
-		render.DrawSphere(p2 + Vector(0,0,max.z),10,30,30,Color(255,255,255))
-
-		local p3 = StormFox.SkyboxPos() + Vector(min.x,min.y,0)
-		render.DrawSphere(p3 + Vector(0,0,min.z),10,30,30,Color(255,255,255))
-		render.DrawSphere(p3 + Vector(0,0,max.z),10,30,30,Color(255,255,255))
-
-		local p4 = StormFox.SkyboxPos() + Vector(min.x,max.y,0)
-		render.DrawSphere(p4 + Vector(0,0,min.z),10,30,30,Color(255,255,255))
-		render.DrawSphere(p4 + Vector(0,0,max.z),10,30,30,Color(255,255,255))
-
-		render.DrawLine(p1 + Vector(0,0,min.z),p2 + Vector(0,0,min.z),Color(255,255,255))
-		render.DrawLine(p2 + Vector(0,0,min.z),p3 + Vector(0,0,min.z),Color(255,255,255))
-		render.DrawLine(p3 + Vector(0,0,min.z),p4 + Vector(0,0,min.z),Color(255,255,255))
-		render.DrawLine(p4 + Vector(0,0,min.z),p1 + Vector(0,0,min.z),Color(255,255,255))
-
-		render.DrawLine(p1 + Vector(0,0,min.z),p3 + Vector(0,0,min.z),Color(255,255,255))
-		render.DrawLine(p2 + Vector(0,0,min.z),p4 + Vector(0,0,min.z),Color(255,255,255))
-
-		render.DrawLine(p1 + Vector(0,0,max.z),p2 + Vector(0,0,max.z),Color(255,255,255))
-		render.DrawLine(p2 + Vector(0,0,max.z),p3 + Vector(0,0,max.z),Color(255,255,255))
-		render.DrawLine(p3 + Vector(0,0,max.z),p4 + Vector(0,0,max.z),Color(255,255,255))
-		render.DrawLine(p4 + Vector(0,0,max.z),p1 + Vector(0,0,max.z),Color(255,255,255))
-
-		render.DrawLine(p1 + Vector(0,0,max.z),p3 + Vector(0,0,max.z),Color(255,255,255))
-		render.DrawLine(p2 + Vector(0,0,max.z),p4 + Vector(0,0,max.z),Color(255,255,255))
-
-		render.DrawLine(p1 + Vector(0,0,min.z),p1 + Vector(0,0,max.z),Color(255,255,255))
-		render.DrawLine(p2 + Vector(0,0,min.z),p2 + Vector(0,0,max.z),Color(255,255,255))
-		render.DrawLine(p3 + Vector(0,0,min.z),p3 + Vector(0,0,max.z),Color(255,255,255))
-		render.DrawLine(p4 + Vector(0,0,min.z),p4 + Vector(0,0,max.z),Color(255,255,255))
-
-		render.DrawSphere(StormFox.SkyboxPos(),10,30,30,Color(255,0,0))
-		render.DrawSphere(myPos,60 / StormFox.SkyboxScale(),30,30,Color(0,255,0))
-		render.DrawSphere(myPos + BufferAngle:Forward() * -100,60 / StormFox.SkyboxScale(),30,30,Color(0,0,255))
-	end
-	hook.Add("PostDrawOpaqueRenderables","StormFox - SkyBox Debug",function(b,skybox)
-		if skybox then return end
-		DebugRender()
-	end)
 
 local CloudMaterials = {}
 	CloudMaterials[1] = {(Material("stormfox/clouds/part1.png")),(Material("stormfox/clouds/part1_out.png"))}
@@ -142,14 +84,14 @@ local Clouds = {}
 				mesh.AdvanceVertex()
 			mesh.End( );
 			render.SetMaterial(CloudMaterials[CloudData.mat][2])
-		--	render.SetColorMaterial()
+
 			mesh.Begin( MATERIAL_POLYGON, #cloudPolys +1 );
 				mesh.Position(Vector(0,0,0))
 				mesh.Color(255,255,255,0)
 				mesh.TexCoord(0,0.5,0.5)
 				mesh.Normal(Vector(0,0,1))
 				mesh.AdvanceVertex()
-				--print("a")
+
 				local mr = 0
 				for i,d in ipairs(cloudPolys) do
 					local a = -i * totalCloudPolysAng - CloudData.random
@@ -172,7 +114,7 @@ local Clouds = {}
 				mesh.Normal(Vector(0,0,1))
 				mesh.AdvanceVertex()
 			mesh.End( );
-		--	render.DrawSphere(Vector(0,0,0),1000,30,30,Color(255,0,0))
+
 		cam.PopModelMatrix()
 		cam.Start3D2D(cPos,Angle(0,0,180),1)
 			surface.SetFont("default")
@@ -196,24 +138,24 @@ local Clouds = {}
 		for layer,l_clouds in ipairs(Clouds) do
 			for i,CloudData in pairs(l_clouds) do
 				local pos = sky_center + Vector(CloudData.x,CloudData.y,0)
-				--Clouds[layer][i].render_ang = (pos - pPos):Angle()
+
 				local offset = pPos - pos
 				local angletowards = offset:Angle()
---				print(offset)
+
 				local x = clamp(offset.x / scale * 1.5,-65,65)
 				local y = clamp(offset.y / scale * 1.5,-65,65)
 
 				local ra = (pos - pPos):Angle()
-						--ra.p = 0
-				Clouds[layer][i].render_ang = ra --Angle(270 - x,y + CloudData.random ,30)
+
+				Clouds[layer][i].render_ang = ra
 				Clouds[layer][i].z = abs(x) + abs(y)
-				--print(offset.x)
+
 
 				local dot = angletowards:Forward():Dot(BufferAngle:Forward())
-		--		debugoverlay.Text(pos,dot,0.01,true)
+
 				Clouds[layer][i].ang_dir = -(pos - (pPos - BufferAngle:Forward() * pos.z * 0.5)):Angle().yaw + 90
 				Clouds[layer][i].dot = dot
-				--debugoverlay.Text(pos- Vector(0,0,30),offset.y,0.01,true)
+
 			end
 		end
 	end)
@@ -221,7 +163,7 @@ local Clouds = {}
 
 	hook.Add("PostDrawOpaqueRenderables","StormFox - CloudRender",function(b,skybox)
 		if not LocalPlayer() then return end -- Check if player is valid
-		if not StormFox then return end
+		if not StormFox or not StormFox.ClientSettings.clouds then return end
 		if not StormFox.Is3DSkybox() then return end -- Check if its a valid 3D skybox
 			pPos = StormFox.WorldToSkybox(LocalPlayer():GetPos() + Vector(0,0,30))
 		if LocalPlayer():GetPos():WithinAABox(StormFox.SkyboxPos() + StormFox.SkyboxOBBMins() - Vector(0,0,10),StormFox.SkyboxPos() + StormFox.SkyboxOBBMaxs()) and skybox then return end

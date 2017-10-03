@@ -10,7 +10,7 @@ end , "StormFox-FogDisabledStateChanged" )
 
 local SkyFog = function(scale)
 	if not scale then scale = 1 end
-	if not StormFox.GetData then return end
+	if not StormFox or not StormFox.GetData or not StormFox.ClientSettings.drawfog then return end
 	if not bFogEnabled then return end
 	local col = StormFox.GetData("SkyBottomColor",Color(255,255,255))
 	local outside = StormFox.Env.IsOutside() or StormFox.Env.NearOutside()

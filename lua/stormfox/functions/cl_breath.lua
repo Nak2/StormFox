@@ -37,7 +37,7 @@ Breath
 	local clamp = math.Clamp
 	local genabled = false
 	hook.Add("PostPlayerDraw","StormFox - Breath",function(ply)
-		if not genabled then return end
+		if not genabled or not StormFox.ClientSettings.breath then return end
 		if (ply._sf_breath or 0) > CurTime() then return end
 		local len = ply:GetVelocity():Length()
 		local t = clamp(1 - (len / 100),0.2,1)
@@ -46,11 +46,13 @@ Breath
 
 	end)
 	hook.Add("Think","StormFox - CBreath",function()
+		if not LocalPlayer() or not StormFox.ClientSettings.breath then return end
 		genabled = StormFox.GetData("Temperature",20) < 4 and (StormFox.Env.IsInRain() or StormFox.Env.IsOutside() or StormFox.Env.NearOutside())
 		if not genabled then return end
-		if not LocalPlayer() then return end
+
 		if GetViewEntity() ~= LocalPlayer() then return end
 		local ply = LocalPlayer()
+
 		if (ply._sf_breath or 0) > CurTime() then return end
 		local len = ply:GetVelocity():Length()
 		local t = clamp(1 - (len / 400),0.2,1)

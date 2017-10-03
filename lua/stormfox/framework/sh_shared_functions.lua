@@ -74,8 +74,8 @@ if SERVER then
     end
 
 
-    local SUN_RISE = 360
-    local SUN_SET = 1160
+    local SUN_RISE = StormFox.WeatherType.TIME_SUNRISE
+    local SUN_SET = StormFox.WeatherType.TIME_SUNSET
     local SUNRISE_CALLED = false
     local SUNSET_CALLED = false
     local NEWDAY_CALLED = false
@@ -172,4 +172,9 @@ function StormFox.GetDaylightAmount( num )
 	else
 		return 1 - (t - 1040) / 80
 	end
+end
+
+-- WeatherData
+function StormFox.CelsiusToFahrenheit(num)
+	return num * (9 / 5) + 32
 end

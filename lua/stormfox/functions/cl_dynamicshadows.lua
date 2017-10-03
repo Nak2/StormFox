@@ -13,13 +13,13 @@ end
 
 local max,min,abs = math.max,math.min,math.abs
 local distance = 5000
-local cvShadowConvar = GetConVar("sf_allow_dynamicshadow")
 
 hook.Add("Think", "StormFox - Suntest", function()
-	if not LocalPlayer() then return end
+	if not LocalPlayer() or not StormFox.ClientSettings.dynamic_shadows then return end
+
 	local flTime = StormFox.GetTime() or flTime
 
-	if not cvShadowConvar:GetBool() or (flTime < 350 or flTime > 1300 ) then
+	if flTime < 350 or flTime > 1300 then
 		if STORMFOX_SUN then
 			STORMFOX_SUN:Remove()
 		end

@@ -73,10 +73,6 @@ local function overrideMatProxy()
 	} )
 end
 timer.Simple( 0.5, overrideMatProxy ) -- for lua refreshing
---hook.Add("InitPostEntity", "StormFox-OverrideMatProxy", overrideMatProxy )
-
-
-
 
 -- Skypaint think
 local function ColorToVector( cColor, flDivisor )

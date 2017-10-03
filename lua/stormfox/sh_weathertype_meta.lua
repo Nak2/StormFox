@@ -122,7 +122,7 @@ end
 -- format [ missingIndex = nextIndexToTry ]
 local timeValueNotFoundFallbacks = {
 	TIME_SUNRISE = "TIME_NOON",
-	TIME_NOON = "TIME_SURISE",
+	TIME_NOON = "TIME_SUNRISE",
 	TIME_SUNSET = "TIME_NIGHT",
 	TIME_NIGHT = "TIME_SUNSET"
 }
@@ -207,10 +207,10 @@ function StormFox.WeatherType:GetLerpedTimeValue( sIndex, previousWeatherVal, fl
 		local sPreviousTimeEnum = tPreviousTimeIntervals[ timeEnumeration ] -- Get the most recent passed interval to check what our values should be
 		if flStartTime > flTime then -- We are not within a lerp transition (see commend bellow).
 			local expectedValue = self.TimeDependentData[ sIndex ][ sPreviousTimeEnum ]
-			local currentValue = StormFox.GetData( index )
+			local currentValue = StormFox.GetData( sIndex )
 			if currentValue and currentValue != expectedValue then
 				-- The weather may have been manually edited or we are transitioning from a storm. We need to lerp the current data to match the expectedValue
-				return lerpAnyValue( 0.07, currentValue, expectedValue )
+				return lerpAnyValue( 0.1, currentValue, expectedValue )
 			end
 		else -- Lerp based on time, this slowly adjust values at given time intervals. For example 60 mins before sunset it starts to get lighter outside
 			lerpAmount = math.Clamp( ( flTime - flStartTime ) / ( flTargetTime - flStartTime ), 0, 1 )

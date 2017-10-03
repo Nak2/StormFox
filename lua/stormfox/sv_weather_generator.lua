@@ -28,6 +28,7 @@ Statments:
 
 ]]
 local weatherdata = {}
+local tempConvar = GetConVar("sf_minimum_temp")
 --[[
 	funccondition(weatherpercent,currentweather)
 ]]
@@ -41,6 +42,8 @@ StormFox.AddWeatherCondition("rain",nil,{0.2,1},{240,720})
 --StormFox.AddWeatherCondition("Cloudy",nil,{0.2,1},{240,960})
 
 -- StormFox.AddWeatherCondition("Fog",{335,400},{0.1,0.8},{180,200},function() return math.random(1,3) >= 2 end)
+
+-- TODO: Update the weather generator. This shit is savage
 
 local function PickRandomWeather(exclude)
 	if math.random(0,3) >= 3 and false then
@@ -83,7 +86,7 @@ function StormFox.GenerateNewDay(dont_update)
 
 	local tempacc = GetDataAcceleration(last_temp,last_tempacc,math.random(-10,5),20,math.random(2,7))
 	local con = GetConVar("sf_disable_autoweather_cold")
-	local temp = clamp(last_temp + tempacc,-10,20)
+	local temp = clamp(last_temp + tempacc, tempConvar:GetInt() or -10 ,20)
 	if con:GetBool() then
 		if temp < 5 then
 			tempacc = abs(tempacc)

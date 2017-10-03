@@ -6,7 +6,6 @@ local flSunAngOffset = flSunAngSlope * StormFox.WeatherType.TIME_SUNRISE
 function StormFox.GetSunAngle( flTime )
 	flTime = flTime or StormFox.GetTime()
 	local pitch = flSunAngSlope * flTime - flSunAngOffset
-	--pitch = pitch - 180
 	if pitch < 0 then pitch = pitch + 360 end
 	return Angle( pitch, StormFox.SunMoonAngle, 0 )
 end
@@ -18,10 +17,10 @@ local flMoonIntercept = ( 1440 - StormFox.WeatherType.TIME_SUNSET ) * 180 / flNi
 function StormFox.GetMoonAngle( flTime )
 	flTime = flTime or StormFox.GetTime()
 	-- At night we convert times after sunset to be negative morning times. So the equation starts at like (-200, 0) and ends at ( 360, 180 )
-	flTime = ( flTime > StormFox.WeatherType.TIME_SUNRISE + 20 ) and flTime - 1440 or flTime
+	flTime = ( flTime > StormFox.WeatherType.TIME_SUNSET - 5 ) and flTime - 1440 or flTime
 	local pitch = flMoonSlope * flTime + flMoonIntercept
-	pitch = pitch - 180
-	if pitch < 0 then pitch = pitch + 360 end
+	pitch = pitch + 180
+	if pitch > 360 then pitch = 90 end
 	return Angle( pitch, StormFox.SunMoonAngle, 0 )
 end
 

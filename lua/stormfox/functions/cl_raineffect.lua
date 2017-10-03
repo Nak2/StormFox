@@ -73,8 +73,7 @@ local function ETCalcTrace(pos,size,fDN)
 	if not sky.HitSky and sky.HitTexture != "TOOLS/TOOLSINVISIBLE" then
 		return nil
 	end -- Not under sky
-	--PrintTable(ET(sky.HitPos,pos))
-	--PrintTable(ET(sky.HitPos - Vector(0,0,5),pos))
+
 	local btr = ETPos(sky.HitPos + fDN,pos  + fDN)
 	if btr.Hit then return nil end -- Trace was inside world .. but backtrace checked it
 
@@ -99,8 +98,12 @@ local FrameTime = FrameTime
 hook.Add("Think","StormFox - RenderFalldownThink",function()
 	local temp = StormFox.GetData("Temperature",20)
 	local Gauge = StormFox.GetData("Gauge",0)
-	local raindebug = StormFox.GetData("Raindebug",false)
+
 	if Gauge <= 0 then return end
+
+	-- Calk max
+	local exp = StormFox.ClientSettings.rainParticles
+	local maxparticles = max(exp,1) * 64
 
 	local lp = LocalPlayer()
 	if not lp then return end
@@ -140,9 +143,7 @@ hook.Add("Think","StormFox - RenderFalldownThink",function()
 		end
 	end
 
-	-- Calk max
-	local exp = StormFox.GetExpensive()
-	local maxparticles = max(exp,1) * 64
+
 
 	local weight = IsRain and 1 or 0.2
 	local fDN = Vector(downfallNorm.x,downfallNorm.y,downfallNorm.z * weight)
@@ -381,11 +382,11 @@ local old_raindrop = Material("sprites/heatwave")
 		render.DrawScreenQuad()
 	end)
 
+	local cvarAllowRainDrops = GetConVar("sf_allow_raindrops")
 	hook.Add("HUDPaint","StormFox - RainScreenEffect",function()
 		surface.SetDrawColor(255,255,255)
 		local grav = max(50 -  abs(EyeAngles().p),0) / 60 --Gravity the raindrops
-		local con = GetConVar("sf_allow_raindrops")
-		local oldrain = con and not con:GetBool() or false
+		local oldrain = cvarAllowRainDrops and not cvarAllowRainDrops:GetBool() or false
 		local ms = 1
 		if oldrain then
 			ms = 2
@@ -421,7 +422,7 @@ local last = CurTime()
 hook.Add("Think","StormFox - RenderFalldownHanlde",function()
 	local FT = (CurTime() - last) * 100
 		last = CurTime()
-	local exp = StormFox.GetExpensive()
+	local exp = StormFox.ClientSettings.rainParticles
 	local wind = StormFox.GetData("Wind",0)
 	local Gauge = StormFox.GetData("Gauge",0)
 	local eyepos = EyePos()
@@ -508,23 +509,23 @@ hook.Add("Think","StormFox - RenderFalldownHanlde",function()
 				if exp >= 4 and ran(4) < 2 and not data.nodrop then
 					-- Splash
 					if data.rain then
-						if true then
-							local p = _STORMFOX_PEM2d:Add(rainmat_smoke,data.endpos + Vector(0,0,ran(30,40)))
-									p:SetAngles(data.hitnorm:Angle())
-									p:SetStartSize(50)
-									p:SetEndSize(60)
-									p:SetDieTime(ran(2,5))
-									p:SetEndAlpha(0)
-									p:SetStartAlpha( max(1000 / _STORMFOX_PEM2d:GetNumActiveParticles(),6) )
-									p:SetColor(255,255,255)
-									p:SetGravity(Vector(0,0,ran(4)))
-									p:SetCollide(true)
-									p:SetBounce(0)
-									p:SetAirResistance(20)
-									p:SetVelocity(Vector(downfallNorm.x * wind * 1,downfallNorm.y * 1 * wind,0))
-									p:SetCollideCallback( pf )
-								--	p:SetStartLength(1)
-						else
+						-- if true then -- TODO: Can this smoke effect be removed?
+						-- 	local p = _STORMFOX_PEM2d:Add(rainmat_smoke,data.endpos + Vector(0,0,ran(30,40)))
+						-- 			p:SetAngles(data.hitnorm:Angle())
+						-- 			p:SetStartSize(50)
+						-- 			p:SetEndSize(60)
+						-- 			p:SetDieTime(ran(2,5))
+						-- 			p:SetEndAlpha(0)
+						-- 			p:SetStartAlpha( max(1000 / _STORMFOX_PEM2d:GetNumActiveParticles(),6) )
+						-- 			p:SetColor(255,255,255)
+						-- 			p:SetGravity(Vector(0,0,ran(4)))
+						-- 			p:SetCollide(true)
+						-- 			p:SetBounce(0)
+						-- 			p:SetAirResistance(20)
+						-- 			p:SetVelocity(Vector(downfallNorm.x * wind * 1,downfallNorm.y * 1 * wind,0))
+						-- 			p:SetCollideCallback( pf )
+						-- 		--	p:SetStartLength(1)
+						-- else
 							if data.hitwater then
 								local p = _STORMFOX_PEM:Add(rainsplash_w,data.endpos + Vector(0,0,1))
 									p:SetAngles(data.hitnorm:Angle())
@@ -553,7 +554,7 @@ hook.Add("Think","StormFox - RenderFalldownHanlde",function()
 									p2:SetStartAlpha(200)
 									p2:SetColor(sky_col)
 							end
-						end
+						-- end
 					else
 						-- Snow
 						if data.hitwater then
@@ -640,44 +641,3 @@ hook.Add("PostDrawTranslucentRenderables", "StormFox - RenderFalldown", function
 		RenderRain(depth,sky)
 --	end
 end)
--- Damn you old render engien. Can't use this
---[[
-hook.Add("PostDrawOpaqueRenderables", "StormFox - RenderFalldown_inside", function(depth,sky)
-
-end)]]
---
-
--- Debug rain
---[[
-hook.Add("HUDPaint","StormFox - Debug Rain",function()
-	surface.SetTextPos(10,40)
-	surface.SetFont("Default")
-	local temp = StormFox.GetData("Temperature",20)
-	local Gauge = StormFox.GetData("Gauge",0)
-	local exp = StormFox.GetExpensive()
-	local maxparticles = max(exp,1) * 64
-	surface.SetTextColor(255,255,255)
-	surface.DrawText("Max particles: " .. maxparticles)
-	surface.SetDrawColor(255,255,255)
-	surface.DrawRect(9,59,102,12)
-	surface.SetDrawColor(0,0,0)
-	surface.DrawRect(10,60,100,10)
-	local p = 100 / maxparticles * #particles.main
-	surface.SetDrawColor(2.55 * p,2.55 * (100-p),0)
-	surface.DrawRect(10,60,p,10)
-
-	surface.SetTextPos(10,80)
-	local maxparticles = max(0,32 + (exp - 4) * 64)
-	surface.SetTextColor(255,255,255)
-	surface.DrawText("Max particles: " .. maxparticles)
-	surface.SetDrawColor(255,255,255)
-	surface.DrawRect(9,99,102,12)
-	surface.SetDrawColor(0,0,0)
-	surface.DrawRect(10,100,100,10)
-	local p = 100 / maxparticles * #particles.bg
-	surface.SetDrawColor(2.55 * p,2.55 * (100-p),0)
-	surface.DrawRect(10,100,p,10)
-
-	surface.SetTextPos(24,200)
-	surface.DrawText("Weather quality: " .. exp)
-end)]]
