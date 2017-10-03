@@ -167,7 +167,7 @@ local round,clamp = math.Round,math.Clamp
 		local skyCam = ents.FindByClass("sky_camera")[1] or nil
 		if not IsValid(skyCam) then return end
 		local tr = util.QuickTrace(skyCam:GetPos(),Vector(0,0,-1000))
-		if not tr.Entity then return end
+		if not tr.Entity or not IsValid(tr.Entity) then return end
 		if tr.Entity:GetClass() == "func_brush" and not tr.Entity:IsWorld() then
 			SafeRemoveEntity(tr.Entity) -- just to be safe
 		end

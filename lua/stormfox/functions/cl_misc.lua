@@ -21,6 +21,7 @@ Breath
 			local ang,pos = EyeAngles(),EyePos()
 			mpos = {Pos = pos + ang:Forward() * 3 - ang:Up() * 2,Ang = ang}
 		end
+		if not mpos or not mpos.Pos then return end
 		local p = emit:Add(table.Random(m_mats),mpos.Pos)
 			p:SetStartSize(1)
 			p:SetEndSize(size)
