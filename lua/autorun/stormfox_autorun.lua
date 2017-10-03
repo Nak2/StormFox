@@ -1,6 +1,6 @@
 StormFox = {}
 StormFox.Version = 1.105
-StormFox.WorkShopVersion = game.IsDedicated()
+StormFox.WorkShopVersion = false
 StormFox.SunMoonAngle = 270
 
 if SERVER then
