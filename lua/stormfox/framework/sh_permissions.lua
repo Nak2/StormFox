@@ -27,6 +27,7 @@ function StormFox.CanEditSetting(ply,con,var)
 		--print("b")
 		if not ConVarExists(con) then return end
 		--print("c",con,var)
+		print("[StormFox] " .. ply:Nick() .. " (" .. ply:SteamID() .. ") changed " .. con .. " to " .. tostring(var))
 		local con = GetConVar(con)
 			con:SetString(var)
 	end)

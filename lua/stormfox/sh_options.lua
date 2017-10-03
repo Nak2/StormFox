@@ -14,14 +14,13 @@
 			whitelist["sf_disable_autoweather"] = true
 			whitelist["sf_disable_mapsupport"] = true
 			whitelist["sf_disable_autoweather_cold"] = true
-			whitelist["time_set"] = true
+			whitelist["sf_debugcompatibility"] = true
 
 		util.AddNetworkString("StormFox_Settings")
 		net.Receive("StormFox_Settings",function(len,ply)
 			if not ply then return end
 			if (ply.SF_LAST or 0) > SysTime() then return end
-				ply.SF_LAST = SysTime() + 0.
-			print(ply,"request")
+				ply.SF_LAST = SysTime() + 0.2
 			local con = net.ReadString()
 			local arg = net.ReadString()
 			if not con then return end
@@ -30,7 +29,6 @@
 		end)
 	else
 		local function requestSetting(con,arg)
-			print("Request setting to " .. arg)
 			if type(arg) == "boolean" then
 				arg = arg and "1" or "0"
 			end
@@ -254,6 +252,13 @@
 					end
 
 				panel:AddPanel(ds_button)
+			-- Debugger
+				adminTrickBox(panel,"sf_debugcompatibility")
+				textbox:SetSize(120,14)
+					textbox:SetDark(true)
+					textbox:SetText("        (Requires mapchange and will override hook.Call)")
+				panel:AddPanel(textbox)
+
 		end
 		hook.Add( "PopulateToolMenu", "Populate StormFox Menus", function()
 			spawnmenu.AddToolMenuOption( "Options", "StormFox", "User_StormFox", "Client Settings", "", "", client_settings )

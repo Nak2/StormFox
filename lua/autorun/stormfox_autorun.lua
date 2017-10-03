@@ -1,13 +1,13 @@
 StormFox = {}
-StormFox.Version = 1.108
-StormFox.WorkShopVersion = false--game.IsDedicated()
+StormFox.Version = 1.109
+StormFox.WorkShopVersion = false --game.IsDedicated()
 
 if SERVER then
 	game.ConsoleCommand("sv_skyname painted\n")
 end
 --if true then return end
 -- Reload support
-	hook.Add("InitPostEntity","StormFox-PostEntitiy",function()
+	hook.Add("InitPostEntity","StormFox - CallPostEntitiy",function()
 		hook.Call("StormFox - PostEntity")
 		_STORMFOX_POSTENTIY = true
 	end)
@@ -53,6 +53,9 @@ end
 	end
 	if not ConVarExists("sf_sunmoon_yaw") then
 		CreateConVar("sf_sunmoon_yaw",270, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "The sun/moon yaw.")
+	end
+	if not ConVarExists("sf_debugcompatibility") then
+		CreateConVar("sf_debugcompatibility",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Enable SF compatability-debugger.")
 	end
 
 if SERVER then
@@ -123,6 +126,7 @@ for _,fil in ipairs(file.Find("stormfox/functions/*.lua","LUA")) do
 	HandleFile("stormfox/functions/" .. fil)
 end
 
+HandleFile("stormfox/" .. "sh_debugcompatibility.lua")
 HandleFile("stormfox/" .. "sh_weathertype_meta.lua")
 HandleFile("stormfox/" .. "sh_weather_controller.lua")
 HandleFile("stormfox/" .. "sh_options.lua")

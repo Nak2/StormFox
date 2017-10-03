@@ -56,12 +56,14 @@ if file.Exists("stormfox/wizzard.txt","DATA") then
 end
 local occurred = {}
 local function ShowMessageBox(title,problem,dontshow_option,yesnooption,snd)
-	if options[title] then return end
+	if options[title] and dontshow_option then return end
 	if occurred[problem] then return end
 	if snd then
 		LocalPlayer():EmitSound(snd)
 	end
 		occurred[problem] = true -- Error protection
+	print("[StormFox] " .. title)
+	print(problem)
 	local w,h = 320,160
 	local panel = vgui.Create("DFrame")
 		panel:SetSize(w,h)
@@ -84,7 +86,7 @@ local function ShowMessageBox(title,problem,dontshow_option,yesnooption,snd)
 		for word in string.gmatch( problem or "An unknown error occurred.", "[^%s]+" ) do
 			surface.SetFont("SkyFox-Console")
 			local new_text = ctext .. (#ctext > 0 and " " or "") .. word
-			if surface.GetTextSize(new_text) < w then
+			if surface.GetTextSize(new_text) < w - 10 then
 				ctext = new_text
 			else
 				table.insert(texta,ctext)
@@ -134,44 +136,48 @@ local function ShowMessageBox(title,problem,dontshow_option,yesnooption,snd)
 	panel:ShowCloseButton(false)
 end
 
+net.Receive("StormFox - SendMessageBox",function()
+	ShowMessageBox(net.ReadString(),net.ReadString(),false,nil,net.ReadString())	
+end)
+
 --[[-------------------------------------------------------------------------
 Conflict scanner
 ---------------------------------------------------------------------------]]
-local material_list = {"stormfox/effects/raindrop.vmt",
-	"stormfox/effects/raindrop2.vmt",
-	"stormfox/effects/raindrop3.vmt",
-	"stormfox/effects/rainscreen.vmt",
-	"stormfox/effects/rainscreen_dummy.vmt",
-	"stormfox/symbols/Celsius.png",
-	"stormfox/symbols/Cloudy.png",
-	"stormfox/symbols/Cloudy_Windy.png",
-	"stormfox/symbols/Fahrenheit.png",
-	"stormfox/symbols/Fog.png",
-	"stormfox/symbols/Icy.png",
-	"stormfox/symbols/Night - Cloudy.png",
-	"stormfox/symbols/Night.png",
-	"stormfox/symbols/Raining - Thunder.png",
-	"stormfox/symbols/Raining - Windy.png",
-	"stormfox/symbols/Raining.png",
-	"stormfox/symbols/RainingSnowing.png",
-	"stormfox/symbols/Snowing.png",
-	"stormfox/symbols/Sunny.png",
-	"stormfox/symbols/Thunder.png",
-	"stormfox/symbols/Windy.png",
-	"stormfox/clock_material.vmt",
-	"stormfox/combine_light_off.vmt",
-	"stormfox/imdoinguselessthings.png",
-	"stormfox/moon_fix.vmt",
-	"stormfox/moon_glow.vmt",
-	"stormfox/normalmap.png",
-	"stormfox/raindrop-multi.png",
-	"stormfox/raindrop.png",
-	"stormfox/sf.png",
-	"stormfox/shadow_sprite.vmt",
-	"stormfox/small_shadow_sprite.vmt",
-	"stormfox/snow-multi.png",
-	"stormfox/stormfox.png"
-}
+	local material_list = {"stormfox/effects/raindrop.vmt",
+		"stormfox/effects/raindrop2.vmt",
+		"stormfox/effects/raindrop3.vmt",
+		"stormfox/effects/rainscreen.vmt",
+		"stormfox/effects/rainscreen_dummy.vmt",
+		"stormfox/symbols/Celsius.png",
+		"stormfox/symbols/Cloudy.png",
+		"stormfox/symbols/Cloudy_Windy.png",
+		"stormfox/symbols/Fahrenheit.png",
+		"stormfox/symbols/Fog.png",
+		"stormfox/symbols/Icy.png",
+		"stormfox/symbols/Night - Cloudy.png",
+		"stormfox/symbols/Night.png",
+		"stormfox/symbols/Raining - Thunder.png",
+		"stormfox/symbols/Raining - Windy.png",
+		"stormfox/symbols/Raining.png",
+		"stormfox/symbols/RainingSnowing.png",
+		"stormfox/symbols/Snowing.png",
+		"stormfox/symbols/Sunny.png",
+		"stormfox/symbols/Thunder.png",
+		"stormfox/symbols/Windy.png",
+		"stormfox/clock_material.vmt",
+		"stormfox/combine_light_off.vmt",
+		"stormfox/imdoinguselessthings.png",
+		"stormfox/moon_fix.vmt",
+		"stormfox/moon_glow.vmt",
+		"stormfox/normalmap.png",
+		"stormfox/raindrop-multi.png",
+		"stormfox/raindrop.png",
+		"stormfox/sf.png",
+		"stormfox/shadow_sprite.vmt",
+		"stormfox/small_shadow_sprite.vmt",
+		"stormfox/snow-multi.png",
+		"stormfox/stormfox.png"
+	}
 timer.Simple(30,function()
 	local a = {}
 	for _,matstr in ipairs(material_list) do
@@ -184,35 +190,51 @@ timer.Simple(30,function()
 	end
 end)
 
-local ts = SysTime() + 30
-timer.Create("StormFox - Wizzardcheck",4,0,function()
-	-- Only do this after 10 seconds. Just in case.
-	if ts >= SysTime() or not system.HasFocus() then return end
-	-- Check FPS vs quality settings
-	if StormFox.GetAvageFPS() < 20 then
-		-- Damn that is a slow framerate
-		local t = {}
-			t["sf_exspensive"] = 0
-			t["sf_allow_dynamiclights"] = 0
-			t["sf_allow_sunbeams"] = 0
-			t["sf_allow_dynamicshadow"] = 0
-			t["sf_allow_raindrops"] = 0
-		-- Check if we can change anything
-		local samevars = true
-		for con,var in pairs(t) do
-			local c = GetConVar(con)
-			if c:GetFloat() ~= var then
-				samevars = false
-				break
-			end
-		end
-		if samevars then return end
-		ShowMessageBox("Low FPS!","Detected low framerate. Want to set everything on low quality?",true,function()
+--[[-------------------------------------------------------------------------
+Check for low FPS and high settings
+---------------------------------------------------------------------------]]
+	local ts = SysTime() + 30
+	timer.Create("StormFox - Wizzardcheck",4,0,function()
+		-- Only do this after 10 seconds. Just in case.
+		if ts >= SysTime() or not system.HasFocus() then return end
+		-- Check FPS vs quality settings
+		if StormFox.GetAvageFPS() < 20 then
+			-- Damn that is a slow framerate
+			local t = {}
+				t["sf_exspensive"] = 0
+				t["sf_allow_dynamiclights"] = 0
+				t["sf_allow_sunbeams"] = 0
+				t["sf_allow_dynamicshadow"] = 0
+				t["sf_allow_raindrops"] = 0
+			-- Check if we can change anything
+			local samevars = true
 			for con,var in pairs(t) do
-				RunConsoleCommand(con,var)
+				local c = GetConVar(con)
+				if c:GetFloat() ~= var then
+					samevars = false
+					break
+				end
 			end
-			LocalPlayer():EmitSound("buttons/lever2.wav")
-			ShowMessageBox("Done","All settings are now set to low.")
-		end,"vo/k_lab/ba_pushinit.wav")
+			if samevars then return end
+			ShowMessageBox("Low FPS!","Detected low framerate. Want to set everything on low quality?",true,function()
+				for con,var in pairs(t) do
+					RunConsoleCommand(con,var)
+				end
+				LocalPlayer():EmitSound("buttons/lever2.wav")
+				ShowMessageBox("Done","All settings are now set to low.")
+			end,"vo/k_lab/ba_pushinit.wav")
+		end
+	end)
+
+if not StormFox.DebugHooks or not hook.GetCallResult then return end
+-- Adv debugging enabled
+
+timer.Create("StormFox - Debugger",20,0,function()
+	for hook_name,_ in pairs(StormFox.DebugHooks()) do
+		local result = hook.GetCallResult(hook_name) or {}
+		if result.short_src and result.short_src ~= "[C]" and not string.find(result.short_src,"/stormfox/") then
+			-- This addon returns stuff ..
+			ShowMessageBox("A mod is breaking hooks!",result.short_src .. " is breaking StormFox and other mods by blocking " .. hook_name .. "-hooks.",false,nil,"vo/eli_lab/eli_lookgordon.wav")
+		end
 	end
 end)
