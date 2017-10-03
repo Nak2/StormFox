@@ -54,10 +54,6 @@ else
 	CreateClientConVar("sf_material_replacment","1",true,false,"Enable material replacment for weather effects.")
 	CreateClientConVar("sf_allow_rainsound","1",true,false,"Enable rain-sounds.")
 	CreateClientConVar("sf_allow_windsound","1",true,false,"Enable wind-sounds.")
-	--CreateClientConVar("sf_allow_dynamiclights","1",true,false,"Enable lamp-lights from SF.")
-	--CreateClientConVar("sf_allow_sunbeams","1",true,false,"Enable sunbeams.")
-	--CreateClientConVar("sf_allow_dynamicshadow","0",true,false,"Enable dynamic light/shadows.")
-	--CreateClientConVar("sf_redownloadlightmaps","1",true,false,"Lighterrors and light_environment fix (Can lagspike)")
 	CreateClientConVar("sf_allow_raindrops","1",true,false,"Enables raindrops on the screen")
 end
 
