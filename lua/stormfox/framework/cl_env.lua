@@ -184,7 +184,7 @@ hook.Add("Think","StormFox - Outdoor Env",function()
 		AddEnvData("Window",vec)
 	end
 	-- Scan around
-		local n = clamp(exp * 4 - 1,4,16)
+		local n = 8 --clamp(exp * 4 - 1,4,16) NOTE: Can be adjusted using client settings if this shows up as a bottleneck
 		for i = 0,n do
 			local r = rad(i * (360 / (n + 1)))
 			local pos = eyepos + Vector(cos(r) * 250,sin(r) * 250,0)
