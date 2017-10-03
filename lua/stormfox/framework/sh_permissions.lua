@@ -25,13 +25,7 @@ function StormFox.CanEditSetting(ply,con,var)
 		--print(ply,"a")
 		if not b then ply:PrintMessage(HUD_PRINTCENTER,"You don't have access to server settings.") return end
 		--print("b")
-		if not ConVarExists(con) then
-			if con == "time_set" then
-				if not string.find(var,":") then return end
-				StormFox.SetTime(var)
-			end
-			return
-		end
+		if not ConVarExists(con) then return end
 		--print("c",con,var)
 		local con = GetConVar(con)
 			con:SetString(var)

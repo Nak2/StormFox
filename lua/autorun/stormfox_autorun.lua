@@ -1,7 +1,6 @@
 StormFox = {}
-StormFox.Version = 1.107
-StormFox.WorkShopVersion = false
-StormFox.SunMoonAngle = 270
+StormFox.Version = 1.108
+StormFox.WorkShopVersion = game.IsDedicated()
 
 if SERVER then
 	game.ConsoleCommand("sv_skyname painted\n")
@@ -51,6 +50,9 @@ end
 	end
 	if not ConVarExists("sf_disable_autoweather_cold") then
 		CreateConVar("sf_disable_autoweather_cold",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Stop the autoweather creating snow.")
+	end
+	if not ConVarExists("sf_sunmoon_yaw") then
+		CreateConVar("sf_sunmoon_yaw",270, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "The sun/moon yaw.")
 	end
 
 if SERVER then

@@ -1,3 +1,4 @@
+
 -- Disabled for now
 if true then return end
 
@@ -7,7 +8,7 @@ local function sunAng(time)
 	local pitch = ((time / 360) - 1) * 90
 	if pitch < 0 then pitch = pitch + 360 end
 	if pitch > 180 then pitch = pitch - 180 end
-	local a = StormFox.GetData("SunMoonAngle",0)
+	local a = StormFox.GetSunMoonAngle()
 	return Angle(pitch,a, 0)
 end
 local BufferAngle = Angle(0,0,0)

@@ -3,6 +3,7 @@
 	if SERVER then
 		local whitelist = {}
 			whitelist["sf_timespeed"] = true
+			whitelist["sf_sunmoon_yaw"] = true
 			whitelist["sf_moonscale"] = true
 			whitelist["sf_sv_material_replacment"] = true
 			whitelist["sf_replacment_dirtgrassonly"] = true
@@ -198,6 +199,26 @@
 					requestSetting("sf_moonscale",math.Round(n) .. "")
 				end
 				panel:AddItem(moon_scale)
+
+			-- SunMoonAngle
+				local con = GetConVar("sf_sunmoon_yaw")
+				local ms = 270
+				if con then
+					ms = con:GetFloat() or 270
+				end
+				local moon_scale = vgui.Create("DNumSlider",panel)
+					moon_scale:SetText(con:GetHelpText())
+					moon_scale:SetMin(0)
+					moon_scale:SetMax(360)
+					moon_scale:SetDecimals(0)
+					moon_scale:SetValue(ms)
+					moon_scale:SizeToContents()
+					moon_scale:SetDark( true )
+				function moon_scale:OnValueChanged(n)
+					requestSetting("sf_sunmoon_yaw",math.Round(n) .. "")
+				end
+				panel:AddItem(moon_scale)
+
 			-- Material replacment
 				adminTrickBox(panel,"sf_sv_material_replacment")
 			-- Material dirtgrass only
@@ -255,6 +276,8 @@
 			StormFox.CanEditWeather(ply,function(str,var,msg)
 				if msg == false then
 					StormFox.SetWeather(str,var)
+				elseif str == "time_set" then
+					StormFox.SetTime(var)
 				elseif type(var) == "number" and str ~= "WindAngle" then
 					StormFox.SetNetworkData(str,var,StormFox.GetTimeSpeed() * 2)
 				else
@@ -764,9 +787,10 @@
 					if settimeoption.ampmb and settimeoption.ampmb.text then
 						str = str .. settimeoption.ampmb.text or "AM"
 					end
-					net.Start("StormFox_Settings")
+					net.Start("StormFox - WeatherC")
+						net.WriteBool(true)
 						net.WriteString("time_set")
-						net.WriteString(str)
+						net.WriteType(str)
 					net.SendToServer()
 					print(str)
 				end

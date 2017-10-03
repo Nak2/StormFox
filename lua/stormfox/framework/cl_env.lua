@@ -1,6 +1,15 @@
 
 local max,min,clamp,rad,cos,sin = math.max,math.min,math.Clamp,math.rad,math.cos,math.sin
 --[[-------------------------------------------------------------------------
+ConVar
+---------------------------------------------------------------------------]]
+-- ConVar value
+	local con = GetConVar("sf_sunmoon_yaw")
+	function StormFox.GetSunMoonAngle()
+		return con and con:GetFloat() or 270
+	end
+
+--[[-------------------------------------------------------------------------
 Potato protection
 ---------------------------------------------------------------------------]]
 	local avagefps = 1 / RealFrameTime()
@@ -277,6 +286,7 @@ hook.Add("Think","StormFox - light_env support",function()
 	oml = ml
 	render.RedownloadAllLightmaps()
 end)
+
 --[[
 hook.Add("HUDPaint","RainDebug2",function()
 	surface.SetFont("default")

@@ -24,7 +24,9 @@ local function SwitchLights( bTurnOn, nWave )
 	local sOnOff = bTurnOn and "TurnOn" or "TurnOff"
 
 	for index = 1, #light_spots[ nWave ] do
-		light_spots[ nWave ][ index ]:Fire( sOnOff )
+		if light_spots[ nWave ][ index ] and IsValid(light_spots[ nWave ][ index ]) then
+			light_spots[ nWave ][ index ]:Fire( sOnOff )
+		end
 	end
 
 	if nWave == #light_spots then return end

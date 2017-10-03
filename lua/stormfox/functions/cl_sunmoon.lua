@@ -3,7 +3,7 @@ function StormFox.GetMoonAngle(time) -- Same as the sun .. tbh
 	time = time or StormFox.GetTime()
 	local pitch = ((time / 360) - 1) * 90
 	if pitch < 0 then pitch = pitch + 360 end
-	local ang = Angle(pitch,StormFox.SunMoonAngle, 0)
+	local ang = Angle(pitch,StormFox.GetSunMoonAngle(), 0)
 	return ang
 end
 

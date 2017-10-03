@@ -72,6 +72,11 @@ local round,clamp = math.Round,math.Clamp
 	end
 	hook.Add( "StormFox - PostEntity", "StormFox - FindEntities", FindEntities )
 
+-- ConVar value
+	local con = GetConVar("sf_sunmoon_yaw")
+	function StormFox.GetSunMoonAngle()
+		return con and con:GetFloat() or 270
+	end
 
 -- Shadow
 	function StormFox.SetShadowColor( cColor )
@@ -83,7 +88,7 @@ local round,clamp = math.Round,math.Clamp
 		if not StormFox.shadow_control then return end
 		nShadowPitch = (nShadowPitch + 180) % 360
 		-- min 190 max 350
-		local sAngleString = ( nShadowPitch + 180 ) .. " " .. StormFox.SunMoonAngle .. " " .. 0 .. " "
+		local sAngleString = ( nShadowPitch + 180 ) .. " " .. StormFox.GetSunMoonAngle() .. " " .. 0 .. " "
 		StormFox.shadow_control:Fire( "SetAngles" , sAngleString , 0 )
 	end
 
