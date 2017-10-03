@@ -61,13 +61,13 @@ end)
 
 -- timeChange
 	local function timeToEnumeratedValue( flTime )
-		if flTime <= StormFox.Weather.TIME_SUNRISE - 30 then
+		if flTime <= StormFox.Weather.TIME_SUNRISE - 60 then
 			return "TIME_NIGHT"
-		elseif flTime < StormFox.Weather.TIME_SUNRISE + 30 then
+		elseif flTime < StormFox.Weather.TIME_SUNRISE then
 			return "TIME_SUNRISE"
-		elseif flTime < StormFox.Weather.TIME_SUNSET - 30 then
+		elseif flTime < StormFox.Weather.TIME_SUNSET then
 			return "TIME_NOON"
-		elseif flTime < StormFox.Weather.TIME_SUNSET + 30 then
+		elseif flTime < StormFox.Weather.TIME_SUNSET + 60 then
 			return "TIME_SUNSET"
 		else
 			return "TIME_NIGHT"
@@ -134,7 +134,6 @@ local function weatherThink()
 				end
 			end
 		-- Update timevars
-			print(currentTimeType)
 			for key,_ in pairs(StormFox.Weather.TimeDependentData) do
 				if flMagnitude >= 1 then
 					StormFox.SetData(key,(StormFox.Weather:GetData(key,flTime)), dataUpdate)
