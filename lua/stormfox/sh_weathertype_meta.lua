@@ -45,13 +45,14 @@ StormFox.WeatherType.TimeDependentData = {
 	HDRScale = { -- TODO: Nak, what is this? Please add a comment
 		 TIME_SUNRISE = 0.66,
 		 TIME_NOON = 0.5,
-		 TIME_SUNSET = 0.1
+		 TIME_SUNSET = 0.1,
+		 TIME_SUNSET = 0.05
 	},
 	MapLight = { -- The amount of daylight ( suns brightness )
-		 TIME_SUNRISE = 20,
+		 TIME_SUNRISE = 8,
 		 TIME_NOON = 80,
-		 TIME_SUNSET = 20,
-		 TIME_NIGHT = 6
+		 TIME_SUNSET = 15,
+		 TIME_NIGHT = 0.2
 	},
 	Fogdensity = { -- TODO: Nak, what is this? Please add a comment
 		 TIME_SUNRISE = 0.8,
@@ -162,7 +163,7 @@ local timeIntervalStarts = {
 	TIME_SUNRISE = StormFox.WeatherType.TIME_SUNRISE - 60,
 	TIME_NOON = StormFox.WeatherType.TIME_SUNRISE + 50,
 	TIME_SUNSET = StormFox.WeatherType.TIME_SUNSET - 60,
-	TIME_NIGHT = StormFox.WeatherType.TIME_SUNSET + 30
+	TIME_NIGHT = StormFox.WeatherType.TIME_SUNSET + 20
 }
 -- local function getPercentOfTimeInterval( flTime )
 --

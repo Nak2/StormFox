@@ -19,57 +19,20 @@ local flStarFade = 1.5
 local sStarTexture = "skybox/starfield"
 local flHDRScale = 0.66
 
-function StormFox.SkyPaint.GetTopColor() return vTopColor end
-function StormFox.SkyPaint.GetBottomColor() return vBottomColor end
-function StormFox.SkyPaint.GetFadeBias() return flFadeBias end
-function StormFox.SkyPaint.GetSunNormal() return vSunNormal end
-function StormFox.SkyPaint.GetSunColor() return vSunColor end
-function StormFox.SkyPaint.GetSunSize() return flSunSize end
-function StormFox.SkyPaint.GetDuskColor() return vDuskColor end
-function StormFox.SkyPaint.GetDuskScale() return flDuskScale end
-function StormFox.SkyPaint.GetDuskIntensity() return flDuskIntensity end
-function StormFox.SkyPaint.GetDrawStars() return bDrawStars end
-function StormFox.SkyPaint.GetStarLayers() return nStarLayers end
-function StormFox.SkyPaint.GetStarSpeed() return flStarSpeed end
-function StormFox.SkyPaint.GetStarScale() return flStarScale end
-function StormFox.SkyPaint.GetStarFade() return flStarFade end
-function StormFox.SkyPaint.GetStarTexture() return sStarTexture end
-function StormFox.SkyPaint.GetHDRScale() return flHDRScale end
-
-
+-- The Material segments in the skybox we will be overriding, we ignore the bottom because no one sees it, if you need it it's "skybox/painteddn"
+local tMaterialSegments = {
+	Material("skybox/paintedft"),
+	Material("skybox/paintedlf"),
+	Material("skybox/paintedbk"),
+	Material("skybox/paintedup"),
+	Material("skybox/paintedrt")
+}
 -- This overrides the matproxy used by g_SkyPaint. Since g_SkyPaint uses entity datatables that are reset by the server every tick or something.
-local function overrideMatProxy()
+local function overrideMatProxy() -- We don't actually use this but we need to override g_SkyPaints matproxy
 	matproxy.Add( {
 		name = "SkyPaint",
-
-		init = function( self, mat, values )
-		end,
-
-		bind = function( self, mat, ent )
-
-			if not StormFox.SkyPaint then return end
-
-			mat:SetVector( "$TOPCOLOR",		StormFox.SkyPaint.GetTopColor() )
-			mat:SetVector( "$BOTTOMCOLOR",	StormFox.SkyPaint.GetBottomColor() )
-			mat:SetVector( "$SUNNORMAL",	StormFox.SkyPaint.GetSunNormal() )
-			mat:SetVector( "$SUNCOLOR",		StormFox.SkyPaint.GetSunColor() )
-			mat:SetVector( "$DUSKCOLOR",	StormFox.SkyPaint.GetDuskColor() )
-			mat:SetFloat( "$FADEBIAS",		StormFox.SkyPaint.GetFadeBias() )
-			mat:SetFloat( "$HDRSCALE",		StormFox.SkyPaint.GetHDRScale() )
-			mat:SetFloat( "$DUSKSCALE",		StormFox.SkyPaint.GetDuskScale() )
-			mat:SetFloat( "$DUSKINTENSITY",	StormFox.SkyPaint.GetDuskIntensity() )
-			mat:SetFloat( "$SUNSIZE",		StormFox.SkyPaint.GetSunSize() )
-
-			if ( StormFox.SkyPaint.GetDrawStars() ) then
-				mat:SetInt( "$STARLAYERS",		StormFox.SkyPaint.GetStarLayers() )
-				mat:SetFloat( "$STARSCALE",		StormFox.SkyPaint.GetStarScale() )
-				mat:SetFloat( "$STARFADE",		StormFox.SkyPaint.GetStarFade() )
-				mat:SetFloat( "$STARPOS",		RealTime() * StormFox.SkyPaint.GetStarSpeed() )
-				mat:SetTexture( "$STARTEXTURE",	StormFox.SkyPaint.GetStarTexture() )
-			else
-				mat:SetInt( "$STARLAYERS", 0 )
-			end
-		end
+		init = function( self, mat, values ) end,
+		bind = function( self, mat, ent ) end
 	} )
 end
 timer.Simple( 0.5, overrideMatProxy ) -- for lua refreshing
@@ -79,7 +42,6 @@ local function ColorToVector( cColor, flDivisor )
 	flDivisor = flDivisor or 255
 	return Vector( cColor.r / flDivisor, cColor.g / flDivisor, cColor.b / flDivisor )
 end
-
 
 -- SkyPaint Main
 local max,round = math.max,math.Round
@@ -95,21 +57,38 @@ hook.Add( "StormFox-Tick", "StormFox - SkyThink", function( flTime )
 	flFadeBias = StormFox.GetData( "FadeBias", 1 )
 	flHDRScale = StormFox.GetData("HDRScale",0.66)
 	vSunColor = Vector(0,0,0)
-
 	flSetSunSize = StormFox.GetData("SunSize",20) / 500
-
-
 	vSetDuskColor = ColorToVector( StormFox.GetData( "DuskColor", Color(255,51,0) ))
 	flDuskIntensity = StormFox.GetData("DuskIntensity",1)
 	flDuskScale = StormFox.GetData("DuskScale",1)
-
 	-- Only draw stars if the current weather type has it enabled and its night time.
 	bDrawStars = StormFox.GetData("DrawStars", true) and ( flTime < 330 or flTime > 1100 )
-
-	flStarSpeed = StormFox.GetData("StarSpeed",0.001)
+	flStarSpeed = RealTime() * StormFox.GetData("StarSpeed",0.001)
 	flStarFade = StormFox.GetData("StarFade",1.5)
 	sStarTexture = StormFox.GetData( "StarTexture","skybox/starfield")
 
+	-- Update the skybox materials
+	for i = 1, #tMaterialSegments - 1 do
+		tMaterialSegments[ i ]:SetVector( "$TOPCOLOR", vTopColor )
+		tMaterialSegments[ i ]:SetVector( "$BOTTOMCOLOR", vBottomColor )
+		tMaterialSegments[ i ]:SetVector( "$SUNNORMAL",	vSunNormal )
+		tMaterialSegments[ i ]:SetVector( "$SUNCOLOR", vSunColor )
+		tMaterialSegments[ i ]:SetVector( "$DUSKCOLOR",	vDuskColor )
+		tMaterialSegments[ i ]:SetFloat( "$FADEBIAS", flFadeBias )
+		tMaterialSegments[ i ]:SetFloat( "$HDRSCALE", flHDRScale )
+		tMaterialSegments[ i ]:SetFloat( "$DUSKSCALE", flDuskScale )
+		tMaterialSegments[ i ]:SetFloat( "$DUSKINTENSITY", flDuskIntensity)
+		tMaterialSegments[ i ]:SetFloat( "$SUNSIZE", flSunSize )
+		if ( bDrawStars ) then
+			tMaterialSegments[ i ]:SetInt( "$STARLAYERS", nStarLayers )
+			tMaterialSegments[ i ]:SetFloat( "$STARSCALE", flStarScale )
+			tMaterialSegments[ i ]:SetFloat( "$STARFADE", flStarFade )
+			tMaterialSegments[ i ]:SetFloat( "$STARPOS", flStarSpeed )
+			tMaterialSegments[ i ]:SetTexture( "$STARTEXTURE", sStarTexture)
+		else
+			tMaterialSegments[ i ]:SetInt( "$STARLAYERS", 0 )
+		end
+	end
 end)
 
 

@@ -1,5 +1,5 @@
 
---[[	
+--[[
 	util.Is3DSkybox()	 -- return [true/false]
 	util.SkyboxPos()	 -- return vector
 	util.SkyboxScale()	 -- return number
@@ -13,6 +13,7 @@
 ]]
 local sky_cam = nil
 local sky_scale = 0
+StormFox_DATA = StormFox_DATA or {}
 
 if SERVER then
 	local function SkyTexture(str,vec)
@@ -49,7 +50,7 @@ if SERVER then
 		t.HitPos = t.HitPos or (pos + pos2)
 		return t
 	end
-	StormFox_DATA = StormFox_DATA or {} -- Not sure what runs first .. but this table is global
+
 	local function scan()
 		local l = ents.FindByClass("sky_camera")
 		if #l < 1 then print("[StormFox] Not a 3D skybox. Clouds disabled!") return end

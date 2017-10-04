@@ -50,7 +50,7 @@ end
 if SERVER then
 	resource.AddWorkshop("1132466603")
 else
-	CreateClientConVar("sf_graphic_settings", "0", true,false,"[0-4] Adjusts the amount of expensive calculations and effects created by the weather Default: 2.")
+	CreateClientConVar("sf_graphic_settings", "2", true,false,"[0-4] Adjusts the amount of expensive calculations and effects created by the weather Default: 2.")
 	CreateClientConVar("sf_material_replacment","1",true,false,"Enable material replacment for weather effects.")
 	CreateClientConVar("sf_allow_rainsound","1",true,false,"Enable rain-sounds.")
 	CreateClientConVar("sf_allow_windsound","1",true,false,"Enable wind-sounds.")
