@@ -58,12 +58,16 @@ local round,clamp = math.Round,math.Clamp
 				SafeRemoveEntity( tSunlist[ i ] )
 			end
 		end
-		RunConsoleCommand("sv_skyname", "painted")
 		StormFox.light_environment = StormFox.light_environment or ents.FindByClass( "light_environment" )[1] or nil
 		StormFox.env_fog_controller = StormFox.env_fog_controller or GetOrCreate( "env_fog_controller" ) or nil
 		StormFox.shadow_control = StormFox.shadow_control or ents.FindByClass( "shadow_control" )[1] or nil
 		StormFox.env_tonemap_controller = StormFox.env_tonemap_controller or ents.FindByClass("env_tonemap_controller")[1] or nil
-		StormFox.env_skypaint = StormFox.env_skypaint or GetOrCreate("env_skypaint") or nil
+
+		local con = GetConVar("sf_disableskybox")
+		if not con or not con:GetBool() then
+			RunConsoleCommand("sv_skyname", "painted")
+			StormFox.env_skypaint = StormFox.env_skypaint or GetOrCreate("env_skypaint") or nil
+		end
 
 		printEntFoundStatus( StormFox.light_environment, "light_environment" )
 		printEntFoundStatus( StormFox.env_fog_controller, "env_fog_controller" )
@@ -153,18 +157,14 @@ local round,clamp = math.Round,math.Clamp
 	local oldls = "-"
 	function StormFox.SetMapLight(light) -- 0-100
 		if not light then return end
+		local getChar = string.char(97 + clamp(light / 4,0,25)) -- a - z
+		if getChar == oldls then return end
+		oldls = getChar
+		engine.LightStyle(0,getChar)
 		if not IsValid(StormFox.light_environment) then
-			light = 15 + (light * 0.7)
-			local s = string.char(97 + clamp(light / 4,0,25))
-			if s == oldls then return end
-			engine.LightStyle(0,s)
-			oldls = s
 			return
 		end
-		local s = string.char(97 + clamp(light / 4,0,25))
-		if s == oldls then return end
-		oldls = s
-		StormFox.light_environment:Fire("FadeToPattern", s ,0)
+		StormFox.light_environment:Fire("FadeToPattern", getChar ,0)
 	end
 
 -- Support for envcitys sky-entity

@@ -116,9 +116,6 @@ local function weatherThink()
 			instantSet = false
 			dataUpdate = nil
 		end
-		
-		local mapLight = StormFox.CalculateMapLight(flTime,StormFox.Weather:GetData("MapNightLight"),StormFox.Weather:GetData("MapDayLight"))
-		StormFox.SetData("MapLight",mapLight,dataUpdate)
 	-- Calc weather and day data
 
 
@@ -172,16 +169,22 @@ local function weatherThink()
 					end
 				end
 			end
-			-- Generate maplight
-		if SERVER then
-			-- StormFox.CalculateMapLight(flTime, 0, 1)
-			StormFox.SetMapBloom(StormFox.GetData("MapBloom") or 0.2)
-			StormFox.SetMapBloomAutoExposureMin(StormFox.GetData("MapBloomMin") or 0.7)
-			StormFox.SetMapBloomAutoExposureMax(StormFox.GetData("MapBloomMax") or 1)
-			StormFox.SetMapLight(mapLight)
-		end
 end
 hook.Add( "Think", "StormFox - WeatherThink", weatherThink )
+
+timer.Create("StormFox - MapLight",15,0,function()
+	-- Generate maplight
+	local mapLight = StormFox.CalculateMapLight(StormFox.GetTime(),StormFox.Weather:GetData("MapNightLight"),StormFox.Weather:GetData("MapDayLight"))
+	StormFox.SetData("MapLight",mapLight,15)
+		
+	if SERVER then
+		-- StormFox.CalculateMapLight(flTime, 0, 1)
+		StormFox.SetMapBloom(StormFox.GetData("MapBloom") or 0.2)
+		StormFox.SetMapBloomAutoExposureMin(StormFox.GetData("MapBloomMin") or 0.7)
+		StormFox.SetMapBloomAutoExposureMax(StormFox.GetData("MapBloomMax") or 1)
+		StormFox.SetMapLight(mapLight)
+	end
+end)
 
 function ET(pos,pos2,mask,filter)
 	local t = util.TraceLine( {

@@ -99,6 +99,9 @@ function StormFox.GenerateNewDay(dont_update)
 		local last_wind = temp >= 7 and (lastWeather.wind or StormFox.GetNetworkData("Wind",0)) or math.min(lastWeather.wind or StormFox.GetData("Wind",0),1.5)
 		local last_windacc = lastWeather.windacc or 0
 		local windacc = GetDataAcceleration(last_wind,last_windacc,0,math.max(temp,3),5)
+		if last_wind >= 18 then
+			last_windacc = last_windacc - 1
+		end
 		local wind = clamp(last_wind + windacc,0,20)
 
 		local windangle = ((lastWeather.windangle or StormFox.GetNetworkData("WindAngle",math.random(0,360))) + math.random(-50,50)) % 360

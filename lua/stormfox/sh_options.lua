@@ -15,6 +15,7 @@
 			whitelist["sf_disable_mapsupport"] = true
 			whitelist["sf_disable_autoweather_cold"] = true
 			whitelist["sf_debugcompatibility"] = true
+			whitelist["sf_disableskybox"] = true
 
 		util.AddNetworkString("StormFox_Settings")
 		net.Receive("StormFox_Settings",function(len,ply)
@@ -118,6 +119,8 @@
 				clientTrickBox(panel,"sf_allow_sunbeams",function() return not render.SupportsPixelShaders_2_0() end)
 			-- Raindrops
 				clientTrickBox(panel,"sf_allow_raindrops")
+			-- renderscreenspace_effects
+				clientTrickBox(panel,"sf_renderscreenspace_effects")
 			-- Dynamic shadows
 				clientTrickBox(panel,"sf_allow_dynamicshadow")
 			-- Dynamic shadows
@@ -233,6 +236,8 @@
 				adminTrickBox(panel,"sf_disable_autoweather")
 			-- Disable autoweather
 				adminTrickBox(panel,"sf_disable_autoweather_cold")
+			-- Disable skybox
+				adminTrickBox(panel,"sf_disableskybox")
 			-- Disable mapsupport
 				adminTrickBox(panel,"sf_disable_mapsupport")
 				local textbox = vgui.Create("DLabel",panel)

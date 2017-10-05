@@ -37,7 +37,9 @@ hook.Add("Think","StormFox - PropImpact",function()
 	if con:GetBool() then return end
 	if t2 > CurTime() then return end
 		t2 = CurTime() + 0.2
+	-- Props moving
 	local norm,wind = GetWindNorm()
+	if wind <= 6 then return end
 	for ent,_ in pairs(move_tab) do
 		if not IsValid(ent) then
 			move_tab[ent] = nil
@@ -61,10 +63,10 @@ hook.Add("Think","StormFox - PropImpact",function()
 			end
 		end
 	end
-	if t > CurTime() then return end
-		t = CurTime() + 1
+	if t > CurTime() and table.Count(move_tab) < 200 then return end
+		t = CurTime() + math.random(1,2)
 
-	for i = 1,10 do
+	for i = 1,20 do
 		if scan_id > #scanList or #scanList <= 0 then
 			scanList = GetEffected()
 			scan_id = 1
@@ -76,9 +78,10 @@ hook.Add("Think","StormFox - PropImpact",function()
 				local pys = ent:GetPhysicsObject()
 				local vol = pys:GetVolume()
 				local mass = pys:GetMass()
+				if not IsValid(pys) or type(vol) ~= "number" or type(mass) ~= "number" then break end -- Bad entity
 				local pNeeded = vol / mass / 63
-				if (not pys:IsMoveable() or constraint.FindConstraint( ent, "Weld" )) and wind > 18 then
-					if math.random(5) >= 3 then
+				if (not pys:IsMoveable() or constraint.FindConstraint( ent, "Weld" )) then
+					if math.random(5) >= 3 or wind < 18 then
 						ent:EmitSound("physics/wood/wood_strain" .. math.random(1,8) .. ".wav")
 						pNeeded = wind + 1
 					else

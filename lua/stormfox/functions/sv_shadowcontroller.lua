@@ -23,4 +23,4 @@ local function ShadowAngleThink( )
 
 
 end
-timer.Create( "StormFox.UpdateShadows", 2.5, 0, ShadowAngleThink )
+timer.Create( "StormFox.UpdateShadows", 10, 0, ShadowAngleThink )

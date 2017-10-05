@@ -14,7 +14,9 @@ local darkalpha = 0
 local min,max = math.min,math.max
 local darkalpha = 0
 local clamp = math.Clamp
+local con = GetConVar("sf_renderscreenspace_effects")
 hook.Add( "RenderScreenspaceEffects", "stormFox - screenmodifier", function()
+	if not con or not con:GetBool() then return end
 	local outside = StormFox.Env.IsOutside() or StormFox.Env.NearOutside()
 	
 	if outside and darkalpha < 1.5 then

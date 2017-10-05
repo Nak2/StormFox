@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.109
+StormFox.Version = 1.110
 StormFox.WorkShopVersion = false --game.IsDedicated()
 
 if SERVER then
@@ -57,6 +57,9 @@ end
 	if not ConVarExists("sf_debugcompatibility") then
 		CreateConVar("sf_debugcompatibility",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Enable SF compatability-debugger.")
 	end
+	if not ConVarExists("sf_disableskybox") then
+		CreateConVar("sf_disableskybox",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Disable the SF-skybox.")
+	end
 
 if SERVER then
 	if StormFox.WorkShopVersion then
@@ -94,6 +97,7 @@ else
 	CreateClientConVar("sf_allow_dynamicshadow","0",true,false,"Enable dynamic light/shadows.")
 	CreateClientConVar("sf_redownloadlightmaps","1",true,false,"Lighterrors and light_environment fix (Can lagspike)")
 	CreateClientConVar("sf_allow_raindrops","1",true,false,"Enables raindrops on the screen")
+	CreateClientConVar("sf_renderscreenspace_effects","1",true,false,"Enables RenderScreenspaceEffects")
 end
 
 -- Launch Stormfox
