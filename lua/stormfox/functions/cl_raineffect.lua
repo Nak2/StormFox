@@ -432,7 +432,7 @@ hook.Add("Think","StormFox - RenderFalldownHanlde",function()
 	for id,data in ipairs(particles.main) do
 		if data.alive then
 			local speed = data.norm * -FT
-			if data.pos.z <= data.endpos.z + speed.z + data.size / 2 or data.pos.z < eyepos.z - 100 then
+			if data.pos.z <= data.endpos.z + speed.z + data.size / 2 or data.pos.z < eyepos.z - 200 then
 				data.alive = false
 				if exp >= 4 and ran(4) < 2 and not data.nodrop then
 					-- Splash
@@ -504,57 +504,26 @@ hook.Add("Think","StormFox - RenderFalldownHanlde",function()
 			local speed = data.norm * -FT
 
 
-			if data.pos.z <= data.endpos.z + speed.z + data.size / 2 or data.pos.z < eyepos.z - 100 then
+			if data.pos.z <= data.endpos.z + speed.z + data.size / 2 or data.pos.z < eyepos.z - 200 then
 				data.alive = false
 				if exp >= 4 and ran(4) < 2 and not data.nodrop then
 					-- Splash
 					if data.rain then
-						if true then
 							local p = _STORMFOX_PEM2d:Add(table.Random(rainmat_smoke),data.endpos + Vector(0,0,ran(30,40)))
-									p:SetAngles(data.hitnorm:Angle())
-									p:SetStartSize(50)
-									p:SetEndSize(60)
-									p:SetDieTime(ran(2,5))
-									p:SetEndAlpha(0)
-									p:SetStartAlpha( max(1000 / _STORMFOX_PEM2d:GetNumActiveParticles(),2) )
-									p:SetColor(255,255,255)
-									p:SetGravity(Vector(0,0,ran(4)))
-									p:SetCollide(true)
-									p:SetBounce(0)
-									p:SetAirResistance(20)
-									p:SetVelocity(Vector(downfallNorm.x * wind * 1,downfallNorm.y * 1 * wind,0))
-									p:SetCollideCallback( pf )
+								p:SetAngles(data.hitnorm:Angle())
+								p:SetStartSize(50)
+								p:SetEndSize(60)
+								p:SetDieTime(ran(2,5))
+								p:SetEndAlpha(0)
+								p:SetStartAlpha( max(1000 / _STORMFOX_PEM2d:GetNumActiveParticles(),2) )
+								p:SetColor(255,255,255)
+								p:SetGravity(Vector(0,0,ran(4)))
+								p:SetCollide(true)
+								p:SetBounce(0)
+								p:SetAirResistance(20)
+								p:SetVelocity(Vector(downfallNorm.x * wind * 1,downfallNorm.y * 1 * wind,0) + data.hitnorm * -10)
+								p:SetCollideCallback( pf )
 								--	p:SetStartLength(1)
-						else
-							if data.hitwater then
-								local p = _STORMFOX_PEM:Add(rainsplash_w,data.endpos + Vector(0,0,1))
-									p:SetAngles(data.hitnorm:Angle())
-									p:SetStartSize(8)
-									p:SetEndSize(30)
-									p:SetDieTime(1)
-									p:SetEndAlpha(0)
-									p:SetStartAlpha(50)
-									p:SetColor(sky_col)
-							else
-								local p = _STORMFOX_PEM:Add(rainsplash,data.endpos + Vector(0,0,1))
-									p:SetAngles(data.hitnorm:Angle())
-									p:SetStartSize(4)
-									p:SetEndSize(10)
-									p:SetDieTime(0.2)
-									p:SetEndAlpha(0)
-									p:SetStartAlpha(200)
-									p:SetColor(sky_col)
-
-								local p2 = _STORMFOX_PEM:Add(rainsplash,data.endpos + Vector(0,0,1))
-									p2:SetAngles((-data.hitnorm):Angle())
-									p2:SetStartSize(4)
-									p2:SetEndSize(10)
-									p2:SetDieTime(0.2)
-									p2:SetEndAlpha(0)
-									p2:SetStartAlpha(200)
-									p2:SetColor(sky_col)
-							end
-						end
 					else
 						-- Snow
 						if data.hitwater then

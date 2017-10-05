@@ -274,16 +274,15 @@ Outdoor varables
 --[[-------------------------------------------------------------------------
 Non light_env support
 ---------------------------------------------------------------------------]]
-local t,oml = 0,-100
-local abs = math.abs
+local t = 0
+local con1 = GetConVar("sf_enable_ekstra_lightsupport")
+local con2 = GetConVar("sf_redownloadlightmaps")
 hook.Add("Think","StormFox - light_env support",function()
 	if t > SysTime() then return end
-		t = SysTime() + 15
-	local con = GetConVar("sf_redownloadlightmaps")
-	if con and not con:GetBool() then return end
-	local ml = StormFox.GetData("MapLight",0)
-	if abs(ml - oml) < 10 then return end
-	oml = ml
+		t = SysTime() + 30
+	if not con1 or not con1:GetBool() then return end
+	if not con2 or not con2:GetBool() then return end
+
 	render.RedownloadAllLightmaps()
 end)
 

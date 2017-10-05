@@ -60,6 +60,9 @@ end
 	if not ConVarExists("sf_disableskybox") then
 		CreateConVar("sf_disableskybox",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Disable the SF-skybox.")
 	end
+	if not ConVarExists("sf_enable_ekstra_lightsupport") then
+		CreateConVar("sf_enable_ekstra_lightsupport",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Enable ekstra lightsupport (engine.LightStyle)")
+	end
 
 if SERVER then
 	if StormFox.WorkShopVersion then

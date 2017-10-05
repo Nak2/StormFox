@@ -80,7 +80,7 @@ if SERVER then
 	local nextHit = 0
 	util.AddNetworkString("StormFox - ThunderLight")
 	hook.Add("Think","StormFox - Thunder",function()
-		if nextHit > SysTime() then return end
+		if nextHit > CurTime() then return end
 			nextHit = SysTime() + math.random(10,20)
 		if not StormFox.GetNetworkData("Thunder",false) then return end
 		local con = GetConVar("sf_disablelightningbolts")
@@ -93,10 +93,10 @@ if SERVER then
 			local thundersize = 512
 			local mmax = StormFox.MapOBBMaxs()
 			local mmin = StormFox.MapOBBMins()
-			local pos = Vector(ran(mmin.x,mmax.x),ran(mmin.y,mmax.y),mmax.z)
-			local tr = ET(pos,Vector(0,0,640000))
+			local pos = Vector(ran(mmin.x,mmax.x),ran(mmin.y,mmax.y),340000)
+			local tr = ET(pos,Vector(0,0,-340000 + mmin.z))
 			if not tr.HitSky then return end
-				pos = tr.HitPos
+				pos = tr.HitPos + Vector(0,0,-50)
 			StormFox.CLEmitSound("ambient/atmosphere/thunder" .. math.random(1,2) .. ".wav",nil,0.5)
 			local lightningarray,HitEntity = CalcLightningStrike(pos,thundersize)
 			EntityHit(HitEntity)
@@ -135,6 +135,7 @@ else
 			table.insert(l,{new,rand(0.5,1),randir,n})
 		end
 		l.renderid = 0
+		print("LIGHTNOT " .. #l)
 		if l[#l] and l[#l][1] then
 			local dlight = DynamicLight( 1 )
 			if ( dlight ) then

@@ -172,10 +172,10 @@ local function weatherThink()
 end
 hook.Add( "Think", "StormFox - WeatherThink", weatherThink )
 
-timer.Create("StormFox - MapLight",15,0,function()
+timer.Create("StormFox - MapLight",10,0,function()
 	-- Generate maplight
 	local mapLight = StormFox.CalculateMapLight(StormFox.GetTime(),StormFox.Weather:GetData("MapNightLight"),StormFox.Weather:GetData("MapDayLight"))
-	StormFox.SetData("MapLight",mapLight,15)
+	StormFox.SetData("MapLight",mapLight,10)
 		
 	if SERVER then
 		-- StormFox.CalculateMapLight(flTime, 0, 1)

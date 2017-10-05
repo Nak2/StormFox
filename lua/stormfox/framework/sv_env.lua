@@ -155,12 +155,15 @@ local round,clamp = math.Round,math.Clamp
 
 -- Maplight
 	local oldls = "-"
+	local con = GetConVar("sf_enable_ekstra_lightsupport")
 	function StormFox.SetMapLight(light) -- 0-100
 		if not light then return end
 		local getChar = string.char(97 + clamp(light / 4,0,25)) -- a - z
 		if getChar == oldls then return end
 		oldls = getChar
-		engine.LightStyle(0,getChar)
+		if con:GetBool() then
+			engine.LightStyle(0,getChar)
+		end
 		if not IsValid(StormFox.light_environment) then
 			return
 		end

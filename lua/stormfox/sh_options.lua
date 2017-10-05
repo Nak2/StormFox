@@ -16,6 +16,7 @@
 			whitelist["sf_disable_autoweather_cold"] = true
 			whitelist["sf_debugcompatibility"] = true
 			whitelist["sf_disableskybox"] = true
+			whitelist["sf_enable_ekstra_lightsupport"] = true
 
 		util.AddNetworkString("StormFox_Settings")
 		net.Receive("StormFox_Settings",function(len,ply)
@@ -145,9 +146,9 @@
 			-- redownloadlightmap
 				clientTrickBox(panel,"sf_redownloadlightmaps")
 				local textbox = vgui.Create("DLabel",panel)
-					textbox:SetSize(120,24)
+					textbox:SetSize(120,26)
 					textbox:SetDark(true)
-					textbox:SetText("Warning! This option might require you to rejoin when \ndisabled.")
+					textbox:SetText("Warning! This option might require you to rejoin when \ndisabled and can cause lag on large maps.")
 				panel:AddPanel(textbox)
 		end
 		local function adminTrickBox(panel,con_name)
@@ -259,9 +260,17 @@
 				panel:AddPanel(ds_button)
 			-- Debugger
 				adminTrickBox(panel,"sf_debugcompatibility")
+				local textbox = vgui.Create("DLabel",panel)
 				textbox:SetSize(120,14)
 					textbox:SetDark(true)
 					textbox:SetText("        (Requires mapchange and will override hook.Call)")
+				panel:AddPanel(textbox)
+			-- Ekstra lightsupport
+				adminTrickBox(panel,"sf_enable_ekstra_lightsupport")
+				local textbox = vgui.Create("DLabel",panel)
+				textbox:SetSize(120,14)
+					textbox:SetDark(true)
+					textbox:SetText("        (Can lag on large maps!)")
 				panel:AddPanel(textbox)
 
 		end

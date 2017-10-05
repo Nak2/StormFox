@@ -48,8 +48,8 @@ Cloudy.TimeDependentData.Fogend = {
 	TIME_SUNSET = 30000
 }
 Cloudy.CalculatedData = {
-	MapDayLight = 10,
-	MapNightLight = 1
+	MapDayLight = 20,
+	MapNightLight = 2
 }
 Cloudy.CalculatedData.SunColor = Color(255,255,255,15)
 
