@@ -1,7 +1,7 @@
 
 
 local Radioactive = StormFox.WeatherType( "radioactive" )
-local max,min = math.max,math.min
+local max,min,ran = math.max,math.min,math.random
 
 Radioactive.TimeDependentData.SkyTopColor = {
 	TIME_SUNRISE = Color(13.0, 155.9, 13.5),
@@ -85,6 +85,7 @@ function Radioactive:InRain(ply,mgn)
 		ply:TakeDamageInfo(dmg)
 	end
 end
+local mat = Material("particle/rain")
 hook.Add("RenderScreenspaceEffects","StormFox - Toxxeffect",function()
 	if not StormFox.Weather then return end
 	if StormFox.Weather.id ~= "radioactive" then return end
@@ -107,6 +108,12 @@ hook.Add("RenderScreenspaceEffects","StormFox - Toxxeffect",function()
 	tab[ "$pp_colour_mulb" ] = 0
 
 	DrawColorModify( tab )
+	local w,h = ScrW(),ScrH()
+	surface.SetMaterial(mat)
+	for i=1,10 do
+		surface.SetDrawColor(255,255,255,55 * toxamount)
+		surface.DrawTexturedRect(ran(w),ran(h),100,100)
+	end
 end)
 
 StormFox.AddWeatherType( Radioactive )
