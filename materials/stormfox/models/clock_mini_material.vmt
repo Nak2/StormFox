@@ -1,0 +1,7 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "stormfox/models/clock_mini_material"
+	"$surfaceprop" "metal"
+	"$model" 1
+	//"$selfillum" 1
+}

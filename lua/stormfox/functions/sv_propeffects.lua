@@ -63,10 +63,10 @@ hook.Add("Think","StormFox - PropImpact",function()
 			end
 		end
 	end
-	if t > CurTime() and table.Count(move_tab) < 200 then return end
+	if t > CurTime() and table.Count(move_tab) < 400 then return end
 		t = CurTime() + math.random(1,2)
 
-	for i = 1,20 do
+	for i = 1,100 do
 		if scan_id > #scanList or #scanList <= 0 then
 			scanList = GetEffected()
 			scan_id = 1
@@ -94,7 +94,7 @@ hook.Add("Think","StormFox - PropImpact",function()
 				if wind >= pNeeded then
 					local m = 1 + pNeeded - wind
 					pys:ApplyForceCenter(norm * m)
-					if table.Count(move_tab) < 200 then
+					if table.Count(move_tab) < 400 then
 						move_tab[ent] = true
 					end
 				end

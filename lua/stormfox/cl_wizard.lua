@@ -143,11 +143,32 @@ end)
 --[[-------------------------------------------------------------------------
 Conflict scanner
 ---------------------------------------------------------------------------]]
-	local material_list = {"stormfox/effects/raindrop.vmt",
+	local material_list = {"stormfox/clouds/cloud1.png",
+		"stormfox/clouds/cloud1_out.png",
+		"stormfox/clouds/cloud2.png",
+		"stormfox/clouds/cloud3.png",
+		"stormfox/clouds/cloud4.png",
+		"stormfox/clouds/cloud5.png",
+		"stormfox/clouds/cloud6.png",
+		"stormfox/clouds/part1.png",
+		"stormfox/clouds/part1_out.png",
+		"stormfox/effects/backuplight.png",
+		"stormfox/effects/lightning.png",
+		"stormfox/effects/lightning2.png",
+		"stormfox/effects/lightning3.png",
+		"stormfox/effects/lightning_end.png",
+		"stormfox/effects/lightning_end2.png",
+		"stormfox/effects/raindrop.vmt",
 		"stormfox/effects/raindrop2.vmt",
 		"stormfox/effects/raindrop3.vmt",
 		"stormfox/effects/rainscreen.vmt",
 		"stormfox/effects/rainscreen_dummy.vmt",
+		"stormfox/models/char_coal.vmt",
+		"stormfox/models/clock_material.vmt",
+		"stormfox/models/clock_mini_material.vmt",
+		"stormfox/models/combine_light_off.vmt",
+		"stormfox/models/firewood_burn.vmt",
+		"stormfox/models/parklight_off.vmt",
 		"stormfox/symbols/Celsius.png",
 		"stormfox/symbols/Cloudy.png",
 		"stormfox/symbols/Cloudy_Windy.png",
@@ -164,19 +185,20 @@ Conflict scanner
 		"stormfox/symbols/Sunny.png",
 		"stormfox/symbols/Thunder.png",
 		"stormfox/symbols/Windy.png",
-		"stormfox/clock_material.vmt",
-		"stormfox/combine_light_off.vmt",
+		"stormfox/MaterialReplacement.png",
+		"stormfox/SF.png",
+		"stormfox/StormFox.png",
+		"stormfox/clock_material.png",
 		"stormfox/imdoinguselessthings.png",
+		"stormfox/moon_dark.png",
 		"stormfox/moon_fix.vmt",
+		"stormfox/moon_full.png",
 		"stormfox/moon_glow.vmt",
-		"stormfox/normalmap.png",
 		"stormfox/raindrop-multi.png",
 		"stormfox/raindrop.png",
-		"stormfox/sf.png",
 		"stormfox/shadow_sprite.vmt",
 		"stormfox/small_shadow_sprite.vmt",
-		"stormfox/snow-multi.png",
-		"stormfox/stormfox.png"
+		"stormfox/snow-multi.png"
 	}
 timer.Simple(30,function()
 	local a = {}
@@ -187,6 +209,8 @@ timer.Simple(30,function()
 	end
 	if #a > 0 then
 		ShowMessageBox("You're missing materials","You're missing " .. #a .. " material" .. (#a ~= 1 and "s" or "") .. ". ",true)
+		print("[StormFox]: Missing materials:")
+		PrintTable(a)
 	end
 end)
 

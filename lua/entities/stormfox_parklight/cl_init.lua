@@ -38,7 +38,7 @@ function ENT:DrawTranslucent()
 			draw.DrawText("Press E to make persistent","BudgetLabel",0,0,Color(255,255,255),1)
 		cam.End3D2D()
 	end
-	if self:GetColor().r ~= 254 then return end
+	if self:GetMaterial() == "stormfox/models/parklight_off" then return end
 
 	if dis > 3000000 then return end
 	local lpos = self:LocalToWorld(Vector(0, 0, 65))

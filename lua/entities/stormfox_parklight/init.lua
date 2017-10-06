@@ -11,9 +11,8 @@ function ENT:Initialize()
 	self.RenderMode = 1
 
 	self:SetRenderMode(RENDERMODE_TRANSALPHA)
-	self:SetColor(Color(255,255,255))
-	self.on = false
-	self.lastT = SysTime() + 7
+	self:SetMaterial("stormfox/models/parklight_off")
+	self.lastT = CurTime() + 7
 end
 
 ENT.Use = StormFox.MakeEntityPersistance
@@ -38,21 +37,16 @@ function ENT:SpawnFunction( ply, tr, ClassName )
 end
 
 function ENT:Think()
-	if (self.lastT or 0) > SysTime() + 20 then
-		self.lastT = 0
-	end
-	if (self.lastT or 0) > SysTime() then return end
-		self.lastT = SysTime() + math.random(5,7)
+	if (self.lastT or 0) > CurTime() then return end
+		self.lastT = CurTime() + math.random(5,7)
 	--local on = StormFox.GetDaylightAmount() <= 0.4
 	local on = StormFox.GetData("MapLight",100) < 20
-	local r = self:GetColor().r
-	if r ~= 254 and on then
-		self.on = true
-		self:SetColor(Color(254,254,254))
+	local mat = self:GetMaterial()
+	if mat == "stormfox/models/parklight_off" and on then
+		self:SetMaterial("")
 		self:DrawShadow(false)
-	elseif r ~= 255 and not on then
-		self.on = false
+	elseif mat ~= "stormfox/models/parklight_off" and not on then
 		self:DrawShadow(true)
-		self:SetColor(Color(255,255,255))
+		self:SetMaterial("stormfox/models/parklight_off")
 	end
 end

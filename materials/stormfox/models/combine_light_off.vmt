@@ -1,6 +1,6 @@
 "VertexLitGeneric"
 {
-	"$basetexture" "stormfox/combine_light_off"
+	"$basetexture" "stormfox/models/combine_light_off"
 	"$surfaceprop" "metal"
 	"$envmapmask" "models/props_combine/combine_light001a_mask"
 	"$selfillum" 0

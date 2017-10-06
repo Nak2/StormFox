@@ -6,7 +6,7 @@ end
 
 local mat = Material("vgui/circle")
 local mat2 = Material("vgui/dashed_line")
-local mat3 = Material("stormfox/clock_mini_material")
+local mat3 = Material("stormfox/models/clock_mini_material")
 function ENT:Draw()
 	render.MaterialOverrideByIndex( 0, mat3 )
 	self:DrawModel()

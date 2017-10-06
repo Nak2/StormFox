@@ -81,7 +81,7 @@ if SERVER then
 	util.AddNetworkString("StormFox - ThunderLight")
 	hook.Add("Think","StormFox - Thunder",function()
 		if nextHit > CurTime() then return end
-			nextHit = SysTime() + math.random(10,20)
+			nextHit = CurTime() + math.random(10,20)
 		if not StormFox.GetNetworkData("Thunder",false) then return end
 		local con = GetConVar("sf_disablelightningbolts")
 		if math.random(10) < 4 or con:GetBool() then
@@ -93,9 +93,9 @@ if SERVER then
 			local thundersize = 512
 			local mmax = StormFox.MapOBBMaxs()
 			local mmin = StormFox.MapOBBMins()
-			local pos = Vector(ran(mmin.x,mmax.x),ran(mmin.y,mmax.y),340000)
-			local tr = ET(pos,Vector(0,0,-340000 + mmin.z))
-			if not tr.HitSky then return end
+			local pos = Vector(ran(mmin.x + 512,mmax.x - 512),ran(mmin.y + 512,mmax.y - 512),mmax.z + 10000)
+			local tr = ET(pos,Vector(0,0,-640000))
+			if not tr.HitSky and tr.HitTexture ~= "TOOLS/TOOLSNODRAW" then return end
 				pos = tr.HitPos + Vector(0,0,-50)
 			StormFox.CLEmitSound("ambient/atmosphere/thunder" .. math.random(1,2) .. ".wav",nil,0.5)
 			local lightningarray,HitEntity = CalcLightningStrike(pos,thundersize)
@@ -119,7 +119,7 @@ else
 		StormFox.SetData("ThunderLight",0,thunder_length)
 		local n = net.ReadFloat()
 		local l = {}
-			l.life = SysTime() + 0.3
+			l.life = CurTime() + 0.3
 		local Sway = 10
 		local old = Vector(0,0,0)
 		for i = 1,n do
@@ -135,7 +135,6 @@ else
 			table.insert(l,{new,rand(0.5,1),randir,n})
 		end
 		l.renderid = 0
-		print("LIGHTNOT " .. #l)
 		if l[#l] and l[#l][1] then
 			local dlight = DynamicLight( 1 )
 			if ( dlight ) then
@@ -153,16 +152,16 @@ else
 	end)
 	local tex = {(Material("stormfox/effects/lightning.png")),(Material("stormfox/effects/lightning2.png")),(Material("stormfox/effects/lightning3.png"))}
 	local texend = {(Material("stormfox/effects/lightning_end.png")),(Material("stormfox/effects/lightning_end2.png"))}
-	local sys = SysTime
+	local cur = CurTime
 	local cos = math.cos
 	hook.Add("PostDrawOpaqueRenderables","StormFox - Lightning",function(_,sky)
 		local removes = {}
 		local bap = ran(2,4)
 		for id,data in ipairs(lightning) do
-			if data.life < SysTime() then
+			if data.life < cur() then
 				table.insert(removes,id)
 			else
-				local a = cos(sys() * 20)
+				local a = cos(cur() * 20)
 				--PrintTable(tex)
 				render.SetMaterial(tex[1])
 				render.StartBeam(#data)

@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.110
+StormFox.Version = 1.112
 StormFox.WorkShopVersion = false --game.IsDedicated()
 
 if SERVER then
@@ -80,8 +80,10 @@ if SERVER then
 			end
 			for k, v in ipairs(files) do
 				local fil = dir .. "/" .. v --:sub(dirlen + 2)
-				resource.AddFile(fil,dirlen)
-			--	print('"' .. fil .. '",')
+				resource.AddFile(fil)
+		--		if string.find(fil,"vmt") or string.find(fil,"png") then
+		--			print('"' .. string.sub(fil,11) .. '",')
+		--		end
 				i = i + 1
 			end
 		end

@@ -7,7 +7,7 @@ end
 local mat = Material("vgui/circle")
 local mat2 = Material("vgui/dashed_line")
 local mat3 = Material("glass/offwndwb")
-local mat4 = Material("stormfox/clock_material")
+local mat4 = Material("stormfox/models/clock_material")
 local sf = Material("stormfox/SF.png")
 function ENT:Draw()
 

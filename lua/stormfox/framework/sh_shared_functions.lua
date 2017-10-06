@@ -9,7 +9,7 @@
  ---------------------------------------------------------------------------]]
 local mmin,clamp = math.min,math.Clamp
 local BASE_TIME = CurTime() -- The base time we will use to calculate current time with.
-local TIME_SPEED = ( GetConVar("sf_timespeed") and GetConVar("sf_timespeed"):GetFloat() or 1 ) or 1
+local TIME_SPEED = math.max(( GetConVar("sf_timespeed") and GetConVar("sf_timespeed"):GetFloat() or 1 ) or 1,0.001)
 
 -- Local functions
 local function StringToTime( str )
@@ -53,20 +53,20 @@ if SERVER then
 
     -- Update our local TIME_SPEED variable if the convar is changed
     cvars.AddChangeCallback( "sf_timespeed", function( sConvarName, sOldValue, sNewValue )
-        local flNewValue = tonumber( sNewValue )
-        if flNewValue < 0 or flNewValue > 66 then
+        local flNewValue = tonumber( sNewValue ) or 1
+        if flNewValue < 0.001 or flNewValue > 66 then
             if flNewValue > 66 then
                 MsgN( "[StormFox] WARNING: Timespeed was set to higer than 66.0. Reverting to a value of 66.0")
                 GetConVar( "sf_timespeed" ):SetFloat( 66.0 )
             else
-                MsgN( "[StormFox] WARNING: Timespeed was invalid. Reverting to the default value of 1.0")
-                GetConVar( "sf_timespeed" ):SetFloat( 1.0 )
+                MsgN( "[StormFox] WARNING: Timespeed can't go lower than 0.001. Reverting to the value of 0.001")
+                GetConVar( "sf_timespeed" ):SetFloat( 0.001 )
             end
             TIME_SPEED = 1
         else
             MsgN( "[StormFox] Timespeed changed to: " .. flNewValue )
             local flOldTime = StormFox.GetTime()
-            TIME_SPEED = math.max(flNewValue,0.00001)
+            TIME_SPEED = math.max(flNewValue,0.001)
             BASE_TIME = CurTime() - ( flOldTime / TIME_SPEED )
             updateClientsTimeVars()
             if TIME_SPEED <= 0 then
@@ -150,6 +150,7 @@ end
 
 function StormFox.GetTime( bNearestSecond )
     local flTime = ( ( CurTime() - BASE_TIME ) * TIME_SPEED ) % 1440
+
     return bNearestSecond and math.Round( flTime ) or flTime
 end
 

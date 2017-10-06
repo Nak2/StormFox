@@ -13,7 +13,7 @@ function ENT:Initialize()
 	self:SetRenderMode(RENDERMODE_TRANSALPHA)
 	self:SetColor(Color(255,255,255))
 	self.on = false
-	self:SetMaterial("stormfox/combine_light_off")
+	self:SetMaterial("stormfox/models/combine_light_off")
 	self.lastT = SysTime() + 7
 	self:SetUseType(SIMPLE_USE )
 end
@@ -47,13 +47,13 @@ function ENT:Think()
 		self.lastT = SysTime() + math.random(5,7)
 	--local on = StormFox.GetDaylightAmount() <= 0.4
 	local on = StormFox.GetData("MapLight",100) < 20
-	if self:GetMaterial() == "stormfox/combine_light_off" and on then
+	if self:GetMaterial() == "stormfox/models/combine_light_off" and on then
 		self.on = true
 		self:SetMaterial("")
 		self:DrawShadow(false)
-	elseif self:GetMaterial() ~= "stormfox/combine_light_off" and not on then
+	elseif self:GetMaterial() ~= "stormfox/models/combine_light_off" and not on then
 		self.on = false
 		self:DrawShadow(true)
-		self:SetMaterial("stormfox/combine_light_off")
+		self:SetMaterial("stormfox/models/combine_light_off")
 	end
 end

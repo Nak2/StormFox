@@ -21,7 +21,7 @@ local function ET(pos,pos2,mask)
 end
 
 local max,min,abs = math.max,math.min,math.abs
-local distance = 5000
+local distance = 18000
 hook.Add("RenderScene","StormFox - Suntest",function(eyepos,eyeang)
 	if not LocalPlayer() then return end
 	local con = GetConVar("sf_allow_dynamicshadow")
@@ -46,7 +46,7 @@ hook.Add("RenderScene","StormFox - Suntest",function(eyepos,eyeang)
 	local colA = abs(0.5 - dla) * 2
 	local tp,tsky = ET(eyepos,sunAngle:Forward() * -8000,MASK_SOLID_BRUSHONLY)
 	if tsky then
-		distance = max(tp:Distance(eyepos) + 2000,5000)
+		distance = max(tp:Distance(eyepos) + 2000,18000)
 	end
 	local lppos,isday = eyepos + sunAngle:Forward() * -distance,dla > 0.5
 	if thunder_light> 0 then
