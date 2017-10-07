@@ -143,15 +143,7 @@ end)
 --[[-------------------------------------------------------------------------
 Conflict scanner
 ---------------------------------------------------------------------------]]
-	local material_list = {"stormfox/clouds/cloud1.png",
-		"stormfox/clouds/cloud1_out.png",
-		"stormfox/clouds/cloud2.png",
-		"stormfox/clouds/cloud3.png",
-		"stormfox/clouds/cloud4.png",
-		"stormfox/clouds/cloud5.png",
-		"stormfox/clouds/cloud6.png",
-		"stormfox/clouds/part1.png",
-		"stormfox/clouds/part1_out.png",
+	local material_list = {
 		"stormfox/effects/backuplight.png",
 		"stormfox/effects/lightning.png",
 		"stormfox/effects/lightning2.png",
@@ -185,7 +177,7 @@ Conflict scanner
 		"stormfox/symbols/Sunny.png",
 		"stormfox/symbols/Thunder.png",
 		"stormfox/symbols/Windy.png",
-		"stormfox/MaterialReplacement.png",
+	--	"stormfox/MaterialReplacement.png",
 		"stormfox/SF.png",
 		"stormfox/StormFox.png",
 	--	"stormfox/clock_material.png",
