@@ -94,7 +94,7 @@
 		SunColor = Color( 255, 255, 255 ),
 		MoonColor = Color( 205, 205, 205 ),
 		Gauge = 0,
-		MapDayLight = 100,
+		MapDayLight = 80,
 		MapNightLight = 2,
 	}
 	-- Here you can add functions that update any of the values in CalculatedData when the storm magnitude changes.

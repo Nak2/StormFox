@@ -39,7 +39,7 @@ hook.Add("Think","StormFox - PropImpact",function()
 		t2 = CurTime() + 0.2
 	-- Props moving
 	local norm,wind = GetWindNorm()
-	if wind <= 6 then return end
+	if wind <= 6 then table.Empty(move_tab) return end
 	for ent,_ in pairs(move_tab) do
 		if not IsValid(ent) then
 			move_tab[ent] = nil

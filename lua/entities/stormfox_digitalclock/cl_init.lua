@@ -95,7 +95,7 @@ function ENT:Draw()
 			surface.SetMaterial(StormFox.Weather:GetIcon())
 			surface.SetTextColor(col)
 			surface.SetFont("SkyFox-DigitalClock")
-			local temp = round(StormFox.GetData("Temperature",20),1)
+			local temp = round(StormFox.GetNetworkData("Temperature",20),1)
 			local text_length = 0
 			if _24clock then
 				-- Cel
