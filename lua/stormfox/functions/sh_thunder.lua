@@ -81,7 +81,7 @@ if SERVER then
 	util.AddNetworkString("StormFox - ThunderLight")
 	hook.Add("Think","StormFox - Thunder",function()
 		if nextHit > CurTime() then return end
-			nextHit = CurTime() + math.random(10,20)
+			nextHit = CurTime() + math.random(10,5)
 		if not StormFox.GetNetworkData("Thunder",false) then return end
 		local con = GetConVar("sf_disablelightningbolts")
 		if math.random(10) < 4 or con:GetBool() then
@@ -97,6 +97,7 @@ if SERVER then
 			local tr = ET(pos,Vector(0,0,-640000))
 			if not tr.HitSky and tr.HitTexture ~= "TOOLS/TOOLSNODRAW" then return end
 				pos = tr.HitPos + Vector(0,0,-50)
+
 			StormFox.CLEmitSound("ambient/atmosphere/thunder" .. math.random(1,2) .. ".wav",nil,0.5)
 			local lightningarray,HitEntity = CalcLightningStrike(pos,thundersize)
 			EntityHit(HitEntity)

@@ -43,10 +43,15 @@ function ENT:Initialize()
 	self.Emitter = ParticleEmitter(self:GetPos(),false)
 	self.t = 0
 	self.t2 = 0
+	self.ES = 1
 end
 
 local ran,rand = math.random,math.Rand
 function ENT:Think()
+	if self:GetColor().r ~= 255 then self.ES = 1 return end
+	if self.ES > 0 then
+		self.ES = self.ES - FrameTime()
+	end
 	if self.t2 <= CurTime() then
 		self.t2 = CurTime() + ran(0.2,0.5)
 		local dlight = DynamicLight( self:EntIndex() )
@@ -63,27 +68,49 @@ function ENT:Think()
 	end
 
 	if self.t > CurTime() then return end
+	if not self.Emitter or not IsValid(self.Emitter) then -- Recreate missing emitter
+		self.Emitter = ParticleEmitter(self:GetPos(),false)
+	end
 	local r = math.Rand(0.2,0.4)
 		self.t = CurTime() + r
 	local wind = StormFox.GetNetworkData("Wind",0)
 	if wind > 20 then wind = 20 end
 	local windangle = Angle(0,StormFox.GetNetworkData("WindAngle",270),0)
 
-	for i=1,20 do
+	local windvec = windangle:Forward() * wind
+	for i = 1,10 do
 		local t = table.Random({"particles/fire1"})
-		local p = self.Emitter:Add(t,self:LocalToWorld(Vector(ran(-5,5), ran(-5,5), i * -1)))
+		local p = self.Emitter:Add(t,self:LocalToWorld(Vector(ran(-5,5), ran(-5,5), i * -2)))
 			p:SetDieTime(rand(0.5,0.9) - wind / 40)
-			p:SetStartSize(ran(10,15))
+			p:SetStartSize(ran(10,15) + self.ES * 15)
 			p:SetGravity(Vector(0,0,30))
 			p:SetEndAlpha(0)
-			p:SetVelocity(Vector(ran(-2,2),ran(-2,2),60) + windangle:Forward() * wind * 5)
+			p:SetVelocity(Vector(ran(-4,4),ran(-4,4),60) + windvec * 5)
+			p:SetRoll(ran(360))
+	end
+	for i = 1,4 do
+		local n = ran(1,9)
+		local t = "particle/smokesprites_000" .. n
+		if n == 7 then
+			t = "particle/smokesprites_0015"
+		end
+
+		local p = self.Emitter:Add(t,self:LocalToWorld(Vector(ran(-5,5), ran(-5,5), i * 2 + 20)) + windvec * 2)
+			p:SetDieTime(rand(0.5,0.9) + self.ES * 2)
+			p:SetStartSize(self.ES * 50)
+			p:SetEndSize(ran(20,15))
+			p:SetGravity(Vector(0,0,30))
+			p:SetStartAlpha(30)
+			p:SetEndAlpha(0)
+			p:SetColor(155,155,155)
+			p:SetVelocity(Vector(ran(-4,4),ran(-4,4),60) + windvec * 5)
 			p:SetRoll(ran(360))
 	end
 	local t = table.Random({"effects/fire_embers1","effects/fire_embers2","effects/fire_embers3"})
 	local p = self.Emitter:Add(t,self:LocalToWorld(Vector(ran(-15,15), ran(-15,15), 0)))
 		p:SetDieTime(1)
 		p:SetStartSize(ran(1,2))
-		p:SetVelocity(Vector(ran(-20,20),ran(-20,20),ran(50,100)) + windangle:Forward() * wind * 5)
+		p:SetVelocity(Vector(ran(-20,20),ran(-20,20),ran(50,100)) + windvec * 5)
 		p:SetAirResistance(20 - wind)
 		p:SetEndAlpha(0)
 		p:SetRoll(ran(360))

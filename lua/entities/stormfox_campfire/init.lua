@@ -15,6 +15,10 @@ function ENT:Initialize()
 	self:SetUseType( SIMPLE_USE )
 	self.SND = CreateSound(self,"ambient/fire/fire_small1.wav")
 	self.SND:Play()
+	self:SetColor(Color(255,0,0)) -- I'm lazy
+	self.t = 0
+	self:SetUseType(SIMPLE_USE )
+	self:EmitSound("ambient/fire/mtov_flame2.wav")
 end
 
 function ENT:SpawnFunction( ply, tr, ClassName )
@@ -36,6 +40,27 @@ function ENT:SpawnFunction( ply, tr, ClassName )
 	return ent
 
 end
+
+function ENT:Use()
+	if self:WaterLevel() < 1 and self:GetColor().r ~= 255 then
+		self:SetColor(Color(255,0,0))
+		self.SND:Play()
+		self:EmitSound("ambient/fire/mtov_flame2.wav")
+	elseif self:GetColor().r ~= 254 then
+		self:SetColor(Color(254,0,0))
+		self.SND:Stop()
+	end
+end
+
+function ENT:Think()
+	if self.t > CurTime() then return end
+		self.t = CurTime() + 1
+	if self:WaterLevel() > 0 then -- Turn pff
+		self:SetColor(Color(254,0,0))
+		self.SND:Stop()
+	end
+end
+
 
 function ENT:OnRemove()
 	self.SND:Stop()
