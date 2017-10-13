@@ -108,8 +108,12 @@ local round,clamp = math.Round,math.Clamp
 
 -- MapBloom
 	local nbloom
+	local disable_bloom = (GetConVar("sf_disable_mapbloom") and GetConVar("sf_disable_mapbloom"):GetFloat() or 0 ) or 0
+	cvars.AddChangeCallback( "sf_disable_mapbloom", function( _, _, sNewValue )
+		disable_bloom = tonumber( sNewValue ) or 0
+	end, "StormFox_MapBloomChanged" )
 	function StormFox.SetMapBloom(n)
-		if nbloom and nbloom == n then
+		if disable_bloom > 0 or (nbloom and nbloom == n) then
 			return
 		end
 		nbloom = n
@@ -118,7 +122,7 @@ local round,clamp = math.Round,math.Clamp
 	end
 	local nbloom
 	function StormFox.SetMapBloomAutoExposureMin(n)
-		if nbloom and nbloom == n then
+		if disable_bloom > 0 or (nbloom and nbloom == n) then
 			return
 		end
 		nbloom = n
@@ -127,7 +131,7 @@ local round,clamp = math.Round,math.Clamp
 	end
 	local nbloom
 	function StormFox.SetMapBloomAutoExposureMax(n)
-		if nbloom and nbloom == n then
+		if disable_bloom > 0 or (nbloom and nbloom == n) then
 			return
 		end
 		nbloom = n
@@ -136,6 +140,7 @@ local round,clamp = math.Round,math.Clamp
 	end
 	local nbloom2
 	function StormFox.SetBlendTonemapScale(target,duration)
+		if disable_bloom > 0 then return end
 		local str = target .. " " .. duration
 		if nbloom2 and nbloom2 == str then
 			return
@@ -145,6 +150,7 @@ local round,clamp = math.Round,math.Clamp
 	end
 	local nscale
 	function StormFox.SetTonemapScale(n,dur)
+		if disable_bloom > 0 then return end
 		if nscale and nscale == n then
 			return
 		end

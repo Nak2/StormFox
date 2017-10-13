@@ -49,11 +49,11 @@ if SERVER then
 		t.HitPos = t.HitPos or (pos + pos2)
 		return t
 	end
-	StormFox_DATA = StormFox_DATA or {} -- Not sure what runs first .. but this table is global
+	StormFox_NETWORK_DATA = StormFox_NETWORK_DATA or {} -- Not sure what runs first .. but this table is global
 	local function scan()
-		StormFox_DATA["mapobbmaxs"] =  game.GetWorld():GetSaveTable().m_WorldMaxs or Vector(0, 0, 0)
-		StormFox_DATA["mapobbmins"] =  game.GetWorld():GetSaveTable().m_WorldMins or Vector(0, 0, 0)
-		StormFox_DATA["mapobbcenter"] = StormFox_DATA["mapobbmins"] + (StormFox_DATA["mapobbmaxs"] - StormFox_DATA["mapobbmins"]) / 2
+		StormFox_NETWORK_DATA["mapobbmaxs"] =  game.GetWorld():GetSaveTable().m_WorldMaxs or vector(0,0,1000)
+		StormFox_NETWORK_DATA["mapobbmins"] =  game.GetWorld():GetSaveTable().m_WorldMins or vector(0,0,0)
+		StormFox_NETWORK_DATA["mapobbcenter"] = StormFox_NETWORK_DATA["mapobbmins"] + (StormFox_NETWORK_DATA["mapobbmaxs"] - StormFox_NETWORK_DATA["mapobbmins"]) / 2
 
 		local l = ents.FindByClass("sky_camera")
 
@@ -61,23 +61,9 @@ if SERVER then
 		sky_cam = l[1]
 		sky_scale = l[1]:GetSaveTable().scale
 		
-		StormFox_DATA["skybox_scale"] = sky_scale
-		StormFox_DATA["skybox_pos"] = sky_cam:GetSaveTable()["m_skyboxData.origin"] or sky_cam:GetPos()
+		StormFox_NETWORK_DATA["skybox_scale"] = sky_scale
+		StormFox_NETWORK_DATA["skybox_pos"] = sky_cam:GetSaveTable()["m_skyboxData.origin"] or sky_cam:GetPos()
 
-		-- Scan the skybox for its size
-		local c = StormFox_DATA["skybox_pos"]
-		local topZ = ET(c,Vector(0,0,16384)).HitPos.z
-		local lowZ = ET(c,Vector(0,0,-16384)).HitPos.z
-
-		local measurepos = Vector(c.x,c.y,topZ - 10)
-		local topX = ET(measurepos,Vector(16384,0,0)).HitPos.x
-		local lowX = ET(measurepos,Vector(-16384,0,0)).HitPos.x
-
-		local topY = ET(measurepos,Vector(0,16384,0)).HitPos.Y
-		local lowY = ET(measurepos,Vector(0,-16384,0)).HitPos.Y
-
-		StormFox_DATA["skybox_obbmaxs"] = Vector(topX,topY,topZ) - c
-		StormFox_DATA["skybox_obbmins"] = Vector(lowX,lowY,lowZ) - c
 	end
 	hook.Add("StormFox - PostEntity","StormFox - FindSkyBox",scan)
 
@@ -86,49 +72,41 @@ if SERVER then
 	end
 else
 	function StormFox.Is3DSkybox()
-		return StormFox_DATA["skybox_pos"] ~= nil
+		return StormFox_NETWORK_DATA["skybox_pos"] ~= nil
 	end
 end
 
 function StormFox.SkyboxPos()
-	return StormFox_DATA["skybox_pos"]
+	return StormFox_NETWORK_DATA["skybox_pos"]
 end
 
 function StormFox.SkyboxScale()
-	return StormFox_DATA["skybox_scale"]
-end
-
-function StormFox.SkyboxOBBMaxs()
-	return StormFox_DATA["skybox_obbmaxs"]
-end
-
-function StormFox.SkyboxOBBMins()
-	return StormFox_DATA["skybox_obbmins"]
+	return StormFox_NETWORK_DATA["skybox_scale"]
 end
 
 function StormFox.WorldToSkybox(pos)
-	if not util.Is3DSkybox() then return end
-	local offset = pos / util.SkyboxScale()
-	return util.SkyboxPos() + offset
+	if not StormFox.Is3DSkybox() then return end
+	local offset = pos / StormFox.SkyboxScale()
+	return StormFox.SkyboxPos() + offset
 end
 
 function StormFox.SkyboxToWorld(pos)
-	if not util.Is3DSkybox() then return end
-	local set = pos - util.SkyboxPos()
-	return set * util.SkyboxScale()
+	if not StormFox.Is3DSkybox() then return end
+	local set = pos - StormFox.SkyboxPos()
+	return set * StormFox.SkyboxScale()
 end
 
 -- Thise don't give the world size .. but brushsize. This means that the topspace of the map might or might not count.
 function StormFox.MapOBBMaxs()
-	return StormFox_DATA["mapobbmaxs"]
+	return StormFox_NETWORK_DATA["mapobbmaxs"]
 end
 
 function StormFox.MapOBBMins()
-	return StormFox_DATA["mapobbmins"]
+	return StormFox_NETWORK_DATA["mapobbmins"]
 end
 
 function StormFox.MapOBBCenter()
-	return StormFox_DATA["mapobbcenter"]
+	return StormFox_NETWORK_DATA["mapobbcenter"]
 end
 
 function StormFox.IsTF2Map()

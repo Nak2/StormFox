@@ -56,12 +56,12 @@ RainStorm.TimeDependentData.MapBloomMax = {
 	TIME_SUNSET = 1.4
 }
 
-RainStorm.CalculatedData = {
-	MapDayLight = 10,
-	MapNightLight = 2,
-	Gauge = 10
-}
+RainStorm.CalculatedData.MapDayLight = 10
+RainStorm.CalculatedData.MapNightLight = 2
+RainStorm.CalculatedData.Gauge = 10
+
 RainStorm.CalculatedData.SunColor = Color(255,255,255,15)
+RainStorm.CalculatedData.CloudsAlpha = 1
 
 RainStorm.DataCalculationFunctions.StarFade = function( flPercent ) return max( 1 - flPercent * 10, 0 ) end
 RainStorm.DataCalculationFunctions.SunSize = function( flPercent ) return max( 0, 10 - ( 10 * flPercent ) ) end

@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.114
+StormFox.Version = 1.116
 StormFox.WorkShopVersion = false --game.IsDedicated()
 
 if SERVER then
@@ -62,6 +62,12 @@ end
 	end
 	if not ConVarExists("sf_enable_ekstra_lightsupport") then
 		CreateConVar("sf_enable_ekstra_lightsupport",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Enable ekstra lightsupport (engine.LightStyle)")
+	end
+	if not ConVarExists("sf_start_time") then
+		CreateConVar("sf_start_time","", { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Start the server at a specific time.")
+	end
+	if not ConVarExists("sf_disable_mapbloom") then
+		CreateConVar("sf_disable_mapbloom",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Disable the light-bloom.")
 	end
 
 if SERVER then
@@ -138,7 +144,7 @@ end
 HandleFile("stormfox/" .. "sh_debugcompatibility.lua")
 HandleFile("stormfox/" .. "sh_weathertype_meta.lua")
 HandleFile("stormfox/" .. "sh_weather_controller.lua")
-HandleFile("stormfox/" .. "sh_options.lua")
+
 if SERVER then
 	HandleFile("stormfox/" .. "sv_map_lights.lua")
 	HandleFile("stormfox/" .. "sv_weather_generator.lua")
@@ -149,5 +155,6 @@ for _,fil in ipairs(file.Find("stormfox/weather_types/*.lua","LUA")) do
 	end
 	include("stormfox/weather_types/" .. fil)
 end
+HandleFile("stormfox/" .. "sh_options.lua")
 HandleFile("stormfox/" .. "cl_wizard.lua")
 hook.Call("StormFox - PostInit")

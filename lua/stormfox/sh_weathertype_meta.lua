@@ -96,6 +96,7 @@
 		Gauge = 0,
 		MapDayLight = 80,
 		MapNightLight = 2,
+		CloudsAlpha = 0
 	}
 	-- Here you can add functions that update any of the values in CalculatedData when the storm magnitude changes.
 	StormFox.WeatherType.DataCalculationFunctions = {
@@ -109,8 +110,7 @@
 		StarTexture = "skybox/starfield",
 		MoonTexture = "stormfox/moon_fix",
 		GaugeColor = Color(255,255,255),
-		EnableThunder = false,
-		Gauge = 0
+		EnableThunder = false
 	}
 	function StormFox.WeatherType:GetName( _, nWindSpeed, bThunder  )
 		nWindSpeed = nWindSpeed or StormFox.GetNetworkData("Wind",0)

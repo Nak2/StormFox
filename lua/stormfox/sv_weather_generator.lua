@@ -83,7 +83,7 @@ function StormFox.GenerateNewDay(dont_update)
 	local lastWeather = week[#week] or {}
 	-- Calc temperature change
 		local last_tempacc = lastWeather.tempacc or math.random(-7,7)
-		local last_temp = lastWeather.temp or StormFox.GetNetworkData("Temperature",20)
+		local last_temp = lastWeather.temp or StormFox.GetNetworkData("Temperature",math.random(20,10))
 
 		local tempacc = GetDataAcceleration(last_temp,last_tempacc,math.random(-10,5),20,math.random(2,7))
 		local con = GetConVar("sf_disable_autoweather_cold")

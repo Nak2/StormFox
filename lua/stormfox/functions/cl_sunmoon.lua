@@ -21,8 +21,12 @@ local m = Material( "stormfox/moon_fix" );
 local poly
 local m_update = 0
 local sunMat = Material("stormfox/moon_glow")
-hook.Add( "PostDraw2DSkyBox", "StormFox - MoonRender", function()
-
+hook.Add("PostDraw2DSkyBox", "StormFox - SkyBoxRender", function()
+	hook.Call("StormFox - TopSkyRender")
+	hook.Call("StormFox - MiddleSkyRender")
+	hook.Call("StormFox - LowerSkyRender")
+end)
+hook.Add( "StormFox - TopSkyRender", "StormFox - MoonRender", function()
 	if not StormFox.GetMoonAngle then return end
 	if not StormFox.GetTime then return end
 	local ang = StormFox.GetMoonAngle()

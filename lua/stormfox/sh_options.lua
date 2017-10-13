@@ -239,6 +239,8 @@
 				adminTrickBox(panel,"sf_disable_autoweather_cold")
 			-- Disable skybox
 				adminTrickBox(panel,"sf_disableskybox")
+			-- Disable light bloom
+				adminTrickBox(panel,"sf_disable_mapbloom")
 			-- Disable mapsupport
 				adminTrickBox(panel,"sf_disable_mapsupport")
 				local textbox = vgui.Create("DLabel",panel)
@@ -297,6 +299,8 @@
 					StormFox.SetWeather(str,var)
 				elseif str == "time_set" then
 					StormFox.SetTime(var)
+				elseif str == "time_speed" then
+					RunConsoleCommand("sf_timespeed",var)
 				elseif type(var) == "number" and str ~= "WindAngle" then
 					StormFox.SetNetworkData(str,var,StormFox.GetTimeSpeed() * 2)
 				else
@@ -472,7 +476,10 @@
 			if STORMFOX_WPANEL and IsValid(STORMFOX_WPANEL) then
 				STORMFOX_WPANEL:Remove()
 			end
-			local pw,ph = 200,354
+			weathers = StormFox.GetWeathers()
+			tselected = StormFox.GetWeathersDefaultNumber()
+
+			local pw,ph = 200,378 --354
 			panel = vgui.Create("DFrame")
 				panel:SetTitle("StormFox " .. StormFox.Version)
 				panel:SetSize(pw,ph)
@@ -813,7 +820,110 @@
 					net.SendToServer()
 					print(str)
 				end
-				
+			-- Time speed
+				local symbol = CreateButton(panel,"")
+					symbol:SetSize(18,18)
+					symbol:SetPos(pw / 2 - 78,338)
+					symbol.symbol = Material("stormfox/symbols/time_default.png")
+				function symbol:PaintOver(w,h)
+					surface.SetDrawColor(Color(255,255,255))
+					surface.SetMaterial(self.symbol)
+					surface.DrawTexturedRect(0,0,w,h)
+				end
+				function symbol:DoClick()
+					local cur = StormFox.GetTimeSpeed()
+					local default = self.default or 1
+					if cur > 0 then
+						self.default = cur
+						-- Set 0
+						net.Start("StormFox - WeatherC")
+							net.WriteBool(true)
+							net.WriteString("time_speed")
+							net.WriteType("0")
+						net.SendToServer()
+					else
+						-- Set self.default
+						net.Start("StormFox - WeatherC")
+							net.WriteBool(true)
+							net.WriteString("time_speed")
+							net.WriteType((self.default or 1) .. "")
+						net.SendToServer()
+					end
+				end
+				local time_speed = CreateSlider(panel,140,14)
+				time_speed:SetPos(pw / 2 - 60,340)
+				time_speed.oldVar = -1
+				function time_speed:Paint(w,h)
+					surface.SetDrawColor(Color(255,255,255,5))
+					surface.DrawRect(0,0,w,h)
+					for i = 0,1 do
+						local lv = i / 4
+						if self.var < lv then
+							surface.SetDrawColor(colors[3])
+						else
+							surface.SetDrawColor(colors[1])
+						end
+						surface.DrawRect(w * 0.05 + w * 0.9 * lv,0,2,h)
+					end
+					surface.SetDrawColor(colors[3])
+					surface.DrawRect(w * 0.05,h / 2 - 1,w * 0.9,2)
+
+					surface.SetDrawColor(colors[1])
+					surface.DrawRect(w * 0.05,h / 2 - 1,w * 0.9 * self.var,2)
+
+					surface.DrawRect(w * 0.05 + w * 0.9 * self.var,0,2,h)
+					surface.SetDrawColor(colors[3])
+				end
+				function time_speed:DoClick()
+					local w,h = self:GetSize()
+					local x,y = self:CursorPos()
+					local procent = clamp((x - w * 0.05) / (w * 0.9),0,1)
+					local speed = procent * 4
+					if procent > 0.25 then
+						speed = 1 + (procent - 0.25) * 42.66
+					end
+					if speed > 0.8 and speed < 1.85 then
+						speed = 1
+					else
+						for i = 1,3 do
+							local cur = math.Round(1 + (i * 0.25) * 42.66,1)
+							local curmin, curmax = 1 + (i * 0.25 - 0.05) * 42.66,1 + (i * 0.25 + 0.05) * 42.66
+							if speed > curmin and speed < curmax then
+								speed = cur
+								break
+							end
+						end
+					end
+
+					net.Start("StormFox - WeatherC")
+						net.WriteBool(true)
+						net.WriteString("time_speed")
+						net.WriteType(speed .. "")
+					net.SendToServer()
+				end
+				function time_speed:Think()
+					local cur = StormFox.GetTimeSpeed()
+					if time_speed.oldVar == cur then return end
+					time_speed.oldVar = cur
+					if cur <= 1 then
+						time_speed.var = cur / 4
+					else
+						time_speed.var = 0.25 + (cur - 1) / 42.66
+					end
+					if cur <= 0 then
+						symbol.symbol = Material("stormfox/symbols/time_pause.png")
+					elseif cur < 1 then
+						symbol.symbol = Material("stormfox/symbols/time_slow.png")
+					elseif cur == 1 then
+						symbol.symbol = Material("stormfox/symbols/time_default.png")
+					elseif cur <= 11.7 then
+						symbol.symbol = Material("stormfox/symbols/time_speedup.png")
+					elseif cur <= 22.3 then
+						symbol.symbol = Material("stormfox/symbols/time_speedup2.png")
+					else
+						symbol.symbol = Material("stormfox/symbols/time_speedup3.png")
+					end
+				end
 
 			local blabel = vgui.Create("DLabel",panel)
 				blabel.text = "Hold C"

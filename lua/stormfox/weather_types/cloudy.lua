@@ -47,10 +47,10 @@ Cloudy.TimeDependentData.Fogend = {
 	TIME_SUNRISE = 54000,
 	TIME_SUNSET = 30000
 }
-Cloudy.CalculatedData = {
-	MapDayLight = 20,
-	MapNightLight = 2
-}
+Cloudy.CalculatedData.MapDayLight = 20
+Cloudy.CalculatedData.MapNightLight = 2
+Cloudy.CalculatedData.CloudsAlpha = 1
+
 Cloudy.CalculatedData.SunColor = Color(255,255,255,15)
 
 Cloudy.DataCalculationFunctions.StarFade = function( flPercent ) return max( 1 - flPercent * 10, 0 ) end

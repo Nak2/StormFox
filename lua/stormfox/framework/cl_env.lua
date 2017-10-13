@@ -23,7 +23,7 @@ Potato protection
 		else
 			avagefps = buffer / bi
 			buffer = 0
-			local max = math.Clamp(math.Round(avagefps / 11),1,(cookie.GetNumber("StormFox_ultraqt",0) == 0 and 7 or 20))
+			local max = math.Clamp(math.Round(avagefps / 7),1,(cookie.GetNumber("StormFox_ultraqt",0) == 0 and 7 or 20))
 			conDetect = (conDetect + max) / 2
 			bi = 0
 		end

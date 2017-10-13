@@ -20,9 +20,6 @@
 
 -- Setup async data
 	-- functions and logic
-		hook.Add("StormFox - Timeset","StormFox - DropData",function()
-			table.Empty(aimdata)
-		end)
 		local CurTime = CurTime
 		local RealTime = RealTime
 
@@ -62,17 +59,19 @@
 			return aimdata[str]
 		end
 	-- Get and set
+		local con = GetConVar("sf_timespeed")
 		local cdata = {}
 		function StormFox.GetData(str,base)
 			if not data[str] then return base end
 			if not aimdata[str] then -- No aimdata .. return the var
 				return data[str] or nil
 			end
+			local st = con:GetFloat()
 			local t = CurTime()
 			local t_start = aimdata[str][2] or 0
-			local t_stop = aimdata[str][3] or 0
+			local t_stop = t_start + aimdata[str][3] / math.max(st,0.5)
 			-- Is it old aimdata?
-			if t_stop <= t then
+			if t_stop <= t or t_stop < t_start then
 				-- Remove aimdata and set the final var
 				data[str] = aimdata[str][1]
 				aimdata[str] = nil
@@ -95,7 +94,6 @@
 		end
 
 		local datacashe = {}
-		local con = GetConVar("sf_timespeed")
 		function StormFox.SetData(str,var,over_seconds)
 			-- Support freezing time
 			if con and con:GetFloat() <= 0 then
@@ -114,7 +112,7 @@
 			datacashe[str] = var
 			local t = CurTime()
 			-- Set/Delete old aimdata
-				if aimdata[str] then
+				if aimdata[str] and over_seconds then
 					data[str] = StormFox.GetData(str,aimdata[str][1])
 					aimdata[str] = nil
 				end
@@ -126,7 +124,7 @@
 					hook.Call("StormFox - DataChange",nil,str,var,over_seconds)
 					return
 				end
-				aimdata[str] = {var,t,(over_seconds / con:GetFloat()) + t}
+				aimdata[str] = {var,t,over_seconds}
 			-- Notify scripts that something changed
 				hook.Call("StormFox - DataChange",nil,str,var,over_seconds)
 		end
@@ -205,7 +203,7 @@
 
 	local netcashe = {}
 	function StormFox.SetNetworkData(str,var,over_seconds)
-		if con and con:GetFloat() <= 0 or (over_seconds and over_seconds <= 0) then
+		if con and con:GetFloat() <= 0 then
 			over_seconds = nil
 		end
 		-- Check for duplicates
@@ -242,14 +240,14 @@
 				hook.Call("StormFox - NetDataChange",nil,str,var,over_seconds)
 				return
 			end
-			network_aimdata[str] = {var,t,(over_seconds / con:GetFloat()) + t}
+			network_aimdata[str] = {var,t,over_seconds}
 		-- Send the data to clients
 			if SERVER and not ghost then
 				net.Start("StormFox - Data")
 					net.WriteInt(2,8)
 					net.WriteString(str)
 					net.WriteType(var)
-					net.WriteFloat(over_seconds + t)
+					net.WriteFloat(over_seconds)
 				net.Broadcast()
 			end
 		-- Notify scripts that something changed
@@ -262,10 +260,11 @@
 			return network_data[str] or nil
 		end
 		local t = CurTime()
+		local st = con:GetFloat()
 		local t_start = network_aimdata[str][2] or 0
-		local t_stop = network_aimdata[str][3] or 0
+		local t_stop = t_start + (network_aimdata[str][3] or 0) / math.max(st,0.5)
 		-- Is it old aimdata?
-		if t_stop <= t then
+		if t_stop <= t or t_stop < t_start then
 			-- Remove aimdata and set the final var
 			network_data[str] = network_aimdata[str][1]
 			network_aimdata[str] = nil
@@ -294,7 +293,6 @@
 		net.Receive("StormFox - Data",function(len)
 			if not StormFox.GetTime then return end
 			local msg = net.ReadInt(8)
-			local nt = CurTime()
 			if msg == 1 then -- Full update of all vars
 				--print("Full update")
 				for key,var in pairs(net.ReadTable()) do
@@ -304,14 +302,14 @@
 				local key = net.ReadString()
 				local var = net.ReadType(dtype)
 				local t = net.ReadFloat() or -1
-				if t > nt then
-					StormFox.SetNetworkData(key,var,t - nt)
+				if t > CurTime() then
+					StormFox.SetNetworkData(key,var,t)
 				else
 					StormFox.SetNetworkData(key,var)
 				end
 			elseif msg == 3 then
 				for key,var in pairs(net.ReadTable()) do
-					StormFox.SetNetworkData(key,var[1],var[2] - nt)
+					StormFox.SetNetworkData(key,var[1],var[2])
 				end
 			end
 		end)

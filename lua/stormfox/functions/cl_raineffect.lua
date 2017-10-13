@@ -612,17 +612,11 @@ local RenderRain = function(depth, sky)
 	end
 end
 
+-- 
 hook.Add("PostDrawTranslucentRenderables", "StormFox - RenderFalldown", function(depth,sky)
---	if StormFox.GetOutdoorEnv()["Outdoor"][1] > -1 then
-		RenderRain(depth,sky)
---	end
+	if sky or depth then return end
+	RenderRain(depth,sky)
 end)
--- Damn you old render engien. Can't use this
---[[
-hook.Add("PostDrawOpaqueRenderables", "StormFox - RenderFalldown_inside", function(depth,sky)
-
-end)]]
---
 
 -- Debug rain
 --[[
