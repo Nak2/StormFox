@@ -23,7 +23,7 @@ Potato protection
 		else
 			avagefps = buffer / bi
 			buffer = 0
-			local max = math.Clamp(math.Round(avagefps / 7),1,(cookie.GetNumber("StormFox_ultraqt",0) == 0 and 7 or 20))
+			local max = math.Clamp(math.Round(avagefps / 10),1,(cookie.GetNumber("StormFox_ultraqt",0) == 0 and 7 or 20))
 			conDetect = (conDetect + max) / 2
 			bi = 0
 		end
@@ -31,11 +31,12 @@ Potato protection
 	function StormFox.GetExspensive()
 		local con = GetConVar("sf_exspensive")
 		local n = con:GetFloat() or 3
+		local b = system.HasFocus()
 		if n <= 0 then
 			-- Detect
-			return conDetect
+			return b and conDetect or 1
 		else
-			return n
+			return b and n or max(n / 4,1)
 		end
 	end
 	function StormFox.GetAvageFPS()
@@ -291,5 +292,5 @@ hook.Add("HUDPaint","RainDebug2",function()
 	surface.SetFont("default")
 	surface.SetTextPos(24,120)
 	surface.SetTextColor(255,255,255)
-	--surface.DrawText("HQ: "..StormFox.GetExspensive())
+	surface.DrawText("HQ: "..StormFox.GetExspensive())
 end)]]

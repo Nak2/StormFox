@@ -36,7 +36,7 @@ local function lerpAnyValue( amount, currentValue, targetValue )
 end
 
 if SERVER then
-	StormFox.SetNetworkData( "Temperature", 20 )
+	StormFox.SetNetworkData( "Temperature", math.random(10,20) )
 	StormFox.SetNetworkData( "Thunder",false)
 	StormFox.SetNetworkData( "Wind", 0 )
 	StormFox.SetNetworkData( "WindAngle", math.random(360) ) --cl

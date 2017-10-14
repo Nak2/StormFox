@@ -81,7 +81,7 @@ if SERVER then
 	util.AddNetworkString("StormFox - ThunderLight")
 	hook.Add("Think","StormFox - Thunder",function()
 		if nextHit > CurTime() then return end
-			nextHit = CurTime() + math.random(10,5)
+			nextHit = CurTime() + math.random(30,5)
 		if not StormFox.GetNetworkData("Thunder",false) then return end
 		local con = GetConVar("sf_disablelightningbolts")
 		if math.random(10) < 4 or con:GetBool() then
