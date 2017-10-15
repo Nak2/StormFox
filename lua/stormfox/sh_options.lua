@@ -17,6 +17,7 @@
 			whitelist["sf_debugcompatibility"] = true
 			whitelist["sf_disableskybox"] = true
 			whitelist["sf_enable_ekstra_lightsupport"] = true
+			whitelist["sf_disable_mapbloom"] = true
 
 		util.AddNetworkString("StormFox_Settings")
 		net.Receive("StormFox_Settings",function(len,ply)
@@ -302,7 +303,7 @@
 				elseif str == "time_speed" then
 					RunConsoleCommand("sf_timespeed",var)
 				elseif type(var) == "number" and str ~= "WindAngle" then
-					StormFox.SetNetworkData(str,var,StormFox.GetTimeSpeed() * 2)
+					StormFox.SetNetworkData(str,var,2)
 				else
 					StormFox.SetNetworkData(str,var)
 				end
@@ -639,7 +640,7 @@
 					end
 				local tslider = CreateSlider(panel,140,14)
 					tslider:SetPos(pw / 2 - 70,150)
-					tslider.var = StormFox.GetNetworkData("Wind",0) / 20
+					tslider.var = StormFox.GetNetworkData("Wind",0) / 33
 					function tslider:DoClick()
 						local w,h = self:GetSize()
 						local x,y = self:CursorPos()
@@ -647,11 +648,11 @@
 						net.Start("StormFox - WeatherC")
 							net.WriteBool(true)
 							net.WriteString("Wind")
-							net.WriteType(percent * 20)
+							net.WriteType(percent * 33)
 						net.SendToServer()
 					end
 					function tslider:Think()
-						self.var = StormFox.GetNetworkData("Wind",0) / 20
+						self.var = StormFox.GetNetworkData("Wind",0) / 33
 					end
 			-- WindAngle
 				local windang = vgui.Create("DButton",panel)

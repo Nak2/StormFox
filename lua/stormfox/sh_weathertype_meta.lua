@@ -79,7 +79,7 @@
 				TIME_SUNRISE = 0.2,
 				TIME_SUNSET = 0.4
 			},
-		MapBloomMin = 0.7,
+		MapBloomMin = 0.5,
 		MapBloomMax = {
 				TIME_SUNRISE = 1,
 				TIME_SUNSET = 1

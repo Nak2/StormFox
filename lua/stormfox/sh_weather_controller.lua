@@ -176,15 +176,19 @@ timer.Create("StormFox - MapLight",10,0,function()
 	-- Generate maplight
 	local mapLight = StormFox.CalculateMapLight(StormFox.GetTime(),StormFox.Weather:GetData("MapNightLight"),StormFox.Weather:GetData("MapDayLight"))
 	StormFox.SetData("MapLight",mapLight)
-		
 	if SERVER then
 		-- StormFox.CalculateMapLight(flTime, 0, 1)
-		StormFox.SetMapBloom(StormFox.GetData("MapBloom") or 0.2)
-		StormFox.SetMapBloomAutoExposureMin(StormFox.GetData("MapBloomMin") or 0.7)
-		StormFox.SetMapBloomAutoExposureMax(StormFox.GetData("MapBloomMax") or 1)
 		StormFox.SetMapLight(mapLight)
 	end
 end)
+
+if SERVER then
+	timer.Create("StormFox - BloomControl",5,0,function()
+		StormFox.SetMapBloom(StormFox.GetData("MapBloom") or 0.2)
+		StormFox.SetMapBloomAutoExposureMin(StormFox.GetData("MapBloomMin") or 0.7)
+		StormFox.SetMapBloomAutoExposureMax(StormFox.GetData("MapBloomMax") or 1)
+	end)
+end
 
 function ET(pos,pos2,mask,filter)
 	local t = util.TraceLine( {

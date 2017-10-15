@@ -1,5 +1,5 @@
 
-local ran,rand = math.random,math.Rand
+local ran,rand,max = math.random,math.Rand,math.max
 if SERVER then
 
 	local function ETHull(pos,pos2,size,mask)
@@ -29,11 +29,9 @@ if SERVER then
 		effectdata:SetEntity(ent)
 	    effectdata:SetMagnitude(2)
 	    effectdata:SetScale(3)
-	    for i=1,100 do
+	    for i = 1,100 do
 	    	util.Effect( "TeslaHitboxes", effectdata, true, true )
 	    end
-		
-
 		local ctd = DamageInfo()
 			ctd:IsDamageType(DMG_SHOCK)
 			ctd:SetDamage(ran(90,200))
@@ -77,11 +75,22 @@ if SERVER then
 		return line
 	end
 
+	local function FindTopSky(pos)
+		local lower_tracer = ET(pos,Vector(0,0,-640000),MASK_SOLID_BRUSHONLY)
+		if lower_tracer.HitSky or lower_tracer.HitTexture == "TOOLS/TOOLSNODRAW" then
+			return lower_tracer.HitPos + Vector(0,0,-10)
+		end
+		local higer_tracer = ET(pos,Vector(0,0,640000),MASK_SOLID_BRUSHONLY)
+		if higer_tracer.HitSky or higer_tracer.HitTexture == "TOOLS/TOOLSNODRAW" then
+			return higer_tracer.HitPos + Vector(0,0,-10)
+		end
+	end
+
 	local nextHit = 0
 	util.AddNetworkString("StormFox - ThunderLight")
 	hook.Add("Think","StormFox - Thunder",function()
 		if nextHit > CurTime() then return end
-			nextHit = CurTime() + math.random(30,5)
+			nextHit = CurTime() + math.random(10,15)
 		if not StormFox.GetNetworkData("Thunder",false) then return end
 		local con = GetConVar("sf_disablelightningbolts")
 		if math.random(10) < 4 or con:GetBool() then
@@ -93,14 +102,36 @@ if SERVER then
 			local thundersize = 512
 			local mmax = StormFox.MapOBBMaxs()
 			local mmin = StormFox.MapOBBMins()
-			local pos = Vector(ran(mmin.x + 512,mmax.x - 512),ran(mmin.y + 512,mmax.y - 512),mmax.z + 10000)
-			local tr = ET(pos,Vector(0,0,-640000))
-			if not tr.HitSky and tr.HitTexture ~= "TOOLS/TOOLSNODRAW" then return end
-				pos = tr.HitPos + Vector(0,0,-50)
+			local pos
+			for i = 1,20 do
+				local sp = Vector(ran(mmin.x + 512,mmax.x - 512),ran(mmin.y + 512,mmax.y - 512),mmax.z)
+				pos = FindTopSky(sp)
+				if pos then
+					break
+				end
+			end
+			if not pos then return end
 
 			StormFox.CLEmitSound("ambient/atmosphere/thunder" .. math.random(1,2) .. ".wav",nil,0.5)
-			local lightningarray,HitEntity = CalcLightningStrike(pos,thundersize)
+			local lightningarray,HitEntity = {},nil
+			for i = 1,10 do -- try and locate an area to strike
+				lightningarray,HitEntity = CalcLightningStrike(pos,thundersize)
+				if #lightningarray > 1 then
+					break
+				end
+			end
+			local hitPos = lightningarray[#lightningarray]
+			if not hitPos then return end
 			EntityHit(HitEntity)
+			if bit.band( util.PointContents( hitPos ), CONTENTS_WATER ) == CONTENTS_WATER then
+				-- It hit water
+				for _,ent in ipairs(ents.FindInSphere(hitPos,500)) do
+					if ent:WaterLevel() > 0 then
+						EntityHit(ent)
+					end
+				end
+			end
+			
 			net.Start("StormFox - ThunderLight")
 				net.WriteFloat(thunder_length)
 				net.WriteFloat(thunder_light)
@@ -137,6 +168,7 @@ else
 		end
 		l.renderid = 0
 		if l[#l] and l[#l][1] then
+			EmitSound("ambient/energy/weld" .. ran(1,2) .. ".wav", l[#l][1], 1,nil,1,15)
 			local dlight = DynamicLight( 1 )
 			if ( dlight ) then
 				dlight.pos = l[#l][1]
@@ -144,8 +176,8 @@ else
 				dlight.g = 255
 				dlight.b = 255
 				dlight.brightness = 6
-				dlight.Decay = 1000
-				dlight.Size = 256 * 4
+				dlight.Decay = 100
+				dlight.Size = 256 * 8
 				dlight.DieTime = CurTime() + 0.5
 			end
 		end

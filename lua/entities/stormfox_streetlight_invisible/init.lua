@@ -44,16 +44,18 @@ function ENT:Think()
 	if (self.lastT or 0) > SysTime() then return end
 		self.lastT = SysTime() + math.random(5,7)
 	--local on = StormFox.GetDaylightAmount() <= 0.4
-	local on = StormFox.GetData("MapLight",100) < 20
+	local on = StormFox.GetData("MapLight",100) < 12
 	local fon = self:GetNWBool("On",false)
 	if not fon and on then
 		self.on = true
 		self:DrawShadow(false)
 		self:SetNWBool("On",true)
+		self:EmitSound("doors/door_metal_large_chamber_close1.wav",65,0.8)
 	elseif fon and not on then
 		self:SetNWBool("On",false)
 		self.on = false
 		self:DrawShadow(true)
+		self:EmitSound("doors/door_metal_large_chamber_close1.wav",65,0.8)
 		if self.flashlight then
 			self.flashlight:Remove()
 		end

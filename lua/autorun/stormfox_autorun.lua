@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.116
+StormFox.Version = 1.118
 StormFox.WorkShopVersion = false --game.IsDedicated()
 
 if SERVER then

@@ -47,11 +47,13 @@ function ENT:Think()
 	local on = StormFox.GetData("MapLight",100) < 20
 	if self:GetModel() == "models/props_c17/lamppost03a_off_dynamic.mdl" and on then
 		self.on = true
+		self:EmitSound("doors/door_metal_large_chamber_close1.wav",65,0.8)
 		self:DrawShadow(false)
 		self:SetModel("models/props_c17/lamppost03a_on.mdl")
 	elseif self.on and not on then
 		self:SetModel( "models/props_c17/lamppost03a_off_dynamic.mdl" )
 		self.on = false
+		self:EmitSound("doors/door_metal_large_chamber_close1.wav",65,0.8)
 		self:DrawShadow(true)
 		if self.flashlight then
 			self.flashlight:Remove()

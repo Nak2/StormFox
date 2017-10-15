@@ -302,7 +302,7 @@
 				local key = net.ReadString()
 				local var = net.ReadType(dtype)
 				local t = net.ReadFloat() or -1
-				if t > CurTime() then
+				if t > 0 then
 					StormFox.SetNetworkData(key,var,t)
 				else
 					StormFox.SetNetworkData(key,var)

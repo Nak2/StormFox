@@ -80,7 +80,7 @@ function ENT:Think()
 	local windvec = windangle:Forward() * wind
 	for i = 1,10 do
 		local t = table.Random({"particles/fire1"})
-		local p = self.Emitter:Add(t,self:LocalToWorld(Vector(ran(-5,5), ran(-5,5), i * -2)))
+		local p = self.Emitter:Add(t,i * -windvec * 0.1 + self:LocalToWorld(Vector(ran(-5,5), ran(-5,5), i * -2)))
 			p:SetDieTime(rand(0.5,0.9) - wind / 40)
 			p:SetStartSize(ran(10,15) + self.ES * 15)
 			p:SetGravity(Vector(0,0,30))

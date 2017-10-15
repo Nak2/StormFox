@@ -10,12 +10,28 @@ local function shuffleIntoLightArray( tLights )
 end
 
 local scanned = false
+local relay_dawn,relay_dusk
 local function ScanForLights()
-	tLights = ents.FindByClass("light_spot")
+	-- Day relay
+	relay_dawn = ents.FindByName( "dawn" );
+	table.Add(relay_dawn,ents.FindByName( "day_events" ))
+	-- Nmight relay
+	relay_dusk = ents.FindByName( "dusk" );
+	table.Add(relay_dusk,ents.FindByName( "night_events" ))
+	-- Locate light
+	tLights = {}
+	for _,ent in ipairs(ents.FindByClass("light_spot")) do
+		local name = ent:GetName() or "night"
+		if not string.find(name,"indoor") and (string.find(name,"night") or string.find(name,"day")) then
+			table.insert(tLights,ent)
+		end
+	end
 	shuffleIntoLightArray( tLights )
 	scanned = true
 end
 timer.Simple( 4, ScanForLights )
+
+
 
 
 -- Turn the map lights on/off in waves
@@ -29,17 +45,31 @@ local function SwitchLights( bTurnOn, nWave )
 		end
 	end
 
-	if nWave == #light_spots then return end
+	if nWave >= #light_spots then return end
 	timer.Simple( 5, function() -- call the next wave after a delay
 		SwitchLights( bTurnOn, nWave + 1 )
 	end )
 end
 
-hook.Add( "StormFox-Sunrise", "Stormfox-Lights-Off", function()
-	SwitchLights( false )
-end )
-
-hook.Add( "StormFox-Sunset", "Stormfox-Lights-On", function()
+timer.Create("StormFox - Light/Lamp support",2,0,function()
 	if not scanned then ScanForLights() end
-	SwitchLights( true )
-end )
+	local map_light = StormFox.GetData("MapLight",80)
+	local on = map_light < 20
+	if on and (not _STORMFOX_LIGHTSTATUS or _STORMFOX_LIGHTSTATUS == nil) then
+		for _,ent in ipairs(relay_dusk) do
+			if IsValid(ent) then
+				ent:Fire( "Trigger", "" );
+			end
+		end
+		SwitchLights( true )
+		_STORMFOX_LIGHTSTATUS = true
+	elseif not on and (_STORMFOX_LIGHTSTATUS or _STORMFOX_LIGHTSTATUS == nil) then
+		for _,ent in ipairs(relay_dawn) do
+			if IsValid(ent) then
+				ent:Fire( "Trigger", "" );
+			end
+		end
+		SwitchLights( false )
+		_STORMFOX_LIGHTSTATUS = false
+	end
+end)
