@@ -21,8 +21,9 @@ sf_disableskybox             | [0/1]         | Disables SF editing the skybox's 
 sf_disable_mapsupport        | [0/1]         | Disables SF creating missing entities.
 sf_enable_ekstra_lightsupport| [0/1]         | Enables ekstra lightsupport (engine.LightStyle).
 sf_disable_mapbloom          | [0/1]         | Disables the light-bloom.
-**Debug**|
+**Debug**|                   |               |
 sf_debugcompatibility        | [0/1]         | This will make SF scan for addons and scripts breaking hooks. (Overrides hook.Call)
+
 
 ##Client Convars
 *ConVar*                     | *Value*       | *Description*              
