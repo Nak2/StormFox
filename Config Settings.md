@@ -25,7 +25,7 @@ sf_disable_mapbloom          | [0/1]         | Disables the light-bloom.
 sf_debugcompatibility        | [0/1]         | This will make SF scan for addons and scripts breaking hooks. (Overrides hook.Call)
 
 
-##Client Convars
+## Client Convars
 *ConVar*                     | *Value*       | *Description*              
 :----------------------------| ------------- |  ------------
 **Time**                     |               |
