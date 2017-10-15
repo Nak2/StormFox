@@ -12,6 +12,7 @@ end
 local scanned = false
 local relay_dawn,relay_dusk
 local function ScanForLights()
+	if scanned then return end
 	-- Day relay
 	relay_dawn = ents.FindByName( "dawn" );
 	table.Add(relay_dawn,ents.FindByName( "day_events" ))

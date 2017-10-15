@@ -1,6 +1,6 @@
 StormFox = {}
-StormFox.Version = 1.118
-StormFox.WorkShopVersion = false --game.IsDedicated()
+StormFox.Version = 1.119
+StormFox.WorkShopVersion = false--game.IsDedicated()
 
 if SERVER then
 	game.ConsoleCommand("sv_skyname painted\n")
@@ -19,56 +19,57 @@ end
 
 -- Add configs
 	if not ConVarExists("sf_timespeed") then
-		CreateConVar("sf_timespeed",1, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "The minutes of gametime pr second." )
+		CreateConVar("sf_timespeed",1, FCVAR_REPLICATED + FCVAR_ARCHIVE, "The minutes of gametime pr second." )
 	end
 	if not ConVarExists("sf_moonscale") then
-		CreateConVar("sf_moonscale",6,{ FCVAR_REPLICATED , FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Set the moonscale." )
+		CreateConVar("sf_moonscale",6, FCVAR_REPLICATED + FCVAR_ARCHIVE , "The scale of the moon." )
 	end
 	if not ConVarExists("sf_sv_material_replacment") then
-		CreateConVar("sf_sv_material_replacment",1, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Replaces materials for weather effects.")
+		CreateConVar("sf_sv_material_replacment",1,  FCVAR_REPLICATED + FCVAR_ARCHIVE, "Enable material-replacment for weather effects.")
 	end
 	if not ConVarExists("sf_replacment_dirtgrassonly") then
-		CreateConVar("sf_replacment_dirtgrassonly",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Replace only dirt and grass. (Useful on crazy maps)")
+		CreateConVar("sf_replacment_dirtgrassonly",0, FCVAR_REPLICATED + FCVAR_ARCHIVE , "Only replace dirt and grass. (Useful on crazy maps)")
 	end
 	if not ConVarExists("sf_disablefog") then
-		CreateConVar("sf_disablefog",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Disable the fog.")
+		CreateConVar("sf_disablefog",0, FCVAR_REPLICATED + FCVAR_ARCHIVE , "Disable SF editing the fog.")
 	end
 	if not ConVarExists("sf_disableweatherdebuffs") then
-		CreateConVar("sf_disableweatherdebuffs",game.IsDedicated() and 1 or 0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Disable weather debuffs/damage/impact.")
+		CreateConVar("sf_disableweatherdebuffs",game.IsDedicated() and 1 or 0, FCVAR_REPLICATED + FCVAR_ARCHIVE , "Disable weather debuffs/damage/impact.")
 	end
 	if not ConVarExists("sf_disable_windpush") then
-		CreateConVar("sf_disable_windpush",game.IsDedicated() and 1 or 0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Disable wind-push on props (Careful on servers).")
+		CreateConVar("sf_disable_windpush",game.IsDedicated() and 1 or 0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Disable wind-push on props (Careful on servers).")
 	end
 	if not ConVarExists("sf_disablelightningbolts") then
-		CreateConVar("sf_disablelightningbolts",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Disable lightning strikes.")
+		CreateConVar("sf_disablelightningbolts",0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Disable lightning strikes.")
 	end
 	if not ConVarExists("sf_disable_autoweather") then
-		CreateConVar("sf_disable_autoweather",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Disable the automatic weather-generator.")
+		CreateConVar("sf_disable_autoweather",0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Disable the automatic weather-generator.")
 	end
 	if not ConVarExists("sf_disable_mapsupport") then
-		CreateConVar("sf_disable_mapsupport",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Disable the entity-support for maps.")
+		CreateConVar("sf_disable_mapsupport",0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Disable the entity-support for maps.")
 	end
 	if not ConVarExists("sf_disable_autoweather_cold") then
-		CreateConVar("sf_disable_autoweather_cold",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Stop the autoweather creating snow.")
+		CreateConVar("sf_disable_autoweather_cold",0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Disable autoweather creating snow.")
 	end
 	if not ConVarExists("sf_sunmoon_yaw") then
-		CreateConVar("sf_sunmoon_yaw",270, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "The sun/moon yaw.")
+		CreateConVar("sf_sunmoon_yaw",270, FCVAR_REPLICATED + FCVAR_ARCHIVE, "The sun/moon yaw.")
 	end
 	if not ConVarExists("sf_debugcompatibility") then
-		CreateConVar("sf_debugcompatibility",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Enable SF compatability-debugger.")
+		CreateConVar("sf_debugcompatibility",0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Enable SF compatability-debugger.")
 	end
 	if not ConVarExists("sf_disableskybox") then
-		CreateConVar("sf_disableskybox",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Disable the SF-skybox.")
+		CreateConVar("sf_disableskybox",0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Disable the SF-skybox.")
 	end
 	if not ConVarExists("sf_enable_ekstra_lightsupport") then
-		CreateConVar("sf_enable_ekstra_lightsupport",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Enable ekstra lightsupport (engine.LightStyle)")
+		CreateConVar("sf_enable_ekstra_lightsupport",0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Enable ekstra lightsupport (engine.LightStyle)")
 	end
 	if not ConVarExists("sf_start_time") then
-		CreateConVar("sf_start_time","", { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Start the server at a specific time.")
+		CreateConVar("sf_start_time","", FCVAR_REPLICATED + FCVAR_ARCHIVE, "Start the server at a specific time.")
 	end
 	if not ConVarExists("sf_disable_mapbloom") then
-		CreateConVar("sf_disable_mapbloom",0, { FCVAR_REPLICATED, FCVAR_ARCHIVE,FCVAR_SERVER_CAN_EXECUTE }, "Disable the light-bloom.")
+		CreateConVar("sf_disable_mapbloom",0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Disable SF editing light-bloom.")
 	end
+
 
 if SERVER then
 	if StormFox.WorkShopVersion then
