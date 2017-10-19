@@ -29,7 +29,7 @@ sf_debugcompatibility        | [0/1]         | This will make SF scan for addons
 *ConVar*                     | *Value*       | *Description*              
 :----------------------------| ------------- |  ------------
 **Time**                     |               |
-sf_exspensive                | [0-20]        | Ther weather quality-level. 0 will make it automatic measure the best setting.
+sf_exspensive                | [0-20]        | Ther weather quality-level. 0 will make it automatic measure for the best setting.
 sf_material_replacment       | [0/1]         | Enable material replacment for weather effects. (clientside)
 sf_allow_rainsound           | [0/1]         | Enable rain-sounds
 sf_allow_windsound           | [0/1]         | Enable wind-sounds
