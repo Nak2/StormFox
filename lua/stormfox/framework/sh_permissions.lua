@@ -13,7 +13,7 @@ CAMI.RegisterPrivilege{
 
 CAMI.RegisterPrivilege{
 	Name = "StormFox Changemap",
-	MinAccess = "admin"
+	MinAccess = "superadmin"
 }
 if CLIENT then
 	concommand.Add("sf_map_change")
