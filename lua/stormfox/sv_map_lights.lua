@@ -19,6 +19,9 @@ local function ScanForLights()
 	-- Nmight relay
 	relay_dusk = ents.FindByName( "dusk" );
 	table.Add(relay_dusk,ents.FindByName( "night_events" ))
+	if #relay_dusk > 0 or #relay_dawn > 0 then
+		StormFox.SetNetworkData("has_trigger",true)
+	end
 	-- Locate light
 	tLights = {}
 	for _,ent in ipairs(ents.FindByClass("light_spot")) do

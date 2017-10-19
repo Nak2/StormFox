@@ -51,7 +51,7 @@ local round,clamp = math.Round,math.Clamp
 	local function FindEntities()
 		print( "[StormFox] Scanning mapentities ..." )
 		local con = GetConVar("sf_disable_mapsupport")
-		if not con:GetBool() then
+		if not con or not con:GetBool() then
 			local tSunlist = ents.FindByClass( "env_sun" )
 			for i = 1, #tSunlist do -- Remove any env_suns there should be only one but who knows
 				tSunlist[ i ]:Fire( "TurnOff" )
@@ -65,16 +65,16 @@ local round,clamp = math.Round,math.Clamp
 
 		local con = GetConVar("sf_disableskybox")
 		if not con or not con:GetBool() then
-			RunConsoleCommand("sv_skyname", "painted")
-			StormFox.env_skypaint = StormFox.env_skypaint or GetOrCreate("env_skypaint") or nil
+			StormFox.env_skypaint = GetOrCreate("env_skypaint") or nil
 		end
 
 		printEntFoundStatus( StormFox.light_environment, "light_environment" )
+		printEntFoundStatus( StormFox.env_skypaint, "env_skypaint" )
 		printEntFoundStatus( StormFox.env_fog_controller, "env_fog_controller" )
 		printEntFoundStatus( StormFox.shadow_control, "shadow_control" )
 		hook.Call( "StormFox - PostEntityScan" )
 	end
-	hook.Add( "StormFox - PostEntity", "StormFox - FindEntities", FindEntities )
+	hook.Add( "StormFox - PostEntity", "StormFox - ScanForEntities", FindEntities )
 
 -- ConVar value
 	local con = GetConVar("sf_sunmoon_yaw")

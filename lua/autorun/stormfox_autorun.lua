@@ -1,15 +1,18 @@
 StormFox = {}
-StormFox.Version = 1.119
+StormFox.Version = 1.120
 StormFox.WorkShopVersion = false--game.IsDedicated()
 
-if SERVER then
-	game.ConsoleCommand("sv_skyname painted\n")
+-- Skypaint creation fix.
+local con = GetConVar("sf_disableskybox")
+if not con or not con:GetBool() then
+	RunConsoleCommand("sv_skyname", "painted")
 end
+
 --if true then return end
 -- Reload support
 	hook.Add("InitPostEntity","StormFox - CallPostEntitiy",function()
-		hook.Call("StormFox - PostEntity")
 		_STORMFOX_POSTENTIY = true
+		hook.Call("StormFox - PostEntity")
 	end)
 	if _STORMFOX_POSTENTIY then
 		timer.Simple(1,function()
@@ -69,7 +72,9 @@ end
 	if not ConVarExists("sf_disable_mapbloom") then
 		CreateConVar("sf_disable_mapbloom",0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Disable SF editing light-bloom.")
 	end
-
+	if not ConVarExists("sf_disblemapbrowser") then
+		CreateConVar("sf_disblemapbrowser",game.IsDedicated() and 1 or 0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Disable people changing the map with SF-browser.")
+	end
 
 if SERVER then
 	if StormFox.WorkShopVersion then
@@ -158,4 +163,5 @@ for _,fil in ipairs(file.Find("stormfox/weather_types/*.lua","LUA")) do
 end
 HandleFile("stormfox/" .. "sh_options.lua")
 HandleFile("stormfox/" .. "cl_wizard.lua")
+HandleFile("stormfox/" .. "cl_mapbrowser.lua")
 hook.Call("StormFox - PostInit")

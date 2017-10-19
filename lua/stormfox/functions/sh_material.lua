@@ -1,31 +1,43 @@
 
-if SERVER then
-	StormFox.SetNetworkData("SnowMaterial_Amount",0)
+-- Server snow logic
+	if SERVER then
+		StormFox.SetNetworkData("SnowMaterial_Amount",0)
 
-	local l = 0
-	local old_lvl = -1
-	hook.Add("Think","StormFox - Snow Replacement",function()
-		if l > SysTime() then return end
-			l = SysTime() + 5
-		local temp = StormFox.GetNetworkData("Temperature",20)
-		local Gauge = StormFox.GetData("Gauge",0)
-		local con = GetConVar("sf_sv_material_replacment")
-		if temp > -2 or not con:GetBool() then
-			StormFox.SetNetworkData("SnowMaterial_Amount",0)
-			old_lvl = 0
-		elseif Gauge > 0 then -- is cold and snowing
-			local lvl = math.Clamp(math.Round((Gauge - 2) / 2),0,4)
-			if GetConVarNumber("sf_replacment_dirtgrassonly",0) > 0 then
-				lvl = 1
+		local l = 0
+		local old_lvl = -1
+		hook.Add("Think","StormFox - Snow Replacement",function()
+			if l > SysTime() then return end
+				l = SysTime() + 5
+			local temp = StormFox.GetNetworkData("Temperature",20)
+			local Gauge = StormFox.GetData("Gauge",0)
+			local con = GetConVar("sf_sv_material_replacment")
+			if temp > -2 or not con:GetBool() then
+				StormFox.SetNetworkData("SnowMaterial_Amount",0)
+				old_lvl = 0
+			elseif Gauge > 0 then -- is cold and snowing
+				local lvl = math.Clamp(math.Round((Gauge - 2) / 2),0,4)
+				if GetConVarNumber("sf_replacment_dirtgrassonly",0) > 0 then
+					lvl = 1
+				end
+				if old_lvl < lvl then
+					old_lvl = lvl
+					StormFox.SetNetworkData("SnowMaterial_Amount",lvl)
+				end
 			end
-			if old_lvl < lvl then
-				old_lvl = lvl
-				StormFox.SetNetworkData("SnowMaterial_Amount",lvl)
-			end
+		end)
+		return
+	end
+
+-- Delete old data from 1.119 and below
+	local whitelist = {}
+		whitelist["wizzard.txt"] = true
+		whitelist["maplist.txt"] = true
+
+	for _,fil in ipairs(file.Find( "stormfox/*", "DATA" )) do
+		if not whitelist[fil] then
+			file.Delete("stormfox/" .. fil)
 		end
-	end)
-	return
-end
+	end
 
 _STORMFOX_ORIGNALTEX = _STORMFOX_ORIGNALTEX or {}
 _STORMFOX_REPLACETEX_STR = _STORMFOX_REPLACETEX_STR or {}
@@ -73,25 +85,36 @@ _STORMFOX_REPLACETEX_STR = _STORMFOX_REPLACETEX_STR or {}
 				t["roof"] = {}
 				t["pavement"] = {}
 				t["road"] = {}
+			local t2 = {}
+				t2["grass"] = {}
+				t2["roof"] = {}
+				t2["pavement"] = {}
+				t2["road"] = {}
 
 			for _,list in ipairs(forcedlist) do
 				tab[list] = true
 			end
 
 			for str,_ in pairs(tab) do
-				local mat = Material(str)
-				local tex1,tex2 = mat:GetTexture("$basetexture"),mat:GetTexture("$basetexture2")
-				local match1,match2 = ScanTexType(tex1,mat_layers),ScanTexType(tex2,mat_layers)
-				if match1 then
-					t[match1][mat] = {}
-					t[match1][mat][1] = tex1:GetName()
-				end
-				if match2 then
-					t[match2][mat] = t[match2][mat] or {}
-					t[match2][mat][2] = tex2:GetName()
+				if not string.match(str,"^env/") then
+					local mat = Material(str)
+					local tex1,tex2 = mat:GetTexture("$basetexture"),mat:GetTexture("$basetexture2")
+					local match1,match2 = ScanTexType(tex1,mat_layers),ScanTexType(tex2,mat_layers)
+					if match1 then
+						t[match1][mat] = {}
+						t[match1][mat][1] = tex1:GetName()
+						t2[match1][str] = {}
+						t2[match1][str][1] = tex1:GetName()
+					end
+					if match2 then
+						t[match2][mat] = t[match2][mat] or {}
+						t[match2][mat][2] = tex2:GetName()
+						t2[match2][str] = t2[match2][str] or {}
+						t2[match2][str][2] = tex2:GetName()
+					end
 				end
 			end
-			return t
+			return t,t2
 		end
 		local function ETHull(pos,pos2,min,max,mask)
 			max.z = 0
@@ -107,18 +130,22 @@ _STORMFOX_REPLACETEX_STR = _STORMFOX_REPLACETEX_STR or {}
 			return t
 		end
 
-if not file.Exists("stormfox","data") then
-	file.CreateDir("stormfox")
-end
+
 
 local function LoadMapData()
-	if file.Exists("stormfox/" .. game.GetMap() .. ".txt","data") then
-		print("[StormFox]: Loading cached texmap...")
-		local materials = util.JSONToTable(file.Read("stormfox/" .. game.GetMap() .. ".txt","DATA"))
-		_STORMFOX_ORIGNALTEX = ScanMapTextures(materials)
+	if file.Exists("stormfox/maps/" .. game.GetMap() .. ".txt","data") then
+		print("[StormFox]: Loading texturemap...")
+		local tab = util.JSONToTable(file.Read("stormfox/maps/" .. game.GetMap() .. ".txt","DATA"))
+		local t = {}
+		for group,tt in pairs(tab) do
+			t[group] = t[group] or {}
+			for mat_string,data in pairs(tt) do
+				t[group][Material(mat_string)] = data
+			end
+		end
+		_STORMFOX_ORIGNALTEX = t
 	else
-		print("[StormFox]: Generating texmap (Might take a bit)...")
-		
+		print("[StormFox]: Generating texturemap (Might take a bit)...")
 		local str = file.Read("maps/" .. game.GetMap() .. ".bsp","GAME")
 		local materials = {}
 		local mats = 0
@@ -138,14 +165,14 @@ local function LoadMapData()
 			materials[string.lower(w)] = true
 			if string.find(string.lower(w),"grass") then --[[print("Digging: " .. string.lower(w))]] end
 		end
-		local str = util.TableToJSON(materials)
-		file.Write("stormfox/" .. game.GetMap() .. ".txt",str)
-		LoadTexts(materials)
-		
-		_STORMFOX_ORIGNALTEX = ScanMapTextures(materials)
-		print("[StormFox]: Saving texmap cache.")
+		LoadTexts(materials) -- Load materials
+		local t,t2 = ScanMapTextures(materials)
+		_STORMFOX_ORIGNALTEX = t
+		local str = util.TableToJSON(t2)
+		file.Write("stormfox/maps/" .. game.GetMap() .. ".txt",str)
+		print("[StormFox]: Saving texturemap ..")
 	end
-	print("[StormFox]: Texmap loaded (" .. table.Count(_STORMFOX_ORIGNALTEX) .. ").")
+	print("[StormFox]: Texturemap loaded.")
 end
 hook.Add("InitPostEntity","StormFox - MaterialLoader",timer.Simple(2,LoadMapData))
 if #player.GetAll() > 0 then timer.Simple(2,LoadMapData) end
@@ -160,7 +187,7 @@ local function ReplaceMaterial(str,texture,id)
 	local parm = "$basetexture" .. (id == 1 and "" or id)
 	local currentbase = mat:GetTexture(parm)
 	if (currentbase:GetName() or "null") == texture then return end
-	
+
 	if not _STORMFOX_REPLACETEX_STR[str] then
 		_STORMFOX_REPLACETEX_STR[str] = {}
 	end

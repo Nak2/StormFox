@@ -10,12 +10,31 @@ CAMI.RegisterPrivilege{
 	Name = "StormFox WeatherEdit",
 	MinAccess = "admin"
 }
-if CLIENT then return end
 
+CAMI.RegisterPrivilege{
+	Name = "StormFox Changemap",
+	MinAccess = "admin"
+}
+if CLIENT then
+	concommand.Add("sf_map_change")
+	return
+end
+local con = GetConVar("sf_disblemapbrowser")
+concommand.Add("sf_map_change",function(ply,_,args)
+	CAMI.PlayerHasAccess(ply,"StormFox Changemap",function(b)
+		if not b then ply:PrintMessage(HUD_PRINTTALK,"You don't have access to change the map.") return end
+		if con and con:GetBool() then
+			ply:PrintMessage(HUD_PRINTTALK,"Mapchange is disabled on this server. (sf_disblemapbrowser 1)")
+			return
+		end
+		print("[StormFox] " .. (ply and ply:Nick() .. " is changing the map to" or "Changing map to") .. " " .. args[1] .. ".")
+		RunConsoleCommand("changelevel",args[1])
+	end)
+end,nil,"Changes the map.")
 function StormFox.CanEditWeather(ply,func,...)
 	local argz = {...}
 	CAMI.PlayerHasAccess(ply,"StormFox WeatherEdit",function(b)
-		if not b then ply:PrintMessage(HUD_PRINTCENTER,"You don't have access to weather settings.") return end
+		if not b then ply:PrintMessage(HUD_PRINTTALK,"You don't have access to weather settings.") return end
 		func(unpack(argz))
 	end)
 end
@@ -23,7 +42,7 @@ end
 function StormFox.CanEditSetting(ply,con,var)
 	CAMI.PlayerHasAccess(ply,"StormFox Settings",function(b)
 		--print(ply,"a")
-		if not b then ply:PrintMessage(HUD_PRINTCENTER,"You don't have access to server settings.") return end
+		if not b then ply:PrintMessage(HUD_PRINTTALK,"You don't have access to server settings.") return end
 		--print("b")
 		if not ConVarExists(con) then return end
 		--print("c",con,var)

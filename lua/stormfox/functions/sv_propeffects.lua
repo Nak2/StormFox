@@ -58,7 +58,9 @@ hook.Add("Think","StormFox - PropImpact",function()
 				if wind >= pNeeded then
 					local m = 1 + pNeeded - wind
 					pys:ApplyForceCenter(pys:GetMass() / 2 * norm * m)
-					ent:TakeDamage(1,game.GetWorld(),game.GetWorld())
+					if not ent:IsVehicle() then
+						ent:TakeDamage(1,game.GetWorld(),game.GetWorld())
+					end
 				end
 			end
 		end
@@ -79,17 +81,12 @@ hook.Add("Think","StormFox - PropImpact",function()
 				local vol = pys:GetVolume()
 				local mass = pys:GetMass()
 				if not IsValid(pys) or type(vol) ~= "number" or type(mass) ~= "number" then break end -- Bad entity
-				local pNeeded = vol / mass / 63
-				if (not pys:IsMoveable() or constraint.FindConstraint( ent, "Weld" )) then
-					if math.random(5) >= 3 and wind > 18 then
-						ent:EmitSound("physics/wood/wood_strain" .. math.random(1,8) .. ".wav")
-						pNeeded = wind + 1
-					elseif wind >18 then
-						ent:EmitSound("physics/wood/wood_box_break" .. math.random(1,2) .. ".wav")
-						pNeeded = 15
-						constraint.RemoveConstraints( ent, "Weld" )
-						pys:EnableMotion(true)
-					end
+				local pNeeded = vol / mass / 70 --63
+				if (not pys:IsMoveable() or constraint.FindConstraint( ent, "Weld" )) and wind > 20 and wind >= pNeeded then
+					ent:EmitSound("physics/wood/wood_box_break" .. math.random(1,2) .. ".wav")
+					pNeeded = 15
+					constraint.RemoveConstraints( ent, "Weld" )
+					pys:EnableMotion(true)
 				end
 				if wind >= pNeeded then
 					local m = 1 + pNeeded - wind

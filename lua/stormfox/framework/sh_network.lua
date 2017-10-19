@@ -1,5 +1,4 @@
 
-
 --[[-------------------------------------------------------------------------
 	Allows easy data shareing and data "leaping"
 		StormFox.SetData(str,var,timestamp)

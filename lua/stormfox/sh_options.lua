@@ -1,4 +1,23 @@
 
+-- ConCommand
+	concommand.Add("sf_setweather",function( ply, cmd, args, argStr)
+		if CLIENT then return end
+		StormFox.CanEditWeather(ply,function(argStr)
+			StormFox.SetWeather(argStr,1)
+		end,argStr)
+	end,function(cmd,stringargs)
+		--StormFox.GetWeathers()
+		stringargs = string.Trim( stringargs )
+		stringargs = string.lower( stringargs )
+		local tab = {}
+		for k, v in ipairs( StormFox.GetWeathers() ) do
+			if string.find( string.lower( v ), stringargs ) then
+				table.insert( tab, cmd .. " " .. v )
+			end
+		end
+		return tab
+	end,"Sets the weather.")
+
 -- SpawnMenu
 	if SERVER then
 		local whitelist = {}
@@ -18,6 +37,7 @@
 			whitelist["sf_disableskybox"] = true
 			whitelist["sf_enable_ekstra_lightsupport"] = true
 			whitelist["sf_disable_mapbloom"] = true
+			whitelist["sf_disblemapbrowser"] = true
 
 		util.AddNetworkString("StormFox_Settings")
 		net.Receive("StormFox_Settings",function(len,ply)
@@ -242,6 +262,8 @@
 				adminTrickBox(panel,"sf_disableskybox")
 			-- Disable light bloom
 				adminTrickBox(panel,"sf_disable_mapbloom")
+			-- Disable sf mapbrowser changing maps
+				adminTrickBox(panel,"sf_disblemapbrowser")
 			-- Disable mapsupport
 				adminTrickBox(panel,"sf_disable_mapsupport")
 				local textbox = vgui.Create("DLabel",panel)
@@ -259,6 +281,16 @@
 							StormFox.OpenWeatherMenu()
 						end
 					end
+				panel:AddPanel(ds_button)
+			-- Map browser
+				local ds_button = vgui.Create("DButton",panel)
+					ds_button:SetSize(120,30)
+					ds_button:SetText("Open map browser.")
+					ds_button:SetDark(true)
+					ds_button.DoClick = function()
+						RunConsoleCommand("sf_open_mapbrowser")
+						LocalPlayer():EmitSound("ui/buttonclickrelease.wav")
+					end
 
 				panel:AddPanel(ds_button)
 			-- Debugger
@@ -275,7 +307,6 @@
 					textbox:SetDark(true)
 					textbox:SetText("        (Can lag on large maps!)")
 				panel:AddPanel(textbox)
-
 		end
 		hook.Add( "PopulateToolMenu", "Populate StormFox Menus", function()
 			spawnmenu.AddToolMenuOption( "Options", "StormFox", "User_StormFox", "Client Settings", "", "", client_settings )
@@ -310,6 +341,7 @@
 			end,str,var,msg)
 		end)
 	else
+	-- Fonts, functions and data
 		surface.CreateFont( "SkyFox-Console_B", {
 			font = "Arial", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
 			extended = false,
@@ -473,6 +505,88 @@
 			end
 			return slider
 		end
+	-- Map Display
+		local mat = Material("gui/gradient")
+		local cross = Material("debug/particleerror")
+		local check = Material("vgui/hud/icon_check")
+		local function OpenMapDisplay()
+			if not STORMFOX_WPANEL or not IsValid(STORMFOX_WPANEL) then return end
+			if STORMFOX_MPANEL and IsValid(STORMFOX_MPANEL) then
+				STORMFOX_MPANEL:Remove()
+			end
+			local panel = vgui.Create("DPanel")
+			local w,h = 150,154
+			panel.h = h
+			panel:SetSize(w,h)
+			local x,y = STORMFOX_WPANEL:GetPos()
+			panel:SetPos(x - w,y + 24)
+			function panel:Think()
+				if not STORMFOX_WPANEL or not IsValid(STORMFOX_WPANEL) then self:Remove() end
+			end
+			function panel.Paint(self,w,h)
+				local cx,cy = self:CursorPos()
+				surface.SetDrawColor(colors[2])
+				surface.SetDrawColor(Color(0,0,0,100))
+				surface.SetMaterial(mat)
+				surface.DrawRect(0,0,w,self.h)
+				surface.DrawTexturedRectRotated(w - 10 ,self.h / 2,20,self.h,180)
+				surface.DrawTexturedRectRotated(10 ,self.h / 2,20,self.h,0)
+				draw.DrawText("Map Entities","SkyFox-Console_Small",w / 2,0,Color(255,255,255),1)
+				local t = {}
+					t["light_environment"] = "Enables smooth light-controls and doesn't require extra light support to make the map dark."
+					t["env_tonemap_controller"] = "Enables light-bloom/tonemap effects."
+					t["env_fog_controller"] = "Allows to control and edit fog."
+					t["env_skypaint"] = "Allows to paint and edit the sky."
+					t["shadow_control"] = "Allows to control source shadows."
+
+				local y = 0
+				local i = 0
+				for str,helptext in pairs(t) do
+					i = i + 1
+					local b = StormFox.GetNetworkData("has_"..str,false)
+					surface.SetTextPos(24,i * 16)
+					if b then
+						surface.SetTextColor(0,255,0)
+						surface.SetDrawColor(255,255,255)
+						surface.SetMaterial(check)
+					else
+						surface.SetTextColor(255,255,255)
+						surface.SetDrawColor(255,0,0)
+						surface.SetMaterial(cross)
+					end
+					if cx > 5 and cx < w and cy > i * 16 and cy < i * 16 + 16 then
+						local xx,yy = self:LocalToScreen( 4,i * 16 + 7 )
+						StormFox.DisplayTip(xx,yy,helptext,1)
+					end
+
+					surface.SetFont("SkyFox-Console_Small")
+					surface.DrawText(str)
+					surface.DrawTexturedRect(5,i * 16 + 1,14,14)
+					y = i * 16 + 16
+				end
+				if StormFox.GetNetworkData("has_trigger",false) then
+					draw.DrawText("Extra map support","SkyFox-Console_Small",w / 2,y + 16,Color(255,255,255),1)
+					surface.SetTextPos(24,y + 32)
+					surface.SetTextColor(0,255,0)
+					surface.SetDrawColor(255,255,255)
+					surface.SetMaterial(check)
+					surface.DrawText("Map Effects/ Triggers")
+					surface.DrawTexturedRect(5,y + 33,14,14)
+					if cx > 5 and cx < w and cy > y + 32 and cy < y + 48 then
+						local xx,yy = self:LocalToScreen( 4,y + 39 )
+						StormFox.DisplayTip(xx,yy,"This map have extra light-effects and triggers.",1)
+					end
+					y = y + 49
+				end
+				self.h = y + 5
+			end
+
+			STORMFOX_MPANEL = panel
+			return panel
+		end
+	-- HUDMenu
+		local m_info = Material("icon16/information.png")
+		local m_browser = Material("icon16/map.png")
 		function StormFox.OpenWeatherMenu()
 			if STORMFOX_WPANEL and IsValid(STORMFOX_WPANEL) then
 				STORMFOX_WPANEL:Remove()
@@ -480,7 +594,7 @@
 			weathers = StormFox.GetWeathers()
 			tselected = StormFox.GetWeathersDefaultNumber()
 
-			local pw,ph = 200,378 --354
+			local pw,ph = 180,378 --354
 			panel = vgui.Create("DFrame")
 				panel:SetTitle("StormFox " .. StormFox.Version)
 				panel:SetSize(pw,ph)
@@ -491,6 +605,40 @@
 					surface.DrawRect(0,0,w,24)
 				end
 				panel.enabled = false
+			-- Map Details
+				local MapInfo_Button = vgui.Create("DButton",panel)
+					function MapInfo_Button:Paint() end
+					MapInfo_Button:SetText("")
+					MapInfo_Button:SetSize(22,22)
+					MapInfo_Button:SetPos(pw - 62,1)
+					function MapInfo_Button:PaintOver(w,h)
+						surface.SetDrawColor(Color(255,255,255))
+						surface.SetMaterial(m_info)
+						surface.DrawTexturedRect(w * 0.1,h * 0.1,w * 0.85,h * 0.85)
+					end
+					function MapInfo_Button:DoClick()
+						if STORMFOX_MPANEL and IsValid(STORMFOX_MPANEL) then
+							STORMFOX_MPANEL:Remove()
+						else
+							OpenMapDisplay()
+						end
+						LocalPlayer():EmitSound("ui/buttonclick.wav")
+					end
+			-- Map browser
+				local MapInfo_Button = vgui.Create("DButton",panel)
+					function MapInfo_Button:Paint() end
+					MapInfo_Button:SetText("")
+					MapInfo_Button:SetSize(22,22)
+					MapInfo_Button:SetPos(pw - 84,1)
+					function MapInfo_Button:PaintOver(w,h)
+						surface.SetDrawColor(Color(255,255,255))
+						surface.SetMaterial(m_browser)
+						surface.DrawTexturedRect(w * 0.1,h * 0.1,w * 0.85,h * 0.85)
+					end
+					function MapInfo_Button:DoClick()
+						RunConsoleCommand("sf_open_mapbrowser")
+						LocalPlayer():EmitSound("ui/buttonclickrelease.wav")
+					end
 			-- Select Weather
 				local SetWeather = CreateButton(panel,"Set Weather")
 				SetWeather:SetPos(pw / 2 - 60,28)
@@ -563,7 +711,7 @@
 			-- Thunder
 				local thunder = CreateButton(panel,"")
 					thunder:SetText("")
-					thunder:SetSize(32,32)
+					thunder:SetSize(28,28)
 					thunder:SetPos(pw - (pw / 4) + 8,58)
 					function thunder:PaintOver(w,h)
 						local thunder = StormFox.GetNetworkData("Thunder",false)
@@ -790,7 +938,7 @@
 						function ampmb:DoClick()
 							ampmb.text = (ampmb.text == "AM" and "PM" or "AM")
 							settimeoption.htext[3] = ampmb.text
-							LocalPlayer():EmitSound("buttons/button22.wav")
+							LocalPlayer():EmitSound("ui/buttonclick.wav")
 						end
 					end
 				end
@@ -800,7 +948,7 @@
 					ampmtoggle:SetSize(60,12)
 					ampmtoggle:SetPos(20,264)
 				function ampmtoggle:DoClick()
-					LocalPlayer():EmitSound("buttons/button22.wav")
+					LocalPlayer():EmitSound("ui/buttonclick.wav")
 					ampm = 1 - ampm
 					ampmtoggle.text = ampm == 0 and "AM/PM" or "24 clock"
 					cookie.Set("stormfox-ampm",ampm .. "")
@@ -819,7 +967,6 @@
 						net.WriteString("time_set")
 						net.WriteType(str)
 					net.SendToServer()
-					print(str)
 				end
 			-- Time speed
 				local symbol = CreateButton(panel,"")
@@ -951,8 +1098,11 @@
 			blabel:SetPos(pw / 2 - 70,ph - 20)
 			panel:SetPos((ScrW() / 4 ) * 3 - pw / 2,ScrH() / 6)
 			--panel:MakePopup()
+			panel.btnMaxim:SetVisible( false )
+			panel.btnMinim:SetVisible( false )
 			STORMFOX_WPANEL = panel
 		end
+	-- SF menu HUD
 		concommand.Add("sf_menu",StormFox.OpenWeatherMenu)
 		hook.Add("OnPlayerChat","StormFox - Menu",function(pl,text)
 			if pl ~= LocalPlayer() then return end
