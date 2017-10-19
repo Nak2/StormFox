@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.120
+StormFox.Version = 1.121
 StormFox.WorkShopVersion = false--game.IsDedicated()
 
 -- Skypaint creation fix.
@@ -80,6 +80,9 @@ if SERVER then
 	if StormFox.WorkShopVersion then
 		resource.AddWorkshop("1132466603")
 	else
+		file.CreateDir("stormfox")
+		file.CreateDir("stormfox/maps")
+
 	-- Add addon content
 		local i = 0
 		local function AddDir(dir,dirlen)

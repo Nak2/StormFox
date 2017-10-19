@@ -68,7 +68,9 @@ _STORMFOX_REPLACETEX_STR = _STORMFOX_REPLACETEX_STR or {}
 			if str == "error" then return end
 			for _,mat_type in ipairs(mat_layers) do
 				local fname = string.GetFileFromFilename(str)
-				if (string.find(fname,mat_type) or tablescan(tab[mat_type],fname)) and (not tablescan(blacklist,str) or tablescan(whitelist,str)) then
+				if tablescan(whitelist,str) then
+					return mat_type
+				elseif (string.find(fname,mat_type) or tablescan(tab[mat_type],fname)) and (not tablescan(blacklist,str)) then
 					return mat_type
 				end
 			end
