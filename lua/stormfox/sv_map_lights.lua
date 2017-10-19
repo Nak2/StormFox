@@ -26,7 +26,7 @@ local function ScanForLights()
 	tLights = {}
 	for _,ent in ipairs(ents.FindByClass("light_spot")) do
 		local name = ent:GetName() or "night"
-		if not string.find(name,"indoor") and (string.find(name,"night") or string.find(name,"day")) then
+		if not string.find(name,"indoor") and (string.find(name,"night") or string.find(name,"1") or string.find(name,"day")) then
 			table.insert(tLights,ent)
 		end
 	end

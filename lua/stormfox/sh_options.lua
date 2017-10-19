@@ -543,7 +543,7 @@
 				local i = 0
 				for str,helptext in pairs(t) do
 					i = i + 1
-					local b = StormFox.GetNetworkData("has_"..str,false)
+					local b = StormFox.GetNetworkData("has_" .. str,false)
 					surface.SetTextPos(24,i * 16)
 					if b then
 						surface.SetTextColor(0,255,0)

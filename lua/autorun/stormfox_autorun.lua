@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.121
+StormFox.Version = 1.122
 StormFox.WorkShopVersion = false--game.IsDedicated()
 
 -- Skypaint creation fix.

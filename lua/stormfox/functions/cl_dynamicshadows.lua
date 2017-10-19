@@ -108,16 +108,20 @@ hook.Add("RenderScene","StormFox - Suntest",function(eyepos,eyeang)
 	local tlight = 0
 	STORMFOX_SUN:SetTexture("stormfox/small_shadow_sprite")
 	local l = 500
+	local f = StormFox.GetNetworkData("has_light_environment",false)
 	if isday then
 		local c = Color(127.5 + 127.5 * colA,255,255 * colA)
 		STORMFOX_SUN:SetColor(c)
 		STORMFOX_SUN_distance:SetColor(c)
-		tlight = StormFox.GetData("SunSize",20) * 0.7
+		tlight = StormFox.GetData("SunSize",20) * 0.5
 	else
 		local c =  Color(63.5 + 63.5 * colA,155,255 * colA)
 		STORMFOX_SUN:SetColor(c)
 		STORMFOX_SUN_distance:SetColor(c)
 		tlight = StormFox.GetData("MoonVisibility",100) * 0.05 - 2
+	end
+	if f then
+		tlight = tlight * 4
 	end
 	STORMFOX_SUN:SetOrthographic(true,l,l,l,l)
 	STORMFOX_SUN:SetFarZ( distance * 1.3 )
