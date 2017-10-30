@@ -60,7 +60,6 @@ if SERVER then
 		if #l < 1 then print("[StormFox] Not a 3D skybox. Clouds disabled!") return end
 		sky_cam = l[1]
 		sky_scale = l[1]:GetSaveTable().scale
-		
 		StormFox_NETWORK_DATA["skybox_scale"] = sky_scale
 		StormFox_NETWORK_DATA["skybox_pos"] = sky_cam:GetSaveTable()["m_skyboxData.origin"] or sky_cam:GetPos()
 

@@ -28,6 +28,23 @@
  ---------------------------------------------------------------------------]]
 local round,clamp = math.Round,math.Clamp
 
+-- Support unamed entities
+local con = GetConVar("sf_disable_mapsupport")
+local function SetNameFix( ent )
+	if not IsValid(ent) then return end
+	if con and con:GetBool() then return end
+	if ent:GetClass() == "light_environment" then
+		if not ent:GetName() or ent:GetName() == "" then
+			ent:SetKeyValue("targetname", "lightenv")
+		end
+	elseif ent:GetClass() == "shadow_control" then
+		if not ent:GetName() or ent:GetName() == "" then
+			ent:SetKeyValue("targetname", "shadowenv")
+		end
+	end
+end
+hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
+
 -- Scan/create mapentities
 	local function GetOrCreate(str)
 		local l = ents.FindByClass(str)
@@ -45,7 +62,7 @@ local round,clamp = math.Round,math.Clamp
 		local sStatus = bFound and "OK" or "Not Found"
 		local cStatusColor = bFound and Color( 0, 255, 0 ) or Color( 255, 0, 0 )
 	 	MsgC( "	", Color(255,255,255), sEntClass, " ", cStatusColor, sStatus, Color( 255, 255, 255), "\n" )
-		StormFox.SetData( "has_" .. sEntClass, bFound )
+		StormFox.SetNetworkData( "has_" .. sEntClass, bFound and true or false )
 	end
 
 	local function FindEntities()
@@ -58,7 +75,7 @@ local round,clamp = math.Round,math.Clamp
 				SafeRemoveEntity( tSunlist[ i ] )
 			end
 		end
-		StormFox.light_environment = StormFox.light_environment or ents.FindByClass( "light_environment" )[1] or nil
+		StormFox.light_environment = StormFox.light_environment or ents.FindByClass( "light_environment" )[1] or nil-- ents.FindByName("lightenv")[1] or nil
 		StormFox.env_fog_controller = StormFox.env_fog_controller or GetOrCreate( "env_fog_controller" ) or nil
 		StormFox.shadow_control = StormFox.shadow_control or ents.FindByClass( "shadow_control" )[1] or nil
 		StormFox.env_tonemap_controller = StormFox.env_tonemap_controller or ents.FindByClass("env_tonemap_controller")[1] or nil
@@ -71,6 +88,7 @@ local round,clamp = math.Round,math.Clamp
 		printEntFoundStatus( StormFox.light_environment, "light_environment" )
 		printEntFoundStatus( StormFox.env_skypaint, "env_skypaint" )
 		printEntFoundStatus( StormFox.env_fog_controller, "env_fog_controller" )
+		printEntFoundStatus( StormFox.env_fog_controller, "env_tonemap_controller" )
 		printEntFoundStatus( StormFox.shadow_control, "shadow_control" )
 		hook.Call( "StormFox - PostEntityScan" )
 	end
@@ -167,13 +185,16 @@ local round,clamp = math.Round,math.Clamp
 		local getChar = string.char(97 + clamp(light / 4,0,25)) -- a - z
 		if getChar == oldls then return end
 		oldls = getChar
+		local sReturn = false
 		if con:GetBool() then
 			engine.LightStyle(0,getChar)
+			sReturn = true
 		end
 		if not IsValid(StormFox.light_environment) then
-			return
+			return sReturn and getChar or nil
 		end
 		StormFox.light_environment:Fire("FadeToPattern", getChar ,0)
+		return sReturn and getChar or nil
 	end
 
 -- Support for envcitys sky-entity

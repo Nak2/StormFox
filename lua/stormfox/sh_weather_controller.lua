@@ -178,7 +178,10 @@ timer.Create("StormFox - MapLight",10,0,function()
 	StormFox.SetData("MapLight",mapLight)
 	if SERVER then
 		-- StormFox.CalculateMapLight(flTime, 0, 1)
-		StormFox.SetMapLight(mapLight)
+		local newChar = StormFox.SetMapLight(mapLight)
+		if newChar then
+			StormFox.SetNetworkData("MapLightChar",newChar)
+		end
 	end
 end)
 

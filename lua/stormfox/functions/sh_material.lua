@@ -132,9 +132,9 @@ _STORMFOX_REPLACETEX_STR = _STORMFOX_REPLACETEX_STR or {}
 			return t
 		end
 
-
-
+local Loaded = false
 local function LoadMapData()
+	if Loaded then return end
 	if file.Exists("stormfox/maps/" .. game.GetMap() .. ".txt","data") then
 		print("[StormFox]: Loading texturemap...")
 		local tab = util.JSONToTable(file.Read("stormfox/maps/" .. game.GetMap() .. ".txt","DATA"))
@@ -150,22 +150,13 @@ local function LoadMapData()
 		print("[StormFox]: Generating texturemap (Might take a bit)...")
 		local str = file.Read("maps/" .. game.GetMap() .. ".bsp","GAME")
 		local materials = {}
-		local mats = 0
-		for w in string.gmatch( str, "materials/([%d%a_/%-]+).vmt" ) do
+		local matlist = string.match(file.Read("maps/" .. game.GetMap() .. ".bsp","GAME"),"%s([^%s]+TOOLS%/TOOLSNODRAW[^%s]+)")
+		local p = ""
+		for w in string.gmatch( matlist, "[%a%d%_-/]+/[%a%d%_-/]+" ) do
 			materials[string.lower(w)] = true
-			mats = mats + 1
 		end
-		for w in string.gmatch( str, [["$basetexture"%s-"([%d%a_/%-]+)"]] ) do
-			materials[string.lower(w)] = true
-			mats = mats + 1
-		end
-		for w in string.gmatch( str, [["$detail"%s-"([%d%a_/%-]+)"]] ) do
-			materials[string.lower(w)] = true
-			mats = mats + 1
-		end
-		for w in string.gmatch( str, [[(%u[%u%d_%-]+/%u[%u%d/_%-]+)]] ) do
-			materials[string.lower(w)] = true
-			if string.find(string.lower(w),"grass") then --[[print("Digging: " .. string.lower(w))]] end
+		for _,str in ipairs(game.GetWorld():GetMaterials()) do
+			materials[string.lower(str)] = true
 		end
 		LoadTexts(materials) -- Load materials
 		local t,t2 = ScanMapTextures(materials)
@@ -175,9 +166,9 @@ local function LoadMapData()
 		print("[StormFox]: Saving texturemap ..")
 	end
 	print("[StormFox]: Texturemap loaded.")
+	Loaded = true
 end
-hook.Add("InitPostEntity","StormFox - MaterialLoader",timer.Simple(2,LoadMapData))
-if #player.GetAll() > 0 then timer.Simple(2,LoadMapData) end
+hook.Add("StormFox - PostEntity","StormFox - MaterialLoader",timer.Simple(2,LoadMapData))
 
 local function ReplaceMaterial(str,texture,id)
 	if not id then id = 1 end
@@ -237,6 +228,7 @@ local l,lvl_old = 0,-1
 hook.Add("Think","StormFox - Snow Replacement",function()
 	if l > SysTime() then return end
 		l = SysTime() + 5
+	if not Loaded then return end
 	local lvl = math.Clamp(StormFox.GetNetworkData("SnowMaterial_Amount",0),0,3)
 	local con = GetConVar("sf_material_replacment")
 	if not con:GetBool() then

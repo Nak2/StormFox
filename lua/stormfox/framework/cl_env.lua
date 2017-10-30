@@ -1,5 +1,5 @@
 
-local max,min,clamp,rad,cos,sin = math.max,math.min,math.Clamp,math.rad,math.cos,math.sin
+local max,min,clamp,rad,cos,sin,abs = math.max,math.min,math.Clamp,math.rad,math.cos,math.sin,math.abs
 --[[-------------------------------------------------------------------------
 ConVar
 ---------------------------------------------------------------------------]]
@@ -278,12 +278,17 @@ Non light_env support
 local t = 0
 local con1 = GetConVar("sf_enable_ekstra_lightsupport")
 local con2 = GetConVar("sf_redownloadlightmaps")
+local lastL = "a"
 hook.Add("Think","StormFox - light_env support",function()
+	local nowL = StormFox.GetNetworkData("MapLightChar","a")
+	if nowL ~= lastL then return end
 	if t > SysTime() then return end
-		t = SysTime() + 30
+		t = SysTime() + 15
+	if not IsValid(LocalPlayer()) then return end
+	if LocalPlayer():GetVelocity():Length() > 20 then return end
 	if not con1 or not con1:GetBool() then return end
 	if not con2 or not con2:GetBool() then return end
-
+	lastL = nowL
 	render.RedownloadAllLightmaps()
 end)
 

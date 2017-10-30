@@ -331,12 +331,4 @@
 			surface.SetTextPos(ScrW() - 400,10 + i * 15)
 			surface.DrawText(StormFox.GetRealTime())
 		end)]]
-	else
-		hook.Add( "StormFox - PostEntityScan", "StormFox - SendEntities",function()
-			StormFox.SetNetworkData("has_env_tonemap_controller",StormFox.env_tonemap_controller and true or false)
-			StormFox.SetNetworkData("has_light_environment",StormFox.env_tonemap_controller and true or false)
-			StormFox.SetNetworkData("has_env_fog_controller",StormFox.env_fog_controller and true or false)
-			StormFox.SetNetworkData("has_env_skypaint",StormFox.env_skypaint and true or false)
-			StormFox.SetNetworkData("has_shadow_control",StormFox.shadow_control and true or false)
-		end)
 	end

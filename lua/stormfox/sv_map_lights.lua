@@ -23,7 +23,8 @@ local function ScanForLights()
 		StormFox.SetNetworkData("has_trigger",true)
 	end
 	-- Locate light
-	tLights = {}
+	local tLights = {}
+	light_spots = { {}, {}, {}, {}, {}, {} }
 	for _,ent in ipairs(ents.FindByClass("light_spot")) do
 		local name = ent:GetName() or "night"
 		if not string.find(name,"indoor") and (string.find(name,"night") or string.find(name,"1") or string.find(name,"day")) then

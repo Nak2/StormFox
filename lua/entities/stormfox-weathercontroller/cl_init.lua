@@ -8,6 +8,40 @@ end
 local cos,sin,rad,min,max = math.cos,math.sin,math.rad,math.min,math.max
 local mat = Material("models/props_combine/combine_intmonitor001_disp_off")
 
+surface.CreateFont( "SkyFox-Console_B", {
+			font = "Arial", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
+			extended = false,
+			size = 30,
+			weight = 500,
+			blursize = 0,
+			scanlines = 0,
+			antialias = true,
+			underline = false,
+			italic = false,
+			strikeout = false,
+			symbol = false,
+			rotary = false,
+			shadow = false,
+			additive = false,
+			outline = false,
+		} )
+		surface.CreateFont( "SkyFox-Console", {
+			font = "Arial", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
+			extended = false,
+			size = 20,
+			weight = 500,
+			blursize = 0,
+			scanlines = 0,
+			antialias = true,
+			underline = false,
+			italic = false,
+			strikeout = false,
+			symbol = false,
+			rotary = false,
+			shadow = false,
+			additive = false,
+			outline = false,
+		} )
 
 -- Thanks wiki
 local function WorldToScreen(vWorldPos,vPos,vScale,aRot)

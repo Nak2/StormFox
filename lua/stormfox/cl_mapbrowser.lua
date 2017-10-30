@@ -234,14 +234,19 @@ local IgnoreMaps = {
 	local function GetMapData()
 		local t_l = table.GetKeys(t)
 		local data = {}
-		local n = 0
+		local n,totaln = 0,1
 		for i,str in ipairs(t_l) do
+			totaln = totaln + 1
 			if StormFox.GetNetworkData("has_" .. str) then
 				n = n + 1
 				data[str] = true
 			end
 		end
-		data["percent_support"] = n / #t_l
+		data["3D Skybox"] = StormFox.Is3DSkybox()
+		if StormFox.Is3DSkybox() then
+			n = n + 1
+		end
+		data["percent_support"] = n / totaln
 		local n = 0
 		for str,_ in pairs(bonus_t) do
 			if StormFox.GetNetworkData("has_" .. str) then
@@ -363,14 +368,29 @@ local IgnoreMaps = {
 			surface.DrawTexturedRect(5,i * 10 + 10,10,10)
 			y = i * 10 + 20
 		end
+		local b = self.mapdata["3D Skybox"] or false
+		surface.SetTextPos(18,y)
+		if b then
+			surface.SetTextColor(0,255,0)
+			surface.SetDrawColor(255,255,255)
+			surface.SetMaterial(check)
+		else
+			surface.SetTextColor(255,255,255)
+			surface.SetDrawColor(255,0,0)
+			surface.SetMaterial(cross)
+		end
+
+		surface.DrawText("3D Skybox")
+		surface.DrawTexturedRect(5,y,10,10)
+
 		if (self.mapdata["bonus"] or 0) > 0 then
-			draw.DrawText("Extra map support","SkyFox-Console_Tiny",w / 2,y + 5,Color(255,255,255),1)
-			surface.SetTextPos(18,y + 15)
+			draw.DrawText("Extra map support","SkyFox-Console_Tiny",w / 2,y + 15,Color(255,255,255),1)
+			surface.SetTextPos(18,y + 25)
 			surface.SetTextColor(0,255,0)
 			surface.SetDrawColor(255,255,255)
 			surface.SetMaterial(check)
 			surface.DrawText("Map Effects/ Triggers")
-			surface.DrawTexturedRect(5,y + 15,10,10)
+			surface.DrawTexturedRect(5,y + 25,10,10)
 		end
 	end
 
@@ -434,7 +454,7 @@ local IgnoreMaps = {
 				if panel.map_table then
 					panel.map_table:Remove()
 				end
-
+				if not map_list[category] then return end
 				--panel:PerformLayout()
 				local map_table = vgui.Create( "DIconLayout", d_map_list )
 					map_table:Dock( FILL )

@@ -65,7 +65,7 @@ hook.Add( "StormFox - TopSkyRender", "StormFox - MoonRender", function()
 				local glow = (clamp(a,0,1) - 0.1) * gda
 				render.DrawQuadEasy( N * 200, negativeN, moonsize / nn, moonsize / nn, Color(c.r,c.g,c.b, glow * 255), (ang.p >= 270.01 or ang.p < 90) and 180 or 0 )
 
-				render.SetMaterial( m )
+				render.SetMaterial( Material(StormFox.GetData("MoonTexture","stormfox/moon_fix")) )
 
 				--render.DrawQuadEasy( pos, -N, moonsize, moonsize, Color(c.r,c.g,c.b, clamp((a - 0.3) * 255,0,255)),(ang.p >= 270 or ang.p < 90) and 180 or 0 )
 				local moonalpha = clamp((a * 1.3) - 0.4,0,1) * 255 * gda

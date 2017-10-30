@@ -1,7 +1,6 @@
 StormFox = {}
-StormFox.Version = 1.122
+StormFox.Version = 1.124
 StormFox.WorkShopVersion = false--game.IsDedicated()
-
 -- Skypaint creation fix.
 local con = GetConVar("sf_disableskybox")
 if not con or not con:GetBool() then
@@ -21,60 +20,28 @@ end
 	end
 
 -- Add configs
-	if not ConVarExists("sf_timespeed") then
-		CreateConVar("sf_timespeed",1, FCVAR_REPLICATED + FCVAR_ARCHIVE, "The minutes of gametime pr second." )
+	local function AddConVar(str,default,helptext)
+		if ConVarExists(str) then return end
+		CreateConVar(str,default, { FCVAR_REPLICATED, FCVAR_ARCHIVE }, helptext)
 	end
-	if not ConVarExists("sf_moonscale") then
-		CreateConVar("sf_moonscale",6, FCVAR_REPLICATED + FCVAR_ARCHIVE , "The scale of the moon." )
-	end
-	if not ConVarExists("sf_sv_material_replacment") then
-		CreateConVar("sf_sv_material_replacment",1,  FCVAR_REPLICATED + FCVAR_ARCHIVE, "Enable material-replacment for weather effects.")
-	end
-	if not ConVarExists("sf_replacment_dirtgrassonly") then
-		CreateConVar("sf_replacment_dirtgrassonly",0, FCVAR_REPLICATED + FCVAR_ARCHIVE , "Only replace dirt and grass. (Useful on crazy maps)")
-	end
-	if not ConVarExists("sf_disablefog") then
-		CreateConVar("sf_disablefog",0, FCVAR_REPLICATED + FCVAR_ARCHIVE , "Disable SF editing the fog.")
-	end
-	if not ConVarExists("sf_disableweatherdebuffs") then
-		CreateConVar("sf_disableweatherdebuffs",game.IsDedicated() and 1 or 0, FCVAR_REPLICATED + FCVAR_ARCHIVE , "Disable weather debuffs/damage/impact.")
-	end
-	if not ConVarExists("sf_disable_windpush") then
-		CreateConVar("sf_disable_windpush",game.IsDedicated() and 1 or 0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Disable wind-push on props (Careful on servers).")
-	end
-	if not ConVarExists("sf_disablelightningbolts") then
-		CreateConVar("sf_disablelightningbolts",0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Disable lightning strikes.")
-	end
-	if not ConVarExists("sf_disable_autoweather") then
-		CreateConVar("sf_disable_autoweather",0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Disable the automatic weather-generator.")
-	end
-	if not ConVarExists("sf_disable_mapsupport") then
-		CreateConVar("sf_disable_mapsupport",0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Disable the entity-support for maps.")
-	end
-	if not ConVarExists("sf_disable_autoweather_cold") then
-		CreateConVar("sf_disable_autoweather_cold",0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Disable autoweather creating snow.")
-	end
-	if not ConVarExists("sf_sunmoon_yaw") then
-		CreateConVar("sf_sunmoon_yaw",270, FCVAR_REPLICATED + FCVAR_ARCHIVE, "The sun/moon yaw.")
-	end
-	if not ConVarExists("sf_debugcompatibility") then
-		CreateConVar("sf_debugcompatibility",0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Enable SF compatability-debugger.")
-	end
-	if not ConVarExists("sf_disableskybox") then
-		CreateConVar("sf_disableskybox",0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Disable the SF-skybox.")
-	end
-	if not ConVarExists("sf_enable_ekstra_lightsupport") then
-		CreateConVar("sf_enable_ekstra_lightsupport",0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Enable ekstra lightsupport (engine.LightStyle)")
-	end
-	if not ConVarExists("sf_start_time") then
-		CreateConVar("sf_start_time","", FCVAR_REPLICATED + FCVAR_ARCHIVE, "Start the server at a specific time.")
-	end
-	if not ConVarExists("sf_disable_mapbloom") then
-		CreateConVar("sf_disable_mapbloom",0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Disable SF editing light-bloom.")
-	end
-	if not ConVarExists("sf_disblemapbrowser") then
-		CreateConVar("sf_disblemapbrowser",game.IsDedicated() and 1 or 0, FCVAR_REPLICATED + FCVAR_ARCHIVE, "Disable people changing the map with SF-browser.")
-	end
+	AddConVar("sf_timespeed",1,"The minutes of gametime pr second.")
+	AddConVar("sf_moonscale",6,"The scale of the moon.")
+	AddConVar("sf_sv_material_replacment",1,"Enable material-replacment for weather effects.")
+	AddConVar("sf_replacment_dirtgrassonly",0,"Only replace dirt and grass. (Useful on crazy maps)")
+	AddConVar("sf_disablefog",0,"Disable SF editing the fog.")
+	AddConVar("sf_disableweatherdebuffs",game.IsDedicated() and 1 or 0,"Disable weather debuffs/damage/impact.")
+	AddConVar("sf_disable_windpush",game.IsDedicated() and 1 or 0,"Disable wind-push on props (Careful on servers).")
+	AddConVar("sf_disablelightningbolts",0,"Disable lightning strikes.")
+	AddConVar("sf_disable_autoweather",0,"Disable the automatic weather-generator.")
+	AddConVar("sf_disable_mapsupport",0,"Disable the entity-support for maps.")
+	AddConVar("sf_disable_autoweather_cold",0,"Disable autoweather creating snow.")
+	AddConVar("sf_sunmoon_yaw",270,"The sun/moon yaw.")
+	AddConVar("sf_debugcompatibility",0,"Enable SF compatability-debugger.")
+	AddConVar("sf_disableskybox",0,"Disable the SF-skybox.")
+	AddConVar("sf_enable_ekstra_lightsupport",0,"Enable ekstra lightsupport (engine.LightStyle)")
+	AddConVar("sf_start_time","","Start the server at a specific time.")
+	AddConVar("sf_disable_mapbloom",0,"Disable SF editing light-bloom.")
+	AddConVar("sf_disblemapbrowser",game.IsDedicated() and 1 or 0,"Disable people changing the map with SF-browser.")
 
 if SERVER then
 	if StormFox.WorkShopVersion then
@@ -115,6 +82,7 @@ else
 	CreateClientConVar("sf_allow_dynamiclights","1",true,false,"Enable lamp-lights from SF.")
 	CreateClientConVar("sf_allow_sunbeams","1",true,false,"Enable sunbeams.")
 	CreateClientConVar("sf_allow_dynamicshadow","0",true,false,"Enable dynamic light/shadows.")
+	CreateClientConVar("sf_dynamiclightamount","1",true,false,"Controls the dynamic-light amount.")
 	CreateClientConVar("sf_redownloadlightmaps","1",true,false,"Lighterrors and light_environment fix (Can lagspike)")
 	CreateClientConVar("sf_allow_raindrops","1",true,false,"Enables raindrops on the screen")
 	CreateClientConVar("sf_renderscreenspace_effects","1",true,false,"Enables RenderScreenspaceEffects")
@@ -168,3 +136,13 @@ HandleFile("stormfox/" .. "sh_options.lua")
 HandleFile("stormfox/" .. "cl_wizard.lua")
 HandleFile("stormfox/" .. "cl_mapbrowser.lua")
 hook.Call("StormFox - PostInit")
+
+local t1 = util.JSONToTable(file.Read("stormfox/maps/" .. game.GetMap() .. ".txt","DATA"))
+local t2 = util.JSONToTable(file.Read("stormfox/maps/" .. game.GetMap() .. " - Kopi.txt","DATA"))
+for _type,tab in pairs(t2) do
+	for matstr,str in pairs(tab) do
+		if not t1[_type][matstr] then
+			print("Not added",matstr)
+		end
+	end
+end

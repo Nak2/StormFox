@@ -1,4 +1,3 @@
-
 -- ConCommand
 	concommand.Add("sf_setweather",function( ply, cmd, args, argStr)
 		if CLIENT then return end
@@ -145,6 +144,10 @@
 				clientTrickBox(panel,"sf_renderscreenspace_effects")
 			-- Dynamic shadows
 				clientTrickBox(panel,"sf_allow_dynamicshadow")
+			-- Dynamic shadows light
+				local qt = panel:AddControl( "Slider", { Label = "Dynamiclight Amount", Type = "float", Command = "sf_dynamiclightamount", Min = "0", Max = "5" } )
+				local con = GetConVar("sf_dynamiclightamount")
+					qt:SetValue(con:GetFloat())
 			-- Dynamic shadows
 				local ds_button = vgui.Create("DButton",panel)
 					ds_button:SetSize(120,30)
@@ -162,7 +165,6 @@
 							RunConsoleCommand("r_projectedtexture_filter","0.2")
 						end
 					end
-
 				panel:AddPanel(ds_button)
 			-- redownloadlightmap
 				clientTrickBox(panel,"sf_redownloadlightmaps")
@@ -505,10 +507,39 @@
 			end
 			return slider
 		end
+	-- Chat status
+		local openChat = false
+		hook.Add("StartChat","StormFox DisableC",function()
+			openChat = true
+		end)
+		hook.Add("FinishChat","StormFox EnableC",function()
+			openChat = false
+		end)
 	-- Map Display
 		local mat = Material("gui/gradient")
 		local cross = Material("debug/particleerror")
 		local check = Material("vgui/hud/icon_check")
+		local function drawStatus(name,x,y,bool,helptext,self)
+			local cx,cy = self:CursorPos()
+			surface.SetTextPos(x + 19,y)
+			if bool then
+				surface.SetTextColor(0,255,0)
+				surface.SetDrawColor(255,255,255)
+				surface.SetMaterial(check)
+			else
+				surface.SetTextColor(255,255,255)
+				surface.SetDrawColor(255,0,0)
+				surface.SetMaterial(cross)
+			end
+			if cx > x and cx < x + 150 and cy > y and cy < y + 16 then
+				local xx,yy = self:LocalToScreen( x,y + 7 )
+				StormFox.DisplayTip(xx,yy,helptext,1)
+			end
+			surface.SetFont("SkyFox-Console_Small")
+			surface.DrawText(name)
+			surface.DrawTexturedRect(x,y + 1,14,14)
+		end
+
 		local function OpenMapDisplay()
 			if not STORMFOX_WPANEL or not IsValid(STORMFOX_WPANEL) then return end
 			if STORMFOX_MPANEL and IsValid(STORMFOX_MPANEL) then
@@ -537,48 +568,24 @@
 					t["env_tonemap_controller"] = "Enables light-bloom/tonemap effects."
 					t["env_fog_controller"] = "Allows to control and edit fog."
 					t["env_skypaint"] = "Allows to paint and edit the sky."
-					t["shadow_control"] = "Allows to control source shadows."
+					t["shadow_control"] = "This map have source shadows."
 
 				local y = 0
 				local i = 0
 				for str,helptext in pairs(t) do
 					i = i + 1
 					local b = StormFox.GetNetworkData("has_" .. str,false)
-					surface.SetTextPos(24,i * 16)
-					if b then
-						surface.SetTextColor(0,255,0)
-						surface.SetDrawColor(255,255,255)
-						surface.SetMaterial(check)
-					else
-						surface.SetTextColor(255,255,255)
-						surface.SetDrawColor(255,0,0)
-						surface.SetMaterial(cross)
-					end
-					if cx > 5 and cx < w and cy > i * 16 and cy < i * 16 + 16 then
-						local xx,yy = self:LocalToScreen( 4,i * 16 + 7 )
-						StormFox.DisplayTip(xx,yy,helptext,1)
-					end
-
-					surface.SetFont("SkyFox-Console_Small")
-					surface.DrawText(str)
-					surface.DrawTexturedRect(5,i * 16 + 1,14,14)
+					drawStatus(str,5,i * 16,b,helptext,self)
 					y = i * 16 + 16
 				end
+				drawStatus("3D skybox",5,y,StormFox.Is3DSkybox(),"Allows better and further distant dynamic light.",self)
+
 				if StormFox.GetNetworkData("has_trigger",false) then
 					draw.DrawText("Extra map support","SkyFox-Console_Small",w / 2,y + 16,Color(255,255,255),1)
-					surface.SetTextPos(24,y + 32)
-					surface.SetTextColor(0,255,0)
-					surface.SetDrawColor(255,255,255)
-					surface.SetMaterial(check)
-					surface.DrawText("Map Effects/ Triggers")
-					surface.DrawTexturedRect(5,y + 33,14,14)
-					if cx > 5 and cx < w and cy > y + 32 and cy < y + 48 then
-						local xx,yy = self:LocalToScreen( 4,y + 39 )
-						StormFox.DisplayTip(xx,yy,"This map have extra light-effects and triggers.",1)
-					end
+					drawStatus("Map Effects/ Triggers",5,y + 32,true,"This map have extra light-effects and triggers.",self)
 					y = y + 49
 				end
-				self.h = y + 5
+				self.h = y + 19
 			end
 
 			STORMFOX_MPANEL = panel
@@ -1076,26 +1083,29 @@
 			local blabel = vgui.Create("DLabel",panel)
 				blabel.text = "Hold C"
 				blabel:SetText("")
-				blabel:SetSize(140,20)
+				blabel:SetSize(160,20)
 			function blabel:Paint(w,h)
+				local t = openChat and "Close chat to interact" or gui.IsConsoleVisible() and "Close console" or self.text
 				surface.SetTextColor(colors[1])
 				surface.SetFont("SkyFox-Console")
-				local tw,th = surface.GetTextSize(self.text)
+				local tw,th = surface.GetTextSize(t)
 				surface.SetTextPos(w / 2 - tw / 2,h / 2 - th / 2)
-				surface.DrawText(self.text)
+				surface.DrawText(t)
 			end
 			function panel:Think()
-				if not self.enabled and input.IsKeyDown(KEY_C) then
+				if not self.enabled and input.IsKeyDown(KEY_C) and not openChat and not gui.IsConsoleVisible() then
 					self.enabled = true
+					self.btnClose:SetDisabled( false )
 					self:MakePopup()
 					self:SetSelected()
 				elseif self.enabled and not input.IsKeyDown(KEY_C) then
 					self.enabled = false
+					self.btnClose:SetDisabled( true )
 					self:SetMouseInputEnabled(false)
 					self:SetKeyboardInputEnabled(false)
 				end
 			end
-			blabel:SetPos(pw / 2 - 70,ph - 20)
+			blabel:SetPos(pw / 2 - 80,ph - 20)
 			panel:SetPos((ScrW() / 4 ) * 3 - pw / 2,ScrH() / 6)
 			--panel:MakePopup()
 			panel.btnMaxim:SetVisible( false )
@@ -1110,4 +1120,16 @@
 			StormFox.OpenWeatherMenu()
 			return true
 		end)
+		list.Set( "DesktopWindows", "StormFox", {
+			title		= "StormFox",
+			icon		= "stormfox/SF.png",
+			width		= 960,
+			height		= 700,
+			onewindow	= true,
+			init		= function(icon)
+				StormFox.OpenWeatherMenu()
+				icon.Window:Remove()
+				LocalPlayer():EmitSound("garrysmod/ui_click.wav")
+			end
+			})
 	end
