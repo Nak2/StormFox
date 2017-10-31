@@ -136,13 +136,3 @@ HandleFile("stormfox/" .. "sh_options.lua")
 HandleFile("stormfox/" .. "cl_wizard.lua")
 HandleFile("stormfox/" .. "cl_mapbrowser.lua")
 hook.Call("StormFox - PostInit")
-
-local t1 = util.JSONToTable(file.Read("stormfox/maps/" .. game.GetMap() .. ".txt","DATA"))
-local t2 = util.JSONToTable(file.Read("stormfox/maps/" .. game.GetMap() .. " - Kopi.txt","DATA"))
-for _type,tab in pairs(t2) do
-	for matstr,str in pairs(tab) do
-		if not t1[_type][matstr] then
-			print("Not added",matstr)
-		end
-	end
-end
