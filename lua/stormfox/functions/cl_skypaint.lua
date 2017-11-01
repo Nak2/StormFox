@@ -12,7 +12,7 @@ local g_SkyPaint_tab = {}
 	function g_SkyPaint_tab.IsValid() return true end
 local g_datacache = {}
 	function g_SkyPaint_tab:GetNetworkVars()
-		return table.Copy(g_datacache)
+		return g_datacache
 	end
 local function AddDataCache(name,defaultdata)
 	g_datacache[name] = defaultdata

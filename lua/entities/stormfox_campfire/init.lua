@@ -19,6 +19,8 @@ function ENT:Initialize()
 	self.t = 0
 	self:SetUseType(SIMPLE_USE )
 	self:EmitSound("ambient/fire/mtov_flame2.wav")
+	self:SetCollisionGroup(COLLISION_GROUP_WORLD)
+	self.ignite_list = {}
 end
 
 function ENT:SpawnFunction( ply, tr, ClassName )
@@ -36,9 +38,7 @@ function ENT:SpawnFunction( ply, tr, ClassName )
 	if IsValid(pys) then
 		pys:EnableMotion(false)
 	end
-
 	return ent
-
 end
 
 function ENT:Use()
@@ -49,16 +49,38 @@ function ENT:Use()
 	elseif self:GetColor().r ~= 254 then
 		self:SetColor(Color(254,0,0))
 		self.SND:Stop()
+		table.Empty(self.ignite_list)
+	end
+end
+
+local function igniteTick(self)
+	if (self.tt or 0) > SysTime() then return end
+	self.tt = SysTime() + 0.1
+	local TDI = DamageInfo()
+		TDI:SetDamage(2)
+		TDI:SetInflictor(self)
+		TDI:SetDamageType(8)
+		TDI:SetReportedPosition(self:GetPos())
+		TDI:SetDamagePosition(self:GetPos())
+		TDI:SetAttacker(self)
+	for _,ent in ipairs(self.ignite_list) do
+		if IsValid(ent) and ent:GetMaxHealth() > 0 and ent:GetPos():DistToSqr(self:GetPos()) < 900 then
+			ent:TakeDamageInfo(TDI)
+		end
 	end
 end
 
 function ENT:Think()
+	igniteTick(self)
 	if self.t > CurTime() then return end
 		self.t = CurTime() + 1
 	if self:WaterLevel() > 0 then -- Turn pff
 		self:SetColor(Color(254,0,0))
+		table.Empty(self.ignite_list)
 		self.SND:Stop()
 	end
+	if self:GetColor().r <= 254 then return end -- Its off
+	self.ignite_list = ents.FindInSphere(self:GetPos(),30)
 end
 
 

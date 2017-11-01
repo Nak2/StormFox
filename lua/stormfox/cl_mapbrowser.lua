@@ -267,23 +267,7 @@ local IgnoreMaps = {
 		end)
 		hook.Remove("StormFox - NetDataChange","StormFox - SaveMapdata")
 	end)
-	surface.CreateFont( "SkyFox-Console_Tiny", {
-			font = "Arial", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
-			extended = false,
-			size = 12,
-			weight = 500,
-			blursize = 0,
-			scanlines = 0,
-			antialias = true,
-			underline = false,
-			italic = false,
-			strikeout = false,
-			symbol = false,
-			rotary = false,
-			shadow = false,
-			additive = false,
-			outline = false,
-		} )
+
 -- Browser itself
 	local map_list
 	-- A copycat from Gmod github .. but there aren't any functions to get the list outside the menu :\

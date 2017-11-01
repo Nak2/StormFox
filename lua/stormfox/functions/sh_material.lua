@@ -155,8 +155,10 @@ local function LoadMapData()
 		for w in string.gmatch( matlist, "[%a%d%_-/]+/[%a%d%_-/]+" ) do
 			materials[string.lower(w)] = true
 		end
-		for _,str in ipairs(game.GetWorld():GetMaterials()) do
-			materials[string.lower(str)] = true
+		if game.GetWorld() and IsValid(game.GetWorld()) then
+			for _,str in ipairs(game.GetWorld():GetMaterials()) do
+				materials[string.lower(str)] = true
+			end
 		end
 		LoadTexts(materials) -- Load materials
 		local t,t2 = ScanMapTextures(materials)

@@ -31,7 +31,6 @@ function ENT:Initialize()
 		self.Sticks[i]:SetParent(self)
 		self.Sticks[i]:SetNoDraw(true)
 		self.Sticks[i]:SetMaterial("stormfox/models/firewood_burn")
-
 	end
 	self.Bottom = ClientsideModel("models/props_debris/concrete_floorpile01a.mdl",RENDERGROUP_OPAQUE)
 	self.Bottom:SetPos(self:LocalToWorld(Vector(0,0,-5)))
@@ -44,6 +43,7 @@ function ENT:Initialize()
 	self.t = 0
 	self.t2 = 0
 	self.ES = 1
+	self:SetCollisionGroup(COLLISION_GROUP_WORLD)
 end
 
 local ran,rand = math.random,math.Rand
@@ -115,6 +115,7 @@ function ENT:Think()
 		p:SetEndAlpha(0)
 		p:SetRoll(ran(360))
 end
+
 function ENT:Draw()
 	-- Render stuff
 	render.SetColorModulation(0.4,0.4,0.4)

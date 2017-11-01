@@ -281,7 +281,7 @@ local con2 = GetConVar("sf_redownloadlightmaps")
 local lastL = "a"
 hook.Add("Think","StormFox - light_env support",function()
 	local nowL = StormFox.GetNetworkData("MapLightChar","a")
-	if nowL ~= lastL then return end
+	if nowL == lastL then return end
 	if t > SysTime() then return end
 		t = SysTime() + 15
 	if not IsValid(LocalPlayer()) then return end
