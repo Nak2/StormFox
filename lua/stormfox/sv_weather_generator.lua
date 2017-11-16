@@ -41,7 +41,7 @@ StormFox.AddWeatherCondition("Rain",nil,{0.2,1},{240,720})
 
 StormFox.AddWeatherCondition("Fog",{335,400},{0.1,0.8},{180,200},function() return math.random(1,3) >= 2 end)
 
-function PickRandomWeather(current)
+local function PickRandomWeather(current)
 	current = current or StormFox.Weather.id or "clear"
 	if math.random(0,3) >= 3 then
 		return "clear"
@@ -65,7 +65,7 @@ function PickRandomWeather(current)
 end
 
 local clamp,max,abs = math.Clamp,math.max,math.abs
-function GetDataAcceleration(current,lastacc,min,max,lerp_acc)
+local function GetDataAcceleration(current,lastacc,min,max,lerp_acc)
 	local dis = max - min
 	local addacc = {-lerp_acc,lerp_acc}
 	if current >= max - dis / 5 then addacc = {-lerp_acc,lerp_acc * 0.2} end
@@ -82,18 +82,12 @@ function StormFox.GenerateNewDay(dont_update)
 	end
 	local lastWeather = week[#week] or {}
 	-- Calc temperature change
+		local tempmin,tempmax = StormFox.GetMapSetting("mintemp",-10),StormFox.GetMapSetting("maxtemp",20)
 		local last_tempacc = lastWeather.tempacc or math.random(-7,7)
-		local last_temp = lastWeather.temp or StormFox.GetNetworkData("Temperature",math.random(20,10))
+		local last_temp = lastWeather.temp or StormFox.GetNetworkData("Temperature",math.random(tempmin,tempmax))
 
-		local tempacc = GetDataAcceleration(last_temp,last_tempacc,math.random(-10,5),20,math.random(2,7))
-		local con = GetConVar("sf_disable_autoweather_cold")
-		local temp = clamp(last_temp + tempacc,-10,20)
-		if con:GetBool() then
-			if temp < 5 then
-				tempacc = abs(tempacc)
-			end
-			temp = max(temp,5)
-		end
+		local tempacc = GetDataAcceleration(last_temp,last_tempacc,tempmin,tempmax,math.random(2,7))
+		local temp = clamp(last_temp + tempacc,tempmin,tempmax)
 
 	-- Wind windmax = math.max(temp,3)
 		local last_wind = temp >= 7 and (lastWeather.wind or StormFox.GetNetworkData("Wind",0)) or math.min(lastWeather.wind or StormFox.GetData("Wind",0),1.5)
@@ -102,7 +96,7 @@ function StormFox.GenerateNewDay(dont_update)
 		if last_wind >= 18 then
 			last_windacc = last_windacc - 1
 		end
-		local wind = clamp(last_wind + windacc,0,20)
+		local wind = clamp(last_wind + windacc,0,StormFox.GetMapSetting("maxwind",30))
 
 		local windangle = ((lastWeather.windangle or StormFox.GetNetworkData("WindAngle",math.random(0,360))) + math.random(-50,50)) % 360
 		windangle = windangle < 0 and windangle + 360 or windangle
@@ -137,18 +131,11 @@ hook.Add("StormFox - PostInit","StormFox - GenerateFirstWeather",function()
 	StormFox.GenerateNewDay( false )
 end)
 
-local autoWeatherConvar = GetConVar("sf_disable_autoweather")
-local bAutoWeatherOn = autoWeatherConvar and autoWeatherConvar:GetBool() or true
-
-cvars.AddChangeCallback( "sf_disable_autoweather", function( sConvar, sOldValue, sNewValue )
-	MsgN("[StormFox] Auto Weather " .. ( sNewValue == "1" and "enabled" or "disabled" ) )
-	StormFox.SetWeather("clear",0)
-	bAutoWeatherOn = false
-end, "StormFox-AutoWeatherChanged")
-
 local selected,clearWD = false
+local autocon = GetConVar("sf_disable_autoweather")
 hook.Add("StormFox-NewDay", "StormFox-SendNextDay", function()
-	if not bAutoWeatherOn then return end
+	if not StormFox.GetMapSetting("autoweather") then return end
+	if autocon and autocon:GetBool() then return end
 	StormFox.GenerateNewDay( )
 	if clearWD and clearWD >= 1440 then
 		clearWD = clearWD - 1339
@@ -157,14 +144,11 @@ hook.Add("StormFox-NewDay", "StormFox-SendNextDay", function()
 end )
 
 local max = math.max
-local IsDisabled = (GetConVar("sf_disable_autoweather") and GetConVar("sf_disable_autoweather"):GetBool() or false)
-	cvars.AddChangeCallback( "sf_disable_autoweather", function( _,_, sNewValue )
-	    IsDisabled = sNewValue == 1
-	end, "StormFox_DisableWeather" )
 
 hook.Add("StormFox-Tick", "StormFox - WeatherAIThink",function(n)
-	if IsDisabled then return end
 	if #week < 1 then return end
+	if not StormFox.GetMapSetting("autoweather") then return end
+	if autocon and autocon:GetBool() then return end
 	if clearWD and clearWD <= n then
 		StormFox.SetWeather("clear",0)
 		clearWD = nil

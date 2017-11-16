@@ -4,6 +4,7 @@ local smoothe,smooths = 10000, 10000
 local SkyFog = function(scale)
 	if not scale then scale = 1 end
 	if not StormFox.GetData then return end
+	if not StormFox.EFEnabled() then return end
 	local con = GetConVar("sf_disablefog")
 	if con and con:GetBool() then
 		return

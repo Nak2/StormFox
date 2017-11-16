@@ -46,7 +46,7 @@
 			local con = net.ReadString()
 			local arg = net.ReadString()
 			if not con then return end
-			if not whitelist[con] then return end
+			if not whitelist[con] and not StormFox.convars[con] then return end
 			StormFox.CanEditSetting(ply,con,arg or nil)
 		end)
 	else
@@ -86,6 +86,7 @@
 				end
 			end
 			panel:AddItem(tickbox)
+			return tickbox
 		end
 		local function client_settings(panel)
 			-- Icon
@@ -129,6 +130,20 @@
 					qt:SetValue(con:GetFloat())
 					qt:UpdateNotches()
 				end
+			-- Disable effects
+				local tick = clientTrickBox(panel,"sf_disableeffects",function(self)
+					local con = GetConVar("sf_allowcl_disableeffects")
+					local disable = false
+					if not con or not con:GetBool() then -- Missing convar
+						local xx,yy = self:LocalToScreen(0,0 )
+						local x,y = gui.MousePos()
+						local w,h = self:GetSize()
+						if x > xx and y > yy and x < xx + w and y < yy + h then
+							StormFox.DisplayTip(xx,yy,"Disabled on this server.",RealFrameTime())
+						end
+						return true
+					end
+				end)
 			-- Material
 				clientTrickBox(panel,"sf_material_replacment")
 			-- Sound
@@ -193,6 +208,7 @@
 				end
 			end
 			panel:AddItem(tickbox)
+			return tickbox
 		end
 		local function admin_settings(panel)
 			-- Icon
@@ -224,7 +240,6 @@
 					requestSetting("sf_moonscale",math.Round(n) .. "")
 				end
 				panel:AddItem(moon_scale)
-
 			-- SunMoonAngle
 				local con = GetConVar("sf_sunmoon_yaw")
 				local ms = 270
@@ -243,11 +258,18 @@
 					requestSetting("sf_sunmoon_yaw",math.Round(n) .. "")
 				end
 				panel:AddItem(moon_scale)
-
-			-- Material replacment
-				adminTrickBox(panel,"sf_sv_material_replacment")
-			-- Material dirtgrass only
-				adminTrickBox(panel,"sf_replacment_dirtgrassonly")
+			-- Allow people to disable effects
+				local de_button = adminTrickBox(panel,"sf_allowcl_disableeffects")
+				function de_button:Think()
+					local xx,yy = self:LocalToScreen(0,0 )
+					local x,y = gui.MousePos()
+					local w,h = self:GetSize()
+					if x > xx and y > yy and x < xx + w and y < yy + h then
+						StormFox.DisplayTip(xx,yy,"Allows clients to disable SF effects. (Clients might get an unfair advantage in heavy rain with this.)",RealFrameTime())
+					end
+				end
+			-- Disable autoweather
+				adminTrickBox(panel,"sf_disable_autoweather")
 			-- Disable fog
 				adminTrickBox(panel,"sf_disablefog")
 			-- Disable windpush
@@ -256,10 +278,6 @@
 				adminTrickBox(panel,"sf_disableweatherdebuffs")
 			-- Disable lightning bolts
 				adminTrickBox(panel,"sf_disablelightningbolts")
-			-- Disable autoweather
-				adminTrickBox(panel,"sf_disable_autoweather")
-			-- Disable autoweather
-				adminTrickBox(panel,"sf_disable_autoweather_cold")
 			-- Disable skybox
 				adminTrickBox(panel,"sf_disableskybox")
 			-- Disable light bloom
@@ -284,6 +302,17 @@
 						end
 					end
 				panel:AddPanel(ds_button)
+			-- Map settings
+				local ms_button = vgui.Create("DButton",panel)
+					ms_button:SetSize(120,30)
+					ms_button:SetText("Open map settings.")
+					ms_button:SetDark(true)
+					ms_button.DoClick = function()
+						StormFox.MapSettings()
+						LocalPlayer():EmitSound("ui/buttonclickrelease.wav")
+					end
+
+				panel:AddPanel(ms_button)
 			-- Map browser
 				local ds_button = vgui.Create("DButton",panel)
 					ds_button:SetSize(120,30)

@@ -56,8 +56,8 @@ RainStorm.TimeDependentData.MapBloomMax = {
 	TIME_SUNSET = 1.4
 }
 
-RainStorm.CalculatedData.MapDayLight = 10
-RainStorm.CalculatedData.MapNightLight = 2
+RainStorm.CalculatedData.MapDayLight = 12.5
+RainStorm.CalculatedData.MapNightLight = 0
 RainStorm.CalculatedData.Gauge = 10
 
 RainStorm.CalculatedData.SunColor = Color(255,255,255,15)

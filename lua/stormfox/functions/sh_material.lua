@@ -10,13 +10,12 @@
 				l = SysTime() + 5
 			local temp = StormFox.GetNetworkData("Temperature",20)
 			local Gauge = StormFox.GetData("Gauge",0)
-			local con = GetConVar("sf_sv_material_replacment")
-			if temp > -2 or not con:GetBool() then
+			if temp > -2 or not StormFox.GetMapSetting("material_replacment") then
 				StormFox.SetNetworkData("SnowMaterial_Amount",0)
 				old_lvl = 0
 			elseif Gauge > 0 then -- is cold and snowing
 				local lvl = math.Clamp(math.Round((Gauge - 2) / 2),0,4)
-				if GetConVarNumber("sf_replacment_dirtgrassonly",0) > 0 then
+				if StormFox.GetMapSetting("replace_dirtgrassonly") then
 					lvl = 1
 				end
 				if old_lvl < lvl then
@@ -48,7 +47,7 @@ _STORMFOX_REPLACETEX_STR = _STORMFOX_REPLACETEX_STR or {}
 		["road"] = {"concretefloor033k","concretefloor033c","gravelpath01","bridge_concrete","road_texture","ajacks_10","asphalt_1_01"},
 		["roof"] = {"dome005","concretefloor005a_-798_-1000_255","concretefloor005a_-915_-1136_255"}
 	}
-	local whitelist = {"models/props_rooftop/dome005","models/props_foliage/branches_003"}
+	local whitelist = {"models/props_rooftop/dome005","models/props_foliage/branches_003","de_dust/groundsand03"}
 	local blacklist = {"concretefloor027a","swamp","indoor","foliage","model","dirtfloor005c","dirtground010"} -- "wood". dirtfloor005c see,s to be used a lot indoors
 	local forcedlist = {"models/props_foliage/branches_003","nature/gravelfloor004a","nature/dirtfloor012a","nature/blendtoxictoxic004a","nature/blenddirtgrass001b","concrete/concretefloor033k","concrete/concretefloor033c","nature/grassfloor002a","nature/dirtfloor011a","nature/dirtfloor006a","nature/dirtfloor005c"}
 
@@ -150,7 +149,8 @@ local function LoadMapData()
 		print("[StormFox]: Generating texturemap (Might take a bit)...")
 		local str = file.Read("maps/" .. game.GetMap() .. ".bsp","GAME")
 		local materials = {}
-		local matlist = string.match(file.Read("maps/" .. game.GetMap() .. ".bsp","GAME"),"%s([^%s]+TOOLS%/TOOLSNODRAW[^%s]+)")
+		local filedata = file.Read("maps/" .. game.GetMap() .. ".bsp","GAME")
+		local matlist = string.match(filedata,"%s([^%s]+TOOLS%/TOOLSNODRAW[^%s]+)") or filedata
 		local p = ""
 		for w in string.gmatch( matlist, "[%a%d%_-/]+/[%a%d%_-/]+" ) do
 			materials[string.lower(w)] = true

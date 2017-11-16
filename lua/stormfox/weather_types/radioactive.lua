@@ -44,8 +44,8 @@ Radioactive.TimeDependentData.Fogend = {
 	TIME_SUNRISE = 5400,
 	TIME_SUNSET = 3000
 }
-Radioactive.CalculatedData.MapDayLight = 70
-Radioactive.CalculatedData.MapNightLight = 10
+Radioactive.CalculatedData.MapDayLight = 87.5
+Radioactive.CalculatedData.MapNightLight = 0
 Radioactive.CalculatedData.Gauge = 2
 Radioactive.CalculatedData.SunColor = Color(155,255,155,15)
 

@@ -254,9 +254,9 @@
 	end
 	local cdata = {}
 	function StormFox.GetNetworkData(str,base)
-		if not network_data[str] then return base end
+		if type(network_data[str]) == "nil" then return base end
 		if not network_aimdata[str] then -- No network_aimdata .. return the var
-			return network_data[str] or nil
+			return network_data[str]
 		end
 		local t = CurTime()
 		local st = con:GetFloat()

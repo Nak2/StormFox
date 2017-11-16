@@ -303,57 +303,82 @@ end)]]
 --[[-------------------------------------------------------------------------
 Tip box
 ---------------------------------------------------------------------------]]
-local tip,tippos,tip_time,tip_w_h
-	local colors = {}
-		colors[1] = Color(241,223,221,255)
-		colors[2] = Color(78,85,93,255)
-		colors[3] = Color(51,56,60)
-		colors[4] = Color(47,50,55)
-function StormFox.DisplayTip(x,y,text,time)
-	surface.SetFont("GModWorldtip")
-	local tw,tl = surface.GetTextSize(text)
-	if tw < 260 then
-		tip = {text}
-		tip_w_h = {tw,tl}
-	else
-		local words = string.Explode("%s",text,true)
-		local current = words[1]
-		tip = {}
-		local minsize = 0
-		for i = 2,#words do
-			local csize = surface.GetTextSize(current .. " " .. words[i])
-			if csize >= 260 then
-				table.insert(tip,current)
-				current = words[i]
-			else
-				if minsize < csize then
-					minsize = csize
+	local tip,tippos,tip_time,tip_w_h
+		local colors = {}
+			colors[1] = Color(241,223,221,255)
+			colors[2] = Color(78,85,93,255)
+			colors[3] = Color(51,56,60)
+			colors[4] = Color(47,50,55)
+	function StormFox.DisplayTip(x,y,text,time)
+		surface.SetFont("GModWorldtip")
+		local tw,tl = surface.GetTextSize(text)
+		if tw < 260 then
+			tip = {text}
+			tip_w_h = {tw,tl}
+		else
+			local words = string.Explode("%s",text,true)
+			local current = words[1]
+			tip = {}
+			local minsize = 0
+			for i = 2,#words do
+				local csize = surface.GetTextSize((current and current .. " " or "") .. words[i])
+				if words[i] == "|" then
+					table.insert(tip,current)
+					current = nil
+				elseif csize >= 260 then
+					table.insert(tip,current)
+					current = words[i]
+				else
+					if minsize < csize then
+						minsize = csize
+					end
+					current = (current and current .. " " or "") .. words[i]
 				end
-				current = current .. " " .. words[i]
 			end
+			table.insert(tip,current)
+			tip_w_h = {minsize,tl * #tip}
 		end
-		table.insert(tip,current)
-		tip_w_h = {minsize,tl * #tip}
+		tippos = {x = x,y = y}
+		tip_time = time + CurTime()
 	end
-	tippos = {x = x,y = y}
-	tip_time = time + CurTime()
-end
 
-local ceil = math.ceil
-hook.Add("HUDPaint","StormFox - HUDTips",function()
-	if not tip then return end
-	if tip_time < CurTime() then return end
-	surface.SetFont("GModWorldtip")
-	local _,tl = surface.GetTextSize("ABCabc")
-	surface.SetDrawColor(Color(0,0,0,205))
-	local w,h = tip_w_h[1],tip_w_h[2]
-	local x,y = tippos.x - w - 8,tippos.y - h / 5
-	local offset = 5
-	surface.DrawOutlinedRect(x - offset,y - offset,w + offset * 2,h + offset * 2)
-	surface.DrawRect(x - offset,y - offset,w + offset * 2,h + offset * 2)
-	surface.SetTextColor(colors[1])
-	for i,str in ipairs(tip) do
-		surface.SetTextPos(x,y + i * tl - tl)
-		surface.DrawText(str)
+	local ceil = math.ceil
+	hook.Add("DrawOverlay","StormFox - HUDTips",function()
+		if not tip then return end
+		if tip_time < CurTime() then return end
+		surface.SetFont("GModWorldtip")
+		local _,tl = surface.GetTextSize("ABCabc")
+		surface.SetDrawColor(Color(0,0,0,205))
+		local w,h = tip_w_h[1],tip_w_h[2]
+		local x,y = tippos.x - w - 8,tippos.y - h / 5
+		local offset = 5
+		surface.DrawOutlinedRect(x - offset,y - offset,w + offset * 2,h + offset * 2)
+		surface.DrawRect(x - offset,y - offset,w + offset * 2,h + offset * 2)
+		surface.SetTextColor(colors[1])
+		for i,str in ipairs(tip) do
+			surface.SetTextPos(x,y + i * tl - tl)
+			surface.DrawText(str)
+		end
+	end)
+
+--[[-------------------------------------------------------------------------
+	Effects enabled
+---------------------------------------------------------------------------]]
+	local EFEnabled = true
+	timer.Create("SF_CheckEFEnable",1,0,function()
+		local sv_con = GetConVar("sf_allowcl_disableeffects")
+		local cl_con = GetConVar("sf_disableeffects")
+		if not sv_con or not cl_con then -- Missing convars
+			EFEnabled = true
+			return
+		end
+		if not sv_con:GetBool() or not cl_con:GetBool() then
+			EFEnabled = true
+			return
+		end
+		EFEnabled = false
+	end)
+
+	function StormFox.EFEnabled()
+		return EFEnabled
 	end
-end)

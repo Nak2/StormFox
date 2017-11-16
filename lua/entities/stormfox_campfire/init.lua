@@ -56,6 +56,7 @@ end
 local function igniteTick(self)
 	if (self.tt or 0) > SysTime() then return end
 	self.tt = SysTime() + 0.1
+	if #(self.ignite_list or {}) < 1 then return end
 	local TDI = DamageInfo()
 		TDI:SetDamage(2)
 		TDI:SetInflictor(self)

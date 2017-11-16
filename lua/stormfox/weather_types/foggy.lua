@@ -21,7 +21,7 @@ Foggy.TimeDependentData.Fogend = { -- TODO: Nak, what is this? Please add a comm
 		}
 Foggy.TimeDependentData.Fogstart = -1000
 
-Foggy.CalculatedData.MapDayLight = 50
+Foggy.CalculatedData.MapDayLight = 62.5
 Foggy.CalculatedData.SunColor = Color(155,255,155,55)
 
 Foggy.DataCalculationFunctions.StarFade = function( flPercent ) return max( 1 - flPercent * 10, 0 ) end

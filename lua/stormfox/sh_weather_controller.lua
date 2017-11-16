@@ -36,7 +36,7 @@ local function lerpAnyValue( amount, currentValue, targetValue )
 end
 
 if SERVER then
-	StormFox.SetNetworkData( "Temperature", math.random(10,20) )
+	StormFox.SetNetworkData( "Temperature", math.random(StormFox.GetMapSetting("mintemp",-10),StormFox.GetMapSetting("maxtemp",20)) )
 	StormFox.SetNetworkData( "Thunder",false)
 	StormFox.SetNetworkData( "Wind", 0 )
 	StormFox.SetNetworkData( "WindAngle", math.random(360) ) --cl
@@ -172,16 +172,28 @@ local function weatherThink()
 end
 hook.Add( "Think", "StormFox - WeatherThink", weatherThink )
 
-timer.Create("StormFox - MapLight",10,0,function()
+local map_name = game.GetMap():sub(0,3)
+local cstrikeMap = string.match(map_name,"ar_") or string.match(map_name,"cs_") or string.match(map_name,"de_") or string.match(map_name,"es_") or string.match(map_name,"fy_") or string.match(map_name,"gd_")
+cstrikeMap = false -- cs_office, de_dust
+local m = {}
+	m["cs_office"] = 2
+	m["de_dust"] = 2
+	m["de_dust2"] = 3
+	m["de_inferno"] = 2
+
+timer.Create("StormFox - MapLight",5,0,function()
 	-- Generate maplight
 	local mapLight = StormFox.CalculateMapLight(StormFox.GetTime(),StormFox.Weather:GetData("MapNightLight"),StormFox.Weather:GetData("MapDayLight"))
+		-- mapLight is from 0 to 100
+		-- Add the map-settings
+	local minlight,maxlight = StormFox.GetMapSetting("minlight",2) / 100,StormFox.GetMapSetting("maxlight",80) / 100
+	local delta = maxlight - minlight
+
+	mapLight = minlight * 100 + mapLight * delta
 	StormFox.SetData("MapLight",mapLight)
 	if SERVER then
 		-- StormFox.CalculateMapLight(flTime, 0, 1)
-		local newChar = StormFox.SetMapLight(mapLight)
-		if newChar then
-			StormFox.SetNetworkData("MapLightChar",newChar)
-		end
+		StormFox.SetMapLight(mapLight)
 	end
 end)
 

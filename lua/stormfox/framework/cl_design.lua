@@ -1,97 +1,107 @@
 -- Fonts
-surface.CreateFont( "SkyFox-Console_B", {
-	font = "Arial",
-	extended = false,
-	size = 30,
-	weight = 500,
-	blursize = 0,
-	scanlines = 0,
-	antialias = true,
-	underline = false,
-	italic = false,
-	strikeout = false,
-	symbol = false,
-	rotary = false,
-	shadow = false,
-	additive = false,
-	outline = false,
-} )
-surface.CreateFont( "SkyFox-Console", {
-	font = "Arial",
-	extended = false,
-	size = 20,
-	weight = 500,
-	blursize = 0,
-	scanlines = 0,
-	antialias = true,
-	underline = false,
-	italic = false,
-	strikeout = false,
-	symbol = false,
-	rotary = false,
-	shadow = false,
-	additive = false,
-	outline = false,
-} )
-surface.CreateFont( "SkyFox-Console_Medium", {
-	font = "Arial",
-	extended = false,
-	size = 16,
-	weight = 500,
-	blursize = 0,
-	scanlines = 0,
-	antialias = true,
-	underline = false,
-	italic = false,
-	strikeout = false,
-	symbol = false,
-	rotary = false,
-	shadow = false,
-	additive = false,
-	outline = false,
-} )
-surface.CreateFont( "SkyFox-Console_Small", {
-	font = "Arial",
-	extended = false,
-	size = 14,
-	weight = 500,
-	blursize = 0,
-	scanlines = 0,
-	antialias = true,
-	underline = false,
-	italic = false,
-	strikeout = false,
-	symbol = false,
-	rotary = false,
-	shadow = false,
-	additive = false,
-	outline = false,
-} )
-surface.CreateFont( "SkyFox-Console_Tiny", {
-	font = "Arial",
-	extended = false,
-	size = 12,
-	weight = 500,
-	blursize = 0,
-	scanlines = 0,
-	antialias = true,
-	underline = false,
-	italic = false,
-	strikeout = false,
-	symbol = false,
-	rotary = false,
-	shadow = false,
-	additive = false,
-	outline = false,
-} )
+	surface.CreateFont( "SkyFox-Console_B", {
+		font = "Arial",
+		extended = false,
+		size = 30,
+		weight = 500,
+		blursize = 0,
+		scanlines = 0,
+		antialias = true,
+		underline = false,
+		italic = false,
+		strikeout = false,
+		symbol = false,
+		rotary = false,
+		shadow = false,
+		additive = false,
+		outline = false,
+	} )
+	surface.CreateFont( "SkyFox-Console", {
+		font = "Arial",
+		extended = false,
+		size = 20,
+		weight = 500,
+		blursize = 0,
+		scanlines = 0,
+		antialias = true,
+		underline = false,
+		italic = false,
+		strikeout = false,
+		symbol = false,
+		rotary = false,
+		shadow = false,
+		additive = false,
+		outline = false,
+	} )
+	surface.CreateFont( "SkyFox-Console_Medium", {
+		font = "Arial",
+		extended = false,
+		size = 16,
+		weight = 500,
+		blursize = 0,
+		scanlines = 0,
+		antialias = true,
+		underline = false,
+		italic = false,
+		strikeout = false,
+		symbol = false,
+		rotary = false,
+		shadow = false,
+		additive = false,
+		outline = false,
+	} )
+	surface.CreateFont( "SkyFox-Console_Small", {
+		font = "Arial",
+		extended = false,
+		size = 14,
+		weight = 500,
+		blursize = 0,
+		scanlines = 0,
+		antialias = true,
+		underline = false,
+		italic = false,
+		strikeout = false,
+		symbol = false,
+		rotary = false,
+		shadow = false,
+		additive = false,
+		outline = false,
+	} )
+	surface.CreateFont( "SkyFox-Console_Tiny", {
+		font = "Arial",
+		extended = false,
+		size = 12,
+		weight = 500,
+		blursize = 0,
+		scanlines = 0,
+		antialias = true,
+		underline = false,
+		italic = false,
+		strikeout = false,
+		symbol = false,
+		rotary = false,
+		shadow = false,
+		additive = false,
+		outline = false,
+	} )
 
-local clamp,min,max,abs,lerp = math.Clamp,math.min,math.max,math.abs,Lerp
+local clamp,min,max,abs,lerp,cos,sin,rad = math.Clamp,math.min,math.max,math.abs,Lerp,math.cos,math.sin,math.rad
 
 local colors = {}
 	colors[1] = Color(241,223,221,255)
 	colors[2] = Color(78,85,93,255)
 	colors[3] = Color(51,56,60)
 	colors[4] = Color(47,50,55)
+
+local function lerpColor(amount,c,c2)
+	if amount == 0 then return c end
+	if amount == 1 then return c2 end
+	local r = lerp(amount,c.r,c2.r)
+	local g = lerp(amount,c.g,c2.g)
+	local b = lerp(amount,c.b,c2.b)
+	local a = lerp(amount,c.a,c2.a)
+	return Color(r,g,b,a)
+end
 
 -- Materials
 local grad = Material("gui/gradient_up")
@@ -101,6 +111,7 @@ local t_override = {}
 	t_override["Button"] = "DButton"
 	t_override["SmallButton"] = "DButton"
 	t_override["Slider"] = "DButton"
+	t_override["Toggle"] = "DButton"
 
 local vgui_types = {}
 local function CreateSFType(str,func,dtype)
@@ -121,6 +132,62 @@ CreateSFType("Frame",function(panel)
 		surface.DrawRect(0,0,w,24)
 	end
 end,"DFrame")
+
+local m_cir = Material("vgui/circle")
+CreateSFType("Toggle",function(panel)
+	panel:SetSize(40,22)
+	panel:SetText("")
+	panel.var = false
+	panel.vvar = 0
+	function panel:SetText() end
+	function panel:SetToggle(bool)
+		panel.var = bool == nil and not panel.var or bool
+	end
+
+	function panel.Paint(self,w,h)
+		local tv = panel.var and 1 or 0
+		local d = self:GetDisabled()
+		if self.vvar ~= tv then
+			local a = math.max(0.4,abs(self.vvar - tv) / 1.1)
+			self.vvar = lerp(RealFrameTime() * a * 10,self.vvar,tv)
+		end
+		draw.NoTexture()
+		if d then
+			surface.SetDrawColor(colors[3])
+		else
+			surface.SetDrawColor(lerpColor(self.vvar,colors[3],Color(100,100,200)))
+		end
+		local poly = {}
+		local corner = h / 2
+		table.insert(poly,{x = corner,y = 0})
+		table.insert(poly,{x = w - corner,y = 0})
+		for i = 0,180,20 do
+			table.insert(poly,{x = w - corner + cos(rad(i - 90)) * corner,y = corner + sin(rad(i - 90)) * corner})
+		end
+		table.insert(poly,{x = corner,y = h})
+		for i = 0,180,20 do
+			table.insert(poly,{x = corner + cos(rad(i + 90)) * corner,y = corner + sin(rad(i + 90)) * corner})
+		end
+		surface.DrawPoly(poly )
+		surface.SetMaterial(m_cir)
+		local size = h - 4
+		local length = w - 4 - size
+		surface.SetDrawColor(Color(0,0,0))
+		surface.DrawTexturedRect(3 + length * self.vvar,3,size,size)
+		surface.SetDrawColor(d and colors[2] or Color(255,255,255))
+		surface.DrawTexturedRect(2 + length * self.vvar,2,size,size)
+	--	surface.DrawTexturedRectUV(0,0,h / 2,h,0,0,0.5,1)
+	--	surface.DrawTexturedRectUV(h / 2,0,w - h,h,0.5,0,0.5,1)
+	--	surface.DrawTexturedRectUV(w - h / 2,0,h / 2,h,0.5,0,1,1)
+
+	end
+	function panel:OnClick() end
+	function panel:DoClick()
+		DoSound("garrysmod/ui_click.wav")
+		panel:SetToggle()
+		self:OnClick(self.var)
+	end
+end,"DButton")
 
 CreateSFType("Button",function(panel)
 	panel:SetText("")
@@ -220,6 +287,7 @@ CreateSFType("Slider",function(panel)
 		panel.min = 0
 		panel.max = 1
 	function panel:Paint(w,h)
+		local d = self:GetDisabled()
 		if self.svar ~= self.var then
 			local a = abs(self.svar - self.var)
 			self.svar = lerp(min(a / 2,2) * RealFrameTime() * 100,self.svar,self.var)
@@ -243,10 +311,11 @@ CreateSFType("Slider",function(panel)
 		surface.SetDrawColor(colors[3])
 		surface.DrawRect(w * 0.05,h / 2 - 1,w * 0.9,2)
 
-		surface.SetDrawColor(colors[1])
+		surface.SetDrawColor(d and colors[3] or colors[1])
 		surface.DrawRect(w * 0.05,h / 2 - 1,w * 0.9 * self.svar,2)
 
 		surface.DrawRect(w * 0.05 + w * 0.9 * self.svar,0,2,h)
+		self.first_pos = w * 0.05 + w * 0.9 * self.svar
 	end
 	function panel:SetMin(n)
 		self.min = n
@@ -290,6 +359,7 @@ CreateSFType("TwoSlider",function(panel)
 		panel.max = 1
 		panel.selectedside = 0
 	function panel:Paint(w,h)
+		local d = self:GetDisabled()
 		if self.svar ~= self.var then
 			local a = abs(self.svar - self.var)
 			self.svar = lerp(min(a / 1.4,8) * RealFrameTime() * 100,self.svar,self.var)
@@ -321,10 +391,10 @@ CreateSFType("TwoSlider",function(panel)
 			self.first_pos = first_pos
 			self.second_pos = second_pos
 		local l = abs(first_pos - second_pos)
-		surface.SetDrawColor(colors[1])
+		surface.SetDrawColor(d and colors[3] or colors[1])
 		surface.DrawRect(first_pos,h / 2,l,2)
 		local s = 0
-		if self:IsHovered() then
+		if self:IsHovered() and not d then
 			local w = self:GetSize()
 			local x = self:CursorPos()
 			local percent = clamp((x - w * 0.05) / (w * 0.9),0,1) -- w * 0.9
@@ -341,15 +411,15 @@ CreateSFType("TwoSlider",function(panel)
 			end
 		end
 		if s == 1 then
-			surface.SetDrawColor(Color(155,155,255))
+			surface.SetDrawColor(d and colors[3] or Color(155,155,255))
 		else
-			surface.SetDrawColor(colors[1])
+			surface.SetDrawColor(d and colors[3] or colors[1])
 		end
 		surface.DrawRect(first_pos,0,2,h)
 		if s == 2 then
-			surface.SetDrawColor(Color(155,155,255))
+			surface.SetDrawColor(d and colors[3] or Color(155,155,255))
 		else
-			surface.SetDrawColor(colors[1])
+			surface.SetDrawColor(d and colors[3] or colors[1])
 		end
 		surface.DrawRect(second_pos - 1,0,2,h)
 		self.selectedside = s

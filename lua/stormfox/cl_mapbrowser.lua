@@ -231,15 +231,15 @@ local IgnoreMaps = {
 	local bonus_t = {}
 		bonus_t["trigger"] = "This map have extra light-effects and triggers."
 
-	local function GetMapData()
+	function GetMapData()
 		local t_l = table.GetKeys(t)
 		local data = {}
 		local n,totaln = 0,1
 		for i,str in ipairs(t_l) do
 			totaln = totaln + 1
-			if StormFox.GetNetworkData("has_" .. str) then
+			data[str] = StormFox.GetNetworkData("has_" .. str)
+			if data[str] then
 				n = n + 1
-				data[str] = true
 			end
 		end
 		data["3D Skybox"] = StormFox.Is3DSkybox()
@@ -268,7 +268,7 @@ local IgnoreMaps = {
 		hook.Remove("StormFox - NetDataChange","StormFox - SaveMapdata")
 	end)
 
--- Browser itself
+-- The browser itself
 	local map_list
 	-- A copycat from Gmod github .. but there aren't any functions to get the list outside the menu :\
 	local function CreateMaplist()
@@ -319,6 +319,7 @@ local IgnoreMaps = {
 	local mat = Material("gui/gradient")
 	local cross = Material("debug/particleerror")
 	local check = Material("vgui/hud/icon_check")
+	local question = Material("vgui/avatar_default")
 	local function paintDetails(self,w,h)
 		surface.SetDrawColor(colors[2])
 		surface.SetDrawColor(Color(0,0,0,200))
@@ -333,35 +334,44 @@ local IgnoreMaps = {
 		draw.DrawText("Map Entities","SkyFox-Console_Tiny",w / 2,0,Color(255,255,255),1)
 		local y = 0
 		local i = 0
+		local checkVersion = self
 		surface.SetFont("SkyFox-Console_Tiny")
 		for str,helptext in pairs(t) do
 			i = i + 1
-			local b = self.mapdata[str] or false
+			local b = self.mapdata[str]
 			surface.SetTextPos(18,i * 10 + 10)
 			if b then
 				surface.SetTextColor(0,255,0)
 				surface.SetDrawColor(255,255,255)
 				surface.SetMaterial(check)
-			else
+			elseif b == false then
 				surface.SetTextColor(255,255,255)
 				surface.SetDrawColor(255,0,0)
 				surface.SetMaterial(cross)
+			else
+				surface.SetTextColor(150,150,255)
+				surface.SetDrawColor(150,150,255)
+				surface.SetMaterial(question)
 			end
 
 			surface.DrawText(str)
 			surface.DrawTexturedRect(5,i * 10 + 10,10,10)
 			y = i * 10 + 20
 		end
-		local b = self.mapdata["3D Skybox"] or false
+		local b = self.mapdata["3D Skybox"]
 		surface.SetTextPos(18,y)
 		if b then
 			surface.SetTextColor(0,255,0)
 			surface.SetDrawColor(255,255,255)
 			surface.SetMaterial(check)
-		else
+		elseif b == false then
 			surface.SetTextColor(255,255,255)
 			surface.SetDrawColor(255,0,0)
 			surface.SetMaterial(cross)
+		else
+			surface.SetTextColor(150,150,255)
+			surface.SetDrawColor(150,150,255)
+			surface.SetMaterial(question)
 		end
 
 		surface.DrawText("3D Skybox")

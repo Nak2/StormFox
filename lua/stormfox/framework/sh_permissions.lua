@@ -39,6 +39,14 @@ function StormFox.CanEditWeather(ply,func,...)
 	end)
 end
 
+function StormFox.CanEditMapSetting(ply,func,...)
+	local argz = {...}
+	CAMI.PlayerHasAccess(ply,"StormFox Settings",function(b)
+		if not b then ply:PrintMessage(HUD_PRINTTALK,"You don't have access to map settings.") return end
+		func(unpack(argz))
+	end)
+end
+
 function StormFox.CanEditSetting(ply,con,var)
 	CAMI.PlayerHasAccess(ply,"StormFox Settings",function(b)
 		--print(ply,"a")

@@ -44,8 +44,7 @@ local lcon = GetConVar("sf_dynamiclightamount")
 hook.Add("RenderScene","StormFox - Suntest",function(eyepos,eyeang)
 	if not LocalPlayer() then return end
 	local con = GetConVar("sf_allow_dynamicshadow")
-	local thunder_light = StormFox.GetData("ThunderLight",0)
-	if not con:GetBool() then
+	if not con:GetBool() or not StormFox.GetNetworkData("dynamiclight") or not StormFox.EFEnabled() then
 		if STORMFOX_SUN then
 			STORMFOX_SUN:Remove()
 		end
@@ -54,6 +53,7 @@ hook.Add("RenderScene","StormFox - Suntest",function(eyepos,eyeang)
 		end
 		return
 	end
+	local thunder_light = StormFox.GetData("ThunderLight",0)
 	-- Get angle and alpha
 		local sunAngle,isDay = nil,true
 		if thunder_light > 10 then

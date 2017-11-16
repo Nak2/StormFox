@@ -1,11 +1,11 @@
 StormFox = {}
-StormFox.Version = 1.125
+StormFox.Version = 1.13
 StormFox.WorkShopVersion = false--game.IsDedicated()
 -- Skypaint creation fix.
-local con = GetConVar("sf_disableskybox")
-if not con or not con:GetBool() then
-	RunConsoleCommand("sv_skyname", "painted")
-end
+	local con = GetConVar("sf_disableskybox")
+	if not con or not con:GetBool() then
+		RunConsoleCommand("sv_skyname", "painted")
+	end
 
 --if true then return end
 -- Reload support
@@ -20,21 +20,21 @@ end
 	end
 
 -- Add configs
+	StormFox.convars = {}
 	local function AddConVar(str,default,helptext)
+		StormFox.convars[str] = true
 		if ConVarExists(str) then return end
 		CreateConVar(str,default, { FCVAR_REPLICATED, FCVAR_ARCHIVE }, helptext)
+
 	end
+
 	AddConVar("sf_timespeed",1,"The minutes of gametime pr second.")
 	AddConVar("sf_moonscale",6,"The scale of the moon.")
-	AddConVar("sf_sv_material_replacment",1,"Enable material-replacment for weather effects.")
-	AddConVar("sf_replacment_dirtgrassonly",0,"Only replace dirt and grass. (Useful on crazy maps)")
 	AddConVar("sf_disablefog",0,"Disable SF editing the fog.")
 	AddConVar("sf_disableweatherdebuffs",game.IsDedicated() and 1 or 0,"Disable weather debuffs/damage/impact.")
 	AddConVar("sf_disable_windpush",game.IsDedicated() and 1 or 0,"Disable wind-push on props (Careful on servers).")
 	AddConVar("sf_disablelightningbolts",0,"Disable lightning strikes.")
-	AddConVar("sf_disable_autoweather",0,"Disable the automatic weather-generator.")
 	AddConVar("sf_disable_mapsupport",0,"Disable the entity-support for maps.")
-	AddConVar("sf_disable_autoweather_cold",0,"Disable autoweather creating snow.")
 	AddConVar("sf_sunmoon_yaw",270,"The sun/moon yaw.")
 	AddConVar("sf_debugcompatibility",0,"Enable SF compatability-debugger.")
 	AddConVar("sf_disableskybox",0,"Disable the SF-skybox.")
@@ -42,6 +42,11 @@ end
 	AddConVar("sf_start_time","","Start the server at a specific time.")
 	AddConVar("sf_disable_mapbloom",0,"Disable SF editing light-bloom.")
 	AddConVar("sf_disblemapbrowser",game.IsDedicated() and 1 or 0,"Disable people changing the map with SF-browser.")
+	AddConVar("sf_allowcl_disableeffects",engine.ActiveGamemode() == "sandbox" and 1 or 0,"Allow clients to disable SF-effects.")
+	AddConVar("sf_disable_autoweather",0,"Disable auto. weather-generation for all maps.")
+	--	AddConVar("sf_disable_autoweather_cold",0,"Disable autoweather creating snow.")
+	--	AddConVar("sf_sv_material_replacment",1,"Enable material-replacment for weather effects.")
+	--	AddConVar("sf_replacment_dirtgrassonly",0,"Only replace dirt and grass. (Useful on crazy maps)")
 
 if SERVER then
 	if StormFox.WorkShopVersion then
@@ -75,6 +80,7 @@ if SERVER then
 		MsgN("[StormFox] Added " .. i .. " content files")
 	end
 else
+	CreateClientConVar("sf_disableeffects","0",true,false,"Disable all effects.")
 	CreateClientConVar("sf_exspensive","0",true,false,"[0-7+] Enable exspensive weather calculations.")
 	CreateClientConVar("sf_material_replacment","1",true,false,"Enable material replacment for weather effects.")
 	CreateClientConVar("sf_allow_rainsound","1",true,false,"Enable rain-sounds.")

@@ -39,7 +39,7 @@ hook.Add("StormFox - EnvUpdate","StormFox - RainSounds",function()
 	local Gauge = StormFox.GetData("Gauge",0) -- How much rain
 	local temp = StormFox.GetNetworkData("Temperature",20) -- Is snow
 
-	if not con:GetBool() or Gauge <= 0 then
+	if not con:GetBool() or Gauge <= 0 or not StormFox.EFEnabled() then
 		playSound("Windows",0,snd_glass)
 		playSound("Outdoors",0,snd_direct)
 		playSound("Nextto",0,snd_nextto)

@@ -19,6 +19,7 @@ local LocalPlayer = LocalPlayer
 -- Do the math outside
 	hook.Add("Think","StormFox - DownfallUpdater",function()
 		if uptimer > SysTime() then return end
+		if not StormFox.EFEnabled() then return end
 		uptimer = SysTime() + 1
 		local Gauge = StormFox.GetData("Gauge",0)
 		if Gauge <= 0 then return end
@@ -96,6 +97,7 @@ local LocalPlayer = LocalPlayer
 	local canSnow = 0
 	local FrameTime = FrameTime
 	hook.Add("Think","StormFox - RenderFalldownThink",function()
+		if not StormFox.EFEnabled() then return end
 		local temp = StormFox.GetNetworkData("Temperature",20)
 		local Gauge = StormFox.GetData("Gauge",0)
 		local raindebug = StormFox.GetNetworkData("Raindebug",false)
@@ -253,6 +255,7 @@ local rain_particles = { (Material("stormfox/effects/raindrop")), (Material("sto
 -- Create 2D raindrops
 	hook.Add("Think","StormFox - RenderFalldownScreenThink",function()
 		if not LocalPlayer() then return end
+		if not StormFox.EFEnabled() then return end
 		if LocalPlayer():WaterLevel() >= 3 then
 			if #screenParticles > 0 then
 				table.Empty(screenParticles)
@@ -341,6 +344,7 @@ local old_raindrop = Material("sprites/heatwave")
 		if not LocalPlayer() then return end
 		local con = GetConVar("sf_allow_raindrops")
 		if con and not con:GetBool() then return end
+		if not StormFox.EFEnabled() then return end
 
 		local Gauge = StormFox.GetData("Gauge",20)
 		if LocalPlayer():WaterLevel() >= 3 then rainscreen_alpha = 0.8 return end
@@ -381,6 +385,7 @@ local old_raindrop = Material("sprites/heatwave")
 	end)
 
 	hook.Add("HUDPaint","StormFox - RainScreenEffect",function()
+		if not StormFox.EFEnabled() then return end
 		surface.SetDrawColor(255,255,255)
 		local grav = max(50 -  abs(EyeAngles().p),0) / 60 --Gravity the raindrops
 		local con = GetConVar("sf_allow_raindrops")
@@ -418,6 +423,7 @@ local rainsplash_w = Material("effects/splashwake3")
 local rainsplash = Material("effects/splash4")
 local last = SysTime()
 hook.Add("Think","StormFox - RenderFalldownHanlde",function()
+	if not StormFox.EFEnabled() then return end
 	local FT = (SysTime() - last) * 100
 		last = SysTime()
 	local exp = StormFox.GetExspensive()
@@ -615,6 +621,7 @@ end
 -- 
 hook.Add("PostDrawTranslucentRenderables", "StormFox - RenderFalldown", function(depth,sky)
 	if sky or depth then return end
+	if not StormFox.EFEnabled() then return end
 	RenderRain(depth,sky)
 end)
 

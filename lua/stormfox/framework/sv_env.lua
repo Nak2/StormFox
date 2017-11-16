@@ -62,7 +62,7 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 		local sStatus = bFound and "OK" or "Not Found"
 		local cStatusColor = bFound and Color( 0, 255, 0 ) or Color( 255, 0, 0 )
 	 	MsgC( "	", Color(255,255,255), sEntClass, " ", cStatusColor, sStatus, Color( 255, 255, 255), "\n" )
-		StormFox.SetNetworkData( "has_" .. sEntClass, bFound and true or false )
+		StormFox.SetNetworkData( "has_" .. sEntClass, IsValid(bFound) )
 	end
 
 	local function FindEntities()
@@ -88,7 +88,7 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 		printEntFoundStatus( StormFox.light_environment, "light_environment" )
 		printEntFoundStatus( StormFox.env_skypaint, "env_skypaint" )
 		printEntFoundStatus( StormFox.env_fog_controller, "env_fog_controller" )
-		printEntFoundStatus( StormFox.env_fog_controller, "env_tonemap_controller" )
+		printEntFoundStatus( StormFox.env_tonemap_controller, "env_tonemap_controller" )
 		printEntFoundStatus( StormFox.shadow_control, "shadow_control" )
 		hook.Call( "StormFox - PostEntityScan" )
 	end
@@ -180,14 +180,17 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 -- Maplight
 	local oldls = "-"
 	local con = GetConVar("sf_enable_ekstra_lightsupport")
+	local blockSpam = 0
 	function StormFox.SetMapLight(light) -- 0-100
 		if not light then return end
-		local getChar = string.char(97 + clamp(light / 4,0,25)) -- a - z
-		if getChar == oldls then return end
-		oldls = getChar
+		local getChar = string.char(97 + round(clamp(light,0,100) / 4)) -- a - z
+		--if getChar == oldls then return end
+		--oldls = getChar
 		local sReturn = false
-		if con:GetBool() then
+		if blockSpam < CurTime() and con:GetBool() and StormFox.GetNetworkData("MapLightChar","Å") ~= getChar then
+			blockSpam = CurTime() + 10
 			engine.LightStyle(0,getChar)
+			StormFox.SetNetworkData("MapLightChar",getChar)
 			sReturn = true
 		end
 		if not IsValid(StormFox.light_environment) then
