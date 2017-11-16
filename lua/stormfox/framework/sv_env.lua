@@ -179,25 +179,25 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 
 -- Maplight
 	local oldls = "-"
-	local con = GetConVar("sf_enable_ekstra_lightsupport")
-	local blockSpam = 0
+	--local con = GetConVar("sf_enable_ekstra_lightsupport")
+	local blockSpam = CurTime() + 4
 	function StormFox.SetMapLight(light) -- 0-100
 		if not light then return end
+		if blockSpam > CurTime() then return end
+
 		local getChar = string.char(97 + round(clamp(light,0,100) / 4)) -- a - z
-		--if getChar == oldls then return end
+
 		--oldls = getChar
-		local sReturn = false
-		if blockSpam < CurTime() and con:GetBool() and StormFox.GetNetworkData("MapLightChar","Å") ~= getChar then
-			blockSpam = CurTime() + 10
-			engine.LightStyle(0,getChar)
+		if oldls ~= getChar then
+			if con:GetBool() then
+				engine.LightStyle(0,getChar)
+			end
+			if IsValid(StormFox.light_environment)  then
+				StormFox.light_environment:Fire("FadeToPattern", getChar ,0)
+			end
 			StormFox.SetNetworkData("MapLightChar",getChar)
-			sReturn = true
+			oldls = getChar
 		end
-		if not IsValid(StormFox.light_environment) then
-			return sReturn and getChar or nil
-		end
-		StormFox.light_environment:Fire("FadeToPattern", getChar ,0)
-		return sReturn and getChar or nil
 	end
 
 -- Support for envcitys sky-entity
