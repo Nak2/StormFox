@@ -275,23 +275,25 @@ Outdoor varables
 --[[-------------------------------------------------------------------------
 Non light_env support
 ---------------------------------------------------------------------------]]
-local t = CurTime() + 5
 --local con1 = GetConVar("sf_enable_ekstra_lightsupport")
 local con2 = GetConVar("sf_redownloadlightmaps")
-local lastL = "a"
+local lastL,nowL = "-","-"
 local canRedownload = false
 hook.Add("StormFox - NetDataChange","StormFox - lightfix",function(str,var)
 	if str ~= "MapLightChar" then return end
 	if not con2 or not con2:GetBool() then return end
-	if lastL == var then return end
-	lastL = var
+	nowL = var
+end)
+timer.Create("StormFox - Changemaplights",2,0,function()
+	if nowL == lastL then return end
+	if not canRedownload then return end
+	lastL = nowL
 	timer.Simple(2,function()
-		if not canRedownload then return end
 		render.RedownloadAllLightmaps()
 	end)
 end)
 hook.Add("StormFox - PostEntity","StormFox - FixMapBlackness",function()
-	timer.Simple(9,function()
+	timer.Simple(10,function()
 		render.RedownloadAllLightmaps()
 		canRedownload = true
 		print("[StormFox]: Fix lightmap.")

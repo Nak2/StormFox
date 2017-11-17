@@ -180,14 +180,13 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 -- Maplight
 	local oldls = "-"
 	--local con = GetConVar("sf_enable_ekstra_lightsupport")
-	local blockSpam = CurTime() + 20
+	local blockSpam = SysTime() + 30
 	hook.Add("StormFox - PostEntityScan","StormFox - FixMapBlackness",function()
-		blockSpam = CurTime() + 5
+		blockSpam = SysTime() + 2
 	end)
 	function StormFox.SetMapLight(light) -- 0-100
 		if not light then return end
-		if blockSpam > CurTime() then return end
-
+		if blockSpam > SysTime() then return end
 		local getChar = string.char(97 + round(clamp(light,0,100) / 4)) -- a - z
 
 		--oldls = getChar
