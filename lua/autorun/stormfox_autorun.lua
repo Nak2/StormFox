@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.132
+StormFox.Version = 1.133
 StormFox.WorkShopVersion = false--game.IsDedicated()
 -- Skypaint creation fix.
 	local con = GetConVar("sf_disableskybox")

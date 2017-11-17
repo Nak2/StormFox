@@ -181,20 +181,22 @@ local m = {}
 	m["de_dust2"] = 3
 	m["de_inferno"] = 2
 
-timer.Create("StormFox - MapLight",5,0,function()
-	-- Generate maplight
-	local mapLight = StormFox.CalculateMapLight(StormFox.GetTime(),StormFox.Weather:GetData("MapNightLight"),StormFox.Weather:GetData("MapDayLight"))
-		-- mapLight is from 0 to 100
-		-- Add the map-settings
-	local minlight,maxlight = StormFox.GetMapSetting("minlight",2) / 100,StormFox.GetMapSetting("maxlight",80) / 100
-	local delta = maxlight - minlight
+hook.Add("StormFox - PostEntity","StormFox - FixMapblackness2",function()
+	timer.Create("StormFox - MapLight",5,0,function()
+		-- Generate maplight
+		local mapLight = StormFox.CalculateMapLight(StormFox.GetTime(),StormFox.Weather:GetData("MapNightLight"),StormFox.Weather:GetData("MapDayLight"))
+			-- mapLight is from 0 to 100
+			-- Add the map-settings
+		local minlight,maxlight = StormFox.GetMapSetting("minlight",2) / 100,StormFox.GetMapSetting("maxlight",80) / 100
+		local delta = maxlight - minlight
 
-	mapLight = minlight * 100 + mapLight * delta
-	StormFox.SetData("MapLight",mapLight)
-	if SERVER then
-		-- StormFox.CalculateMapLight(flTime, 0, 1)
-		StormFox.SetMapLight(mapLight)
-	end
+		mapLight = minlight * 100 + mapLight * delta
+		StormFox.SetData("MapLight",mapLight)
+		if SERVER then
+			-- StormFox.CalculateMapLight(flTime, 0, 1)
+			StormFox.SetMapLight(mapLight)
+		end
+	end)
 end)
 
 if SERVER then
