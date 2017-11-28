@@ -106,10 +106,13 @@
 					cb:SetValue( ultra )
 				BAPQT = panel
 				local qt = panel:AddControl( "Slider", { Label = "Weather Quality", Type = "Integer", Command = "sf_exspensive", Min = "0", Max = (ultra == 0 and "7" or "20") } )
+					qt.auto = false
 				function qt:OnValueChanged(n)
 					if n <= 0 then
+						self.auto = true
 						self:SetText("Weather Quality [AUTO]")
 					else
+						self.auto = false
 						self:SetText("Weather Quality")
 					end
 				end
@@ -129,6 +132,24 @@
 					local con = GetConVar("sf_exspensive")
 					qt:SetValue(con:GetFloat())
 					qt:UpdateNotches()
+				end
+				for _,panel in ipairs(qt:GetChildren()) do
+					if panel:GetName() == "DSlider" then
+						qt.slider = panel
+					elseif panel:GetName() == "DTextEntry" then
+						qt.label = panel
+					end
+				end
+				function qt:Think()
+					if not self.auto then return end
+					local vel = StormFox.GetExspensive()
+					if self.label then
+						self.label:SetText(math.Round(vel,1))
+					end
+
+					if not self.slider then return end
+					local max = 7 + cookie.GetNumber("StormFox_ultraqt",0) * 13
+					self.slider:SetSlideX(math.min(vel / max,1))
 				end
 			-- Disable effects
 				local tick = clientTrickBox(panel,"sf_disableeffects",function(self)
@@ -182,7 +203,15 @@
 					end
 				panel:AddPanel(ds_button)
 			-- redownloadlightmap
-				clientTrickBox(panel,"sf_redownloadlightmaps")
+				clientTrickBox(panel,"sf_redownloadlightmaps",function(self)
+						local xx,yy = self:LocalToScreen(0,0 )
+						local x,y = gui.MousePos()
+						local w,h = self:GetSize()
+						if x > xx and y > yy and x < xx + w and y < yy + h then
+							StormFox.DisplayTip(xx,yy,"Disabled as it causes light-errors turning this off.",RealFrameTime())
+						end
+						return true
+					end)
 				local textbox = vgui.Create("DLabel",panel)
 					textbox:SetSize(120,26)
 					textbox:SetDark(true)
@@ -824,7 +853,7 @@
 					end
 				local tslider = CreateSlider(panel,140,14)
 					tslider:SetPos(pw / 2 - 70,150)
-					tslider.var = StormFox.GetNetworkData("Wind",0) / 33
+					tslider.var = StormFox.GetNetworkData("Wind",0) / 50
 					function tslider:DoClick()
 						local w,h = self:GetSize()
 						local x,y = self:CursorPos()
@@ -832,11 +861,11 @@
 						net.Start("StormFox - WeatherC")
 							net.WriteBool(true)
 							net.WriteString("Wind")
-							net.WriteType(percent * 33)
+							net.WriteType(percent * 50)
 						net.SendToServer()
 					end
 					function tslider:Think()
-						self.var = StormFox.GetNetworkData("Wind",0) / 33
+						self.var = StormFox.GetNetworkData("Wind",0) / 50
 					end
 			-- WindAngle
 				local windang = vgui.Create("DButton",panel)

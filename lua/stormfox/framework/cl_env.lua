@@ -23,13 +23,13 @@ Potato protection
 		else
 			avagefps = buffer / bi
 			buffer = 0
-			local max = math.Clamp(math.Round(avagefps / 10),1,(cookie.GetNumber("StormFox_ultraqt",0) == 0 and 7 or 20))
+			local max = math.Clamp(math.Round(avagefps / 8),1,(cookie.GetNumber("StormFox_ultraqt",0) == 0 and 7 or 20))
 			conDetect = (conDetect + max) / 2
 			bi = 0
 		end
 	end)
+	local con = GetConVar("sf_exspensive")
 	function StormFox.GetExspensive()
-		local con = GetConVar("sf_exspensive")
 		local n = con:GetFloat() or 3
 		local b = system.HasFocus()
 		if n <= 0 then
@@ -42,7 +42,14 @@ Potato protection
 	function StormFox.GetAvageFPS()
 		return avagefps or 1 / RealFrameTime()
 	end
-
+--[[-------------------------------------------------------------------------
+Reliable EyePos
+---------------------------------------------------------------------------]]
+local eyepos = Vector(0,0,0)
+hook.Add("PreDrawTranslucentRenderables","StormFox - EyeFix",function() eyepos = EyePos() end)
+function StormFox.GetEyePos()
+	return eyepos
+end
 --[[-------------------------------------------------------------------------
 Outdoor varables
 ---------------------------------------------------------------------------]]
@@ -137,7 +144,7 @@ Outdoor varables
 				Is it glass?
 		]]
 		local function HandleSkyPillar(ScanPos,norm,db)
-			local HitPos,HitGlass = CreateSkyPillar(ScanPos or EyePos(),norm)
+			local HitPos,HitGlass = CreateSkyPillar(ScanPos or eyepos,norm)
 
 			-- From eyepos. No need to use more tracers
 			if not ScanPos then
@@ -146,7 +153,7 @@ Outdoor varables
 			end
 
 			-- Something is in the way
-			local trace = ETPos(HitPos or ScanPos,EyePos())
+			local trace = ETPos(HitPos or ScanPos,eyepos)
 			--debugoverlay.Line(HitPos or ScanPos,eyepos,4,Color( 255, 255, 255 ),false)
 			if trace.Hit then
 				HitPos = trace.HitPos
@@ -163,7 +170,7 @@ Outdoor varables
 			end
 			if not pos then return end
 			if type(pos) == "Vector" then
-				pos = (FadeDistance - pos:DistToSqr(EyePos())) / FadeDistance
+				pos = (FadeDistance - pos:DistToSqr(eyepos)) / FadeDistance
 			end
 
 			if pos <= 0 then return end -- Throw it out if its 0 or less
@@ -196,7 +203,7 @@ Outdoor varables
 				end
 			-- Scan the enviroment
 				if lEnv > SysTime() then return end
-				local eyepos,eyeang = EyePos(),EyeAngles()
+				local eyepos,eyeang = eyepos,EyeAngles()
 				local exp = StormFox.GetExspensive()
 				lEnv = SysTime() + clamp( 1 - exp * 0.1,0.2,2)
 				table.Empty(enviroment)
@@ -281,7 +288,7 @@ local lastL,nowL = "-","-"
 local canRedownload = false
 hook.Add("StormFox - NetDataChange","StormFox - lightfix",function(str,var)
 	if str ~= "MapLightChar" then return end
-	if not con2 or not con2:GetBool() then return end
+	--if not con2 or not con2:GetBool() then return end
 	nowL = var
 end)
 timer.Create("StormFox - Changemaplights",2,0,function()

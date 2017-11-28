@@ -31,7 +31,7 @@ hook.Add( "StormFox - TopSkyRender", "StormFox - MoonRender", function()
 	if not StormFox.GetTime then return end
 	local ang = StormFox.GetMoonAngle()
 --	LocalPlayer():SetEyeAngles( ang )
-	local eyepos = EyePos()
+	local eyepos = StormFox.GetEyePos()
 	local N = ang:Forward()
 	local negativeN = -N
 
@@ -104,7 +104,7 @@ end )
 
 		if ang.p > 180 then ang.p = ang.p - 180 end
 		local direciton = -ang:Forward()
-		local beampos = EyePos() + direciton * 4096
+		local beampos = StormFox.GetEyePos() + direciton * 4096
 
 		local pix = util.PixelVisible( beampos, 100, STORMFOX_PIXEL)
 		local scrpos = beampos:ToScreen()

@@ -1,12 +1,12 @@
-local light_spots = { {}, {}, {}, {}, {}, {} }
+light_spots = { {}, {}, {}, {}, {}, {} }
 
 -- Packs the lights into 5 different waves so they don't all turn off at once. Instead they'll turn off in 6 groups
 local function shuffleIntoLightArray( tLights )
 	local random = math.random
-    for i = 1, #tLights do
+	for i = 1, #tLights do
 		local wave = random( 6 )
 		table.insert( light_spots[ wave ], tLights[i] )
-    end
+	end
 end
 
 local scanned = false
@@ -37,23 +37,39 @@ end
 timer.Simple( 4, ScanForLights )
 
 
-
-
 -- Turn the map lights on/off in waves
-local function SwitchLights( bTurnOn, nWave )
-	nWave = nWave or 1
-	local sOnOff = bTurnOn and "TurnOn" or "TurnOff"
+local lightState,currentindex = false,0
+local clamp = math.Clamp
+local nT = 0
+timer.Create("StormFox - LightTimer",0.5,0,function()
+	if lightState and currentindex > 6 then return end
+	if not lightState and currentindex <= 0 then return end
+	if nT > CurTime() then return end
+	nT = math.random(0.2,2) + CurTime()
+	currentindex = clamp(currentindex,1,6)
 
-	for index = 1, #light_spots[ nWave ] do
-		if light_spots[ nWave ][ index ] and IsValid(light_spots[ nWave ][ index ]) then
-			light_spots[ nWave ][ index ]:Fire( sOnOff )
+	local sOnOff = lightState and "TurnOn" or "TurnOff"
+	local wave = light_spots[ currentindex ]
+	if wave then
+		for index = 1, #wave do
+			if wave[ index ] and IsValid(wave[ index ]) then
+				wave[ index ]:Fire( sOnOff )
+			end
 		end
 	end
-
-	if nWave >= #light_spots then return end
-	timer.Simple( 5, function() -- call the next wave after a delay
-		SwitchLights( bTurnOn, nWave + 1 )
-	end )
+	if lightState then
+		currentindex = currentindex + 1
+	else
+		currentindex = currentindex - 1
+	end
+end)
+local function SwitchLights( bTurnOn )
+	lightState = bTurnOn
+	if bTurnOn then
+		currentindex = 1
+	else
+		currentindex = 6
+	end
 end
 
 timer.Create("StormFox - Light/Lamp support",2,0,function()

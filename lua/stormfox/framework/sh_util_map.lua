@@ -57,7 +57,7 @@ if SERVER then
 
 		local l = ents.FindByClass("sky_camera")
 
-		if #l < 1 then print("[StormFox] Not a 3D skybox. Clouds disabled!") return end
+		if #l < 1 then return end
 		sky_cam = l[1]
 		sky_scale = l[1]:GetSaveTable().scale
 		StormFox_NETWORK_DATA["skybox_scale"] = sky_scale

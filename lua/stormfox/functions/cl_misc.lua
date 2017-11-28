@@ -18,7 +18,7 @@ Breath
 			if att <= 0 then return end
 			mpos = ply:GetAttachment(att)
 		else
-			local ang,pos = EyeAngles(),EyePos()
+			local ang,pos = EyeAngles(),StormFox.GetEyePos()
 			mpos = {Pos = pos + ang:Forward() * 3 - ang:Up() * 2,Ang = ang}
 		end
 		if not mpos or not mpos.Pos then return end

@@ -181,7 +181,7 @@ local function ReplaceMaterial(str,texture,id)
 	end
 	local parm = "$basetexture" .. (id == 1 and "" or id)
 	local currentbase = mat:GetTexture(parm)
-	if (currentbase:GetName() or "null") == texture then return end
+	if not currentbase or (currentbase:GetName() or "null") == texture then return end
 
 	if not _STORMFOX_REPLACETEX_STR[str] then
 		_STORMFOX_REPLACETEX_STR[str] = {}

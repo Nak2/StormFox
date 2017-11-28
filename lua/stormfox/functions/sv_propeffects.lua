@@ -1,104 +1,139 @@
-
-local function ET(pos,pos2,mask,filter)
-	local t = util.TraceLine( {
-		start = pos,
-		endpos = pos + pos2,
-		mask = mask,
-		filter = filter
-		} )
-	t.HitPos = t.HitPos or (pos + pos2)
-	return t,t.HitSky
-end
-
-local max = math.max
-local function GetWindNorm()
-	local wind = StormFox.GetNetworkData("Wind",0)
-	local windangle = StormFox.GetNetworkData("WindAngle",0)
-	windNorm = Angle(0,windangle,0):Forward() * -wind
-	return windNorm,wind
-end
-
 local scan_id = 1
 local con = GetConVar("sf_disable_windpush")
-local move_tab = {}
-function getmove_tab()
-	return move_tab
-end
+local count = table.Count
 
-local function GetEffected()
-	local t = ents.FindByClass("prop_*")
-	table.Add(t,ents.FindByClass("gmod_*"))
-	return t
-end
-local scanList = {}
-local t = CurTime() + 1
-local t2 = CurTime()
-hook.Add("Think","StormFox - PropImpact",function()
-	if con:GetBool() then return end
-	if t2 > CurTime() then return end
-		t2 = CurTime() + 0.2
-	-- Props moving
-	local norm,wind = GetWindNorm()
-	if wind <= 6 then table.Empty(move_tab) return end
-	for ent,_ in pairs(move_tab) do
-		if not IsValid(ent) then
-			move_tab[ent] = nil
+
+local max = math.max
+local windNorm,wind = Vector(0,0,1),0
+-- Mini functions
+	local function ET(pos,pos2,mask,filter)
+		local t = util.TraceLine( {
+			start = pos,
+			endpos = pos + pos2,
+			mask = mask,
+			filter = filter
+			} )
+		t.HitPos = t.HitPos or (pos + pos2)
+		return t,t.HitSky
+	end
+	timer.Create("StormFox - WindPushUpdater",1,0,function()
+		wind = StormFox.GetNetworkData("Wind",0)
+		local windangle = StormFox.GetNetworkData("WindAngle",0)
+		windNorm = Angle(0,windangle,0):Forward() * -wind
+		windNorm.z = windNorm.z + max(wind * 0.4,1)
+		windNorm:Normalize()
+	end)
+	local function GetEffected()
+		local t = ents.FindByClass("prop_*")
+		table.Add(t,ents.FindByClass("gmod_*"))
+		table.Add(t,ents.FindByClass("npc_grenade_frag"))
+		return t
+	end
+
+local move_tab = {}
+-- Function
+	function InWind(ent)
+		if wind <= 6 then return end
+		local tr = ET(ent:GetPos(),windNorm * 640000,MASK_SHOT,ent)
+		return tr.HitSky,windNorm
+	end
+	local function CheckProp(ent) -- Check and add into "Move props" table
+		if not ent then return end
+		if wind <= 6 then return end
+		if not IsValid(ent) then return end
+		if move_tab[ent] then return end -- Already in
+		if not IsValid(ent:GetPhysicsObject()) then return end -- No physics
+		if not ent:GetPhysicsObject():IsMoveable() and wind <= 20 then return end -- Ignore
+		if InWind(ent) then
+			move_tab[ent] = 40
+			return true
+		end
+		return false
+	end
+	function fmove_tab() return move_tab end
+
+-- Scan for props to be effected
+	local scanList,index = {},0
+	timer.Create("StormFox - ScanProps",1,0,function()
+		if count(move_tab) > 400 then return end
+		if not scanList[index] then
+			-- Create scanlist
+			scanList = GetEffected()
+			index = 1
 		else
-			local tr = ET(ent:GetPos(),Vector(0,0,1) * 640000,MASK_SHOT,ent)
-			if not tr.HitSky then
-				move_tab[ent] = nil
-			else
-				local pys = ent:GetPhysicsObject()
-				local vol = pys:GetVolume()
-				local mass = pys:GetMass()
-				local pNeeded = vol / mass / 63
-				if not pys:IsMoveable() and wind > 15 then
-					pys:EnableMotion(true)
-				end
-				if wind >= pNeeded then
-					local m = 1 + pNeeded - wind
-					pys:ApplyForceCenter(pys:GetMass() / 2 * norm * m)
-					if not ent:IsVehicle() then
-						ent:TakeDamage(1,game.GetWorld(),game.GetWorld())
-					end
+			-- Scan scanlist
+			for i = index,index + 100 do
+				if scanList[index] then
+					CheckProp(scanList[index])
+					index = index + 1
+				else
+					break
 				end
 			end
 		end
-	end
-	if t > CurTime() and table.Count(move_tab) < 400 then return end
-		t = CurTime() + math.random(1,2)
+	end)
 
-	for i = 1,100 do
-		if scan_id > #scanList or #scanList <= 0 then
-			scanList = GetEffected()
-			scan_id = 1
-			break
-		elseif not move_tab[scanList[scan_id]] and IsValid(scanList[scan_id]) and IsValid(scanList[scan_id]:GetPhysicsObject()) and not scanList[scan_id]:CreatedByMap() then
-			local ent = scanList[scan_id]
-			local tr = ET(ent:GetPos(),Vector(0,0,1) * 640000,MASK_SHOT,ent)
-			if tr.HitSky then
+-- Add newly spawned props
+hook.Add("PlayerSpawnedProp","StormFox - PropCreate",function(ply,model,ent)
+	if con:GetBool() then return end
+	if not IsValid(ent) then return end
+	CheckProp(ent)
+end)
+
+-- Effect props
+local t = 0
+hook.Add("Think","StormFox - EffectProps",function()
+	if con:GetBool() then return end
+	local r = {}
+	for ent,v in pairs(move_tab) do
+		if not ent or not IsValid(ent) then
+			-- Remove ent
+			table.insert(r,ent)
+		elseif not InWind(ent) then
+			-- Check
+			if move_tab[ent] < 1 then
+				-- Remove ent
+				table.insert(r,ent)
+			else
+				move_tab[ent] = move_tab[ent] - 1
+			end
+		else -- Move prop
+			move_tab[ent] = 10
+			-- Get prop data
 				local pys = ent:GetPhysicsObject()
-				local vol = pys:GetVolume()
-				local mass = pys:GetMass()
-				if not IsValid(pys) or type(vol) ~= "number" or type(mass) ~= "number" then break end -- Bad entity
-				local pNeeded = vol / mass / 70 --63
-				if (not pys:IsMoveable() or constraint.FindConstraint( ent, "Weld" )) and wind > 20 and wind >= pNeeded then
-					ent:EmitSound("physics/wood/wood_box_break" .. math.random(1,2) .. ".wav")
-					pNeeded = 15
-					constraint.RemoveConstraints( ent, "Weld" )
+				if not IsValid(pys) then -- SOMETHING IS WRONG!
+					table.insert(r,ent) -- Remove asap
+					break
+				end
+				local vol = pys:GetSurfaceArea()
+				if not vol then
+					table.insert(r,ent) -- Remove asap
+					break
+				end
+			-- Undfreeze if wind > 20
+				if not pys:IsMoveable() and wind > 20 then
 					pys:EnableMotion(true)
 				end
-				if wind >= pNeeded then
-					local m = 1 + pNeeded - wind
-					pys:ApplyForceCenter(norm * m)
-					if table.Count(move_tab) < 400 then
-						move_tab[ent] = true
-					end
+			-- Unweld if wind > 30
+				if wind > 30 and constraint.FindConstraint( ent, "Weld" ) then
+					ent:EmitSound("physics/wood/wood_box_break" .. math.random(1,2) .. ".wav")
+					constraint.RemoveConstraints( ent, "Weld" )
 				end
-			end
-			scan_id = scan_id + 1
-		else
-			scan_id = scan_id + 1
+			-- Do movement
+			local pNeeded = vol / 10
+				pys:Wake()
+				pys:ApplyForceCenter(-windNorm * pNeeded)
+			-- Take damage (To stop all the wood props)
+				if not ent:IsVehicle() and t <= CurTime() and wind > 40 then
+					t3 = CurTime() + 0.5
+					ent:TakeDamage(1,game.GetWorld(),game.GetWorld())
+				end
+		end
+	end
+	if #r >= 0 then
+		for i = #r,1,-1 do
+			move_tab[r[i]] = nil
 		end
 	end
 end)
+

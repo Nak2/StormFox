@@ -77,7 +77,7 @@ function Radioactive:InRain(ply,mgn)
 		local con = GetConVar("sf_disableweatherdebuffs")
 		if con:GetBool() then return end
 		local dmg = DamageInfo()
-			dmg:SetDamage(mgn)
+			dmg:SetDamage(mgn * 7)
 			dmg:SetAttacker(game.GetWorld())
 			dmg:SetInflictor(game.GetWorld())
 			dmg:SetDamageType(DMG_RADIATION)
