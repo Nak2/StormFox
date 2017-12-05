@@ -286,25 +286,25 @@ Non light_env support
 local con2 = GetConVar("sf_redownloadlightmaps")
 local lastL,nowL = "-","-"
 local canRedownload = false
-hook.Add("StormFox - NetDataChange","StormFox - lightfix",function(str,var)
+local updateTime = -1
+hook.Add("StormFox - NetDataChange","StormFox - lightfix",function(str,nowL)
 	if str ~= "MapLightChar" then return end
 	--if not con2 or not con2:GetBool() then return end
-	nowL = var
-end)
-timer.Create("StormFox - Changemaplights",2,0,function()
 	if nowL == lastL then return end
-	if not canRedownload then return end
 	lastL = nowL
-	timer.Simple(6,function()
-		render.RedownloadAllLightmaps()
-		--print("Redownload lightmap")
-	end)
+	nowL = var
+	updateTime = CurTime() + 4
+end)
+hook.Add("Think","StormFox - LightThink",function()
+	if updateTime < 0 then return end
+	if updateTime > CurTime() then return end
+	updateTime = -1
+	render.RedownloadAllLightmaps()
 end)
 hook.Add("StormFox - PostEntity","StormFox - FixMapBlackness",function()
 	timer.Simple(10,function()
 		render.RedownloadAllLightmaps()
 		canRedownload = true
-		print("[StormFox]: Fix lightmap.")
 	end)
 end)
 

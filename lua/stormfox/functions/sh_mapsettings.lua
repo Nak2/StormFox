@@ -9,6 +9,7 @@ local defaultSettings = {}
 	defaultSettings["dynamiclight"] = true 			--
 	defaultSettings["material_replacment"] = true 		--
 	defaultSettings["replace_dirtgrassonly"] = false 	--
+	defaultSettings["start_with_snow"] = false
 	defaultSettings["override_sounds"] = false
 	defaultSettings["sound_birds"] = false
 	defaultSettings["sound_crickets"] = false
@@ -96,7 +97,7 @@ else
 			panel:MakePopup()
 			panel.btnMaxim:SetVisible( false )
 			panel.btnMinim:SetVisible( false )
-			local w,h = 220,340
+			local w,h = 220,368
 			panel:SetSize(w,h)
 			panel:Center()
 		local function CreateToggle(str,setting,y)
@@ -295,7 +296,7 @@ else
 				end
 			end
 			function lightsetting:OnChange(percent,n)
-				local c = math.Round(percent * 100)
+				local c = charRound(math.Round(percent * 100))
 				if n == 1 then
 					RequestSetting("minlight",c)
 				else
@@ -358,6 +359,17 @@ else
 				if self:IsHovered() then
 					local xx,yy = self:LocalToScreen(0,7 )
 					StormFox.DisplayTip(xx,yy,"Block map-ambient sounds.",RealFrameTime())
+				end
+			end
+		-- start_with_snow
+			local start_with_snow = CreateToggle("Start with snow","start_with_snow",332)
+			function start_with_snow:OnClick(bool)
+				RequestSetting("start_with_snow",bool)
+			end
+			function start_with_snow:Think()
+				if self:IsHovered() then
+					local xx,yy = self:LocalToScreen(0,7 )
+					StormFox.DisplayTip(xx,yy,"Start the map with snow (if the temperature is low).",RealFrameTime())
 				end
 			end
 

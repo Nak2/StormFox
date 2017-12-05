@@ -40,6 +40,9 @@ if SERVER then
 	StormFox.SetNetworkData( "Thunder",false)
 	StormFox.SetNetworkData( "Wind", 0 )
 	StormFox.SetNetworkData( "WindAngle", math.random(360) ) --cl
+	if StormFox.GetMapSetting("start_with_snow") and StormFox.GetNetworkData( "Temperature",0) < -4 then
+		StormFox.SetNetworkData("SnowMaterial_Amount",1)
+	end
 
 	function StormFox.SetWeather( sWeatherId, flMagnitude, tTime )
 		if not StormFox.GetWeatherType( sWeatherId ) then print( "[StormFox] Weather not found:", sWeatherId ) return end
@@ -187,7 +190,7 @@ hook.Add("StormFox - PostEntity","StormFox - FixMapblackness2",function()
 		local mapLight = StormFox.CalculateMapLight(StormFox.GetTime(),StormFox.Weather:GetData("MapNightLight"),StormFox.Weather:GetData("MapDayLight"))
 			-- mapLight is from 0 to 100
 			-- Add the map-settings
-		local minlight,maxlight = StormFox.GetMapSetting("minlight",2) / 100,StormFox.GetMapSetting("maxlight",80) / 100
+		local minlight,maxlight = StormFox.GetMapSetting("minlight",4) / 100,StormFox.GetMapSetting("maxlight",80) / 100
 		local delta = maxlight - minlight
 
 		mapLight = minlight * 100 + mapLight * delta

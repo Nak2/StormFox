@@ -40,10 +40,6 @@ local function SetNameFix( ent )
 			ent:SetKeyValue("targetname", "lightenv")
 			ent.targetname_set = true
 		end
-	elseif ent:GetClass() == "shadow_control" then
-		if not ent:GetName() or ent:GetName() == "" then
-			ent:SetKeyValue("targetname", "shadowenv")
-		end
 	end
 end
 hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
@@ -81,6 +77,7 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 			end
 		end
 		StormFox.light_environment = StormFox.light_environment or ents.FindByClass( "light_environment" )[1] or nil-- ents.FindByName("lightenv")[1] or nil
+		StormFox.light_environments = StormFox.light_environments or ents.FindByClass( "light_environment" ) or {}
 		StormFox.env_fog_controller = StormFox.env_fog_controller or GetOrCreate( "env_fog_controller" ) or nil
 		StormFox.shadow_control = StormFox.shadow_control or ents.FindByClass( "shadow_control" )[1] or nil
 		StormFox.env_tonemap_controller = StormFox.env_tonemap_controller or ents.FindByClass("env_tonemap_controller")[1] or nil
@@ -200,8 +197,10 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 				engine.LightStyle(0,getChar)
 			end
 			if IsValid(StormFox.light_environment)  then
-				StormFox.light_environment:Fire("SetPattern", getChar ,0)
-				StormFox.light_environment:Activate()
+				for _,light in ipairs(StormFox.light_environments) do
+					light:Fire("FadeToPattern", getChar ,0)
+					light:Activate()
+				end
 			end
 			StormFox.SetNetworkData("MapLightChar",getChar)
 			oldls = getChar

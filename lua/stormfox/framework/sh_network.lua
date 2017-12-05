@@ -65,6 +65,10 @@
 			if not aimdata[str] then -- No aimdata .. return the var
 				return data[str] or nil
 			end
+			-- Check for cache
+				if cdata[str] and cdata[str][1] > RealTime() then
+					return cdata[str][2]
+				end
 			local st = con:GetFloat()
 			local t = CurTime()
 			local t_start = aimdata[str][2] or 0
@@ -76,10 +80,6 @@
 				aimdata[str] = nil
 				StormFox_AIMDATA[str] = nil
 				return data[str]
-			end
-			-- Check for cache
-			if cdata[str] and cdata[str][1] > RealTime() then
-				return cdata[str][2]
 			end
 			-- We need to calculate the data
 			local n = LeapVarable(data[str],aimdata[str][1],t_start,t_stop)
@@ -223,6 +223,15 @@
 				network_data[str] = StormFox.GetNetworkData(str,network_aimdata[str][1])
 				network_aimdata[str] = nil
 			end
+		-- SetConvars
+			for conname,_ in pairs(StormFox.convars) do
+				local con = GetConVar(conname)
+				network_data["con_" .. conname] = con:GetString()
+				cvars.AddChangeCallback(conname, function( convar_name, value_old, value_new )
+					StormFox.SetNetworkData("con_" .. convar_name,value_new)
+					--print("StormFox update " .. conname)
+				end,"SF_Netupdate-" .. conname )
+			end
 		-- Set the value if its an 'instant'.
 			if not network_data[str] or not over_seconds then -- No base or time .. send it instant to clients
 				network_data[str] = var
@@ -255,9 +264,14 @@
 	local cdata = {}
 	function StormFox.GetNetworkData(str,base)
 		if type(network_data[str]) == "nil" then return base end
-		if not network_aimdata[str] then -- No network_aimdata .. return the var
+		if type(network_aimdata[str]) == "nil" then -- No network_aimdata .. return the var
 			return network_data[str]
 		end
+		-- Check for cache
+			if cdata[str] and cdata[str][1] > RealTime() then
+				return cdata[str][2]
+			end
+
 		local t = CurTime()
 		local st = con:GetFloat()
 		local t_start = network_aimdata[str][2] or 0
@@ -270,10 +284,7 @@
 			StormFox_AIMDATA[str] = nil
 			return network_data[str]
 		end
-		-- Check for cache
-		if cdata[str] and cdata[str][1] > RealTime() then
-			return cdata[str][2]
-		end
+		
 		-- We need to calculate the data
 		local n = LeapVarable(network_data[str],network_aimdata[str][1],t_start,t_stop)
 		-- Cache it for other functions
@@ -293,7 +304,7 @@
 			if not StormFox.GetTime then return end
 			local msg = net.ReadInt(8)
 			if msg == 1 then -- Full update of all vars
-				--print("Full update")
+				print("Full update")
 				for key,var in pairs(net.ReadTable()) do
 					StormFox.SetNetworkData(key,var)
 				end
@@ -331,13 +342,4 @@
 			surface.SetTextPos(ScrW() - 400,10 + i * 15)
 			surface.DrawText(StormFox.GetRealTime())
 		end)]]
-	else
-		for conname,_ in pairs(StormFox.convars) do
-			local con = GetConVar(conname)
-			network_data["con_" .. conname] = con:GetString()
-			cvars.AddChangeCallback(conname, function( convar_name, value_old, value_new )
-				StormFox.SetNetworkData("con_" .. convar_name,value_new)
-				--print("StormFox update " .. conname)
-			end,"SF_Netupdate-" .. conname )
-		end
 	end
