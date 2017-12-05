@@ -165,7 +165,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 
 					local testpos = mainpos + Vector(ran(-random_side,random_side) + fDN.x * -(20 / weight) ,ran(-random_side,random_side) + fDN.y * -(20 / weight),1 / weight * 30)
 						testpos.z = math.min(testpos.z,mainpos.z) - ran(20)
-					local smoke = ran(100) < clamp(wind / 1.2,0,70)
+					local smoke = ran(100) < clamp(wind / 1.2,0,70) - 14
 					local size = IsRain and (smoke and 20 * Gauge or clamp(Gauge / ran(3,5),1,3)) or (smoke and ran(10,30) * Gauge or clamp(Gauge / ran(3,5),1,3))
 					local tr = ETCalcTrace(testpos,size,fDN)
 					local break_ = IsRain and 1 or max(wind / 50,0.4)
@@ -221,7 +221,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 					end
 
 					local testpos = mainpos + Vector(xx + fDN.x * -(20 / weight) ,yy + fDN.y * -(20 / weight),1 / weight * 30)
-					local smoke = ran(100) < clamp(wind / 1.4,1,70)
+					local smoke = ran(100) < clamp(wind / 1.2,0,70) - 10
 					local size = smoke and (IsRain and 30 or 20 * Gauge) or (clamp(Gauge / ran(3,5),1,3) * (IsRain and 64 or 32))
 					local tr = ETCalcTrace(testpos,size,fDN)
 					if tr then

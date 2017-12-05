@@ -5,6 +5,7 @@ Breath
 	local emit
 	local m_mats = {(Material("particle/smokesprites_0001")),(Material("particle/smokesprites_0002")),(Material("particle/smokesprites_0003"))}
 	local function breath(ply,size)
+		if not StormFox.EFEnabled() then return end
 		if size <= 0 then return end
 		if ply:WaterLevel() >= 3 then return end
 		if not emit then

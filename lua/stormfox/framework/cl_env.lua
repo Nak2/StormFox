@@ -295,8 +295,9 @@ timer.Create("StormFox - Changemaplights",2,0,function()
 	if nowL == lastL then return end
 	if not canRedownload then return end
 	lastL = nowL
-	timer.Simple(2,function()
+	timer.Simple(6,function()
 		render.RedownloadAllLightmaps()
+		--print("Redownload lightmap")
 	end)
 end)
 hook.Add("StormFox - PostEntity","StormFox - FixMapBlackness",function()

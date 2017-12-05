@@ -30,12 +30,15 @@ local round,clamp = math.Round,math.Clamp
 
 -- Support unamed entities
 local con = GetConVar("sf_disable_mapsupport")
+local con2 = GetConVar("sf_block_lightenvdelete")
 local function SetNameFix( ent )
 	if not IsValid(ent) then return end
 	if con and con:GetBool() then return end
+	if con2 and not con2:GetBool() then return end
 	if ent:GetClass() == "light_environment" then
 		if not ent:GetName() or ent:GetName() == "" then
 			ent:SetKeyValue("targetname", "lightenv")
+			ent.targetname_set = true
 		end
 	elseif ent:GetClass() == "shadow_control" then
 		if not ent:GetName() or ent:GetName() == "" then
@@ -59,8 +62,10 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 	end
 
 	local function printEntFoundStatus( bFound, sEntClass )
-		local sStatus = bFound and "OK" or "Not Found"
-		local cStatusColor = bFound and Color( 0, 255, 0 ) or Color( 255, 0, 0 )
+		local created = bFound and bFound.targetname_set or false
+		local sStatus = created and "Locked" or (bFound and "OK" or "Not Found")
+
+		local cStatusColor = created and Color(155,155,255) or (bFound and Color( 0, 255, 0 ) or Color( 255, 0, 0 ))
 	 	MsgC( "	", Color(255,255,255), sEntClass, " ", cStatusColor, sStatus, Color( 255, 255, 255), "\n" )
 		StormFox.SetNetworkData( "has_" .. sEntClass, IsValid(bFound) )
 	end
@@ -182,7 +187,7 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 	--local con = GetConVar("sf_enable_ekstra_lightsupport")
 	local blockSpam = SysTime() + 30
 	hook.Add("StormFox - PostEntityScan","StormFox - FixMapBlackness",function()
-		blockSpam = SysTime() + 2
+		blockSpam = SysTime() + 10
 	end)
 	function StormFox.SetMapLight(light) -- 0-100
 		if not light then return end
@@ -195,7 +200,8 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 				engine.LightStyle(0,getChar)
 			end
 			if IsValid(StormFox.light_environment)  then
-				StormFox.light_environment:Fire("FadeToPattern", getChar ,0)
+				StormFox.light_environment:Fire("SetPattern", getChar ,0)
+				StormFox.light_environment:Activate()
 			end
 			StormFox.SetNetworkData("MapLightChar",getChar)
 			oldls = getChar

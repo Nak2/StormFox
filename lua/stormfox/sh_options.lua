@@ -19,24 +19,6 @@
 
 -- SpawnMenu
 	if SERVER then
-		local whitelist = {}
-			whitelist["sf_timespeed"] = true
-			whitelist["sf_sunmoon_yaw"] = true
-			whitelist["sf_moonscale"] = true
-			whitelist["sf_sv_material_replacment"] = true
-			whitelist["sf_replacment_dirtgrassonly"] = true
-			whitelist["sf_disablefog"] = true
-			whitelist["sf_disableweatherdebuffs"] = true
-			whitelist["sf_disable_windpush"] = true
-			whitelist["sf_disablelightningbolts"] = true
-			whitelist["sf_disable_autoweather"] = true
-			whitelist["sf_disable_mapsupport"] = true
-			whitelist["sf_disable_autoweather_cold"] = true
-			whitelist["sf_debugcompatibility"] = true
-			whitelist["sf_disableskybox"] = true
-			whitelist["sf_enable_ekstra_lightsupport"] = true
-			whitelist["sf_disable_mapbloom"] = true
-			whitelist["sf_disblemapbrowser"] = true
 
 		util.AddNetworkString("StormFox_Settings")
 		net.Receive("StormFox_Settings",function(len,ply)
@@ -46,7 +28,7 @@
 			local con = net.ReadString()
 			local arg = net.ReadString()
 			if not con then return end
-			if not whitelist[con] and not StormFox.convars[con] then return end
+			if not StormFox.convars[con] then return end -- whitelist
 			StormFox.CanEditSetting(ply,con,arg or nil)
 		end)
 	else
@@ -230,10 +212,11 @@
 				requestSetting(self.con_name,b and "1" or "0")
 			end
 			function tickbox:Think()
+				if self.Think2 then self:Think2() end
 				if not self.con_name then return end
-				local ucon = GetConVar(self.con_name)
-				if (ucon:GetBool() or true) ~= self:GetValue() then
-					self:SetChecked(ucon:GetBool())
+				local ucon = StormFox.GetNetworkData("con_" .. self.con_name)
+				if (ucon == "1") ~= self:GetValue() then
+					self:SetChecked(ucon == "1")
 				end
 			end
 			panel:AddItem(tickbox)
@@ -289,7 +272,7 @@
 				panel:AddItem(moon_scale)
 			-- Allow people to disable effects
 				local de_button = adminTrickBox(panel,"sf_allowcl_disableeffects")
-				function de_button:Think()
+				function de_button:Think2()
 					local xx,yy = self:LocalToScreen(0,0 )
 					local x,y = gui.MousePos()
 					local w,h = self:GetSize()
@@ -367,6 +350,22 @@
 					textbox:SetDark(true)
 					textbox:SetText("        (Can lag on large maps!)")
 				panel:AddPanel(textbox)
+			-- Block removal of light_environment
+				local block = adminTrickBox(panel,"sf_block_lightenvdelete")
+				local textbox = vgui.Create("DLabel",panel)
+				textbox:SetSize(120,14)
+					textbox:SetDark(true)
+					textbox:SetText("        (Can cause light-flickering)")
+				panel:AddPanel(textbox)
+				function block:Think2()
+					local xx,yy = self:LocalToScreen(0,0 )
+					local x,y = gui.MousePos()
+					local w,h = self:GetSize()
+					if x > xx and y > yy and x < xx + w and y < yy + h then
+						StormFox.DisplayTip(xx,yy,"Prevents the entity from getting deleted. However this can cause some light-flickering and requires map-restart when toggled.",RealFrameTime())
+					end
+				end
+
 		end
 		hook.Add( "PopulateToolMenu", "Populate StormFox Menus", function()
 			spawnmenu.AddToolMenuOption( "Options", "StormFox", "User_StormFox", "Client Settings", "", "", client_settings )

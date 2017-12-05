@@ -331,4 +331,13 @@
 			surface.SetTextPos(ScrW() - 400,10 + i * 15)
 			surface.DrawText(StormFox.GetRealTime())
 		end)]]
+	else
+		for conname,_ in pairs(StormFox.convars) do
+			local con = GetConVar(conname)
+			network_data["con_" .. conname] = con:GetString()
+			cvars.AddChangeCallback(conname, function( convar_name, value_old, value_new )
+				StormFox.SetNetworkData("con_" .. convar_name,value_new)
+				--print("StormFox update " .. conname)
+			end,"SF_Netupdate-" .. conname )
+		end
 	end

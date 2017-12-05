@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.137
+StormFox.Version = 1.139
 StormFox.WorkShopVersion = false--game.IsDedicated()
 
 print("[StormFox] V" .. StormFox.Version .. ".")
@@ -33,7 +33,7 @@ end
 		StormFox.convars[str] = true
 		if ConVarExists(str) then return end
 		CreateConVar(str,default, { FCVAR_REPLICATED, FCVAR_ARCHIVE }, helptext)
-
+		-- FCVAR_REPLICATED is not 100% accurate for some reason
 	end
 
 	AddConVar("sf_timespeed",1,"The minutes of gametime pr second.")
@@ -52,6 +52,7 @@ end
 	AddConVar("sf_disblemapbrowser",game.IsDedicated() and 1 or 0,"Disable people changing the map with SF-browser.")
 	AddConVar("sf_allowcl_disableeffects",engine.ActiveGamemode() == "sandbox" and 1 or 0,"Allow clients to disable SF-effects.")
 	AddConVar("sf_disable_autoweather",0,"Disable auto. weather-generation for all maps.")
+	AddConVar("sf_block_lightenvdelete",0,"Set light_environment's targetname.")
 	--	AddConVar("sf_disable_autoweather_cold",0,"Disable autoweather creating snow.")
 	--	AddConVar("sf_sv_material_replacment",1,"Enable material-replacment for weather effects.")
 	--	AddConVar("sf_replacment_dirtgrassonly",0,"Only replace dirt and grass. (Useful on crazy maps)")
