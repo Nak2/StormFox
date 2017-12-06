@@ -304,7 +304,6 @@
 			if not StormFox.GetTime then return end
 			local msg = net.ReadInt(8)
 			if msg == 1 then -- Full update of all vars
-				print("Full update")
 				for key,var in pairs(net.ReadTable()) do
 					StormFox.SetNetworkData(key,var)
 				end
