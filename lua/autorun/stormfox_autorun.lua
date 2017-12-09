@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.141
+StormFox.Version = 1.142
 StormFox.WorkShopVersion = false--game.IsDedicated()
 
 print("[StormFox] V" .. StormFox.Version .. ".")

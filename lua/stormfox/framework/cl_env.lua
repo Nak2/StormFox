@@ -46,7 +46,11 @@ Potato protection
 Reliable EyePos
 ---------------------------------------------------------------------------]]
 local eyepos = Vector(0,0,0)
-hook.Add("PreDrawTranslucentRenderables","StormFox - EyeFix",function() eyepos = EyePos() end)
+hook.Add("PreDrawTranslucentRenderables","StormFox - EyeFix",function(depth,sky) 
+	if depth or sky then return end 
+	eyepos = EyePos() 
+end)
+
 function StormFox.GetEyePos()
 	return eyepos
 end
