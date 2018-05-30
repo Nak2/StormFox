@@ -61,7 +61,7 @@ RainStorm.CalculatedData.MapNightLight = 0
 RainStorm.CalculatedData.Gauge = 10
 
 RainStorm.CalculatedData.SunColor = Color(255,255,255,15)
-RainStorm.CalculatedData.CloudsAlpha = 1
+RainStorm.CalculatedData.CloudsAlpha = 255
 
 RainStorm.DataCalculationFunctions.StarFade = function( flPercent ) return max( 1 - flPercent * 10, 0 ) end
 RainStorm.DataCalculationFunctions.SunSize = function( flPercent ) return max( 0, 10 - ( 10 * flPercent ) ) end

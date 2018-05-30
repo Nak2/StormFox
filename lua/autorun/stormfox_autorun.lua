@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.142
+StormFox.Version = 1.2
 StormFox.WorkShopVersion = false--game.IsDedicated()
 
 print("[StormFox] V" .. StormFox.Version .. ".")
@@ -53,6 +53,7 @@ end
 	AddConVar("sf_allowcl_disableeffects",engine.ActiveGamemode() == "sandbox" and 1 or 0,"Allow clients to disable SF-effects.")
 	AddConVar("sf_disable_autoweather",0,"Disable auto. weather-generation for all maps.")
 	AddConVar("sf_block_lightenvdelete",0,"Set light_environment's targetname.")
+	AddConVar("sf_realtime",0,"Follow the servers localtime. (This is not perfect)")
 	--	AddConVar("sf_disable_autoweather_cold",0,"Disable autoweather creating snow.")
 	--	AddConVar("sf_sv_material_replacment",1,"Enable material-replacment for weather effects.")
 	--	AddConVar("sf_replacment_dirtgrassonly",0,"Only replace dirt and grass. (Useful on crazy maps)")
@@ -177,3 +178,14 @@ end
 		end
 	end
 	http.Fetch("http://steamcommunity.com/sharedfiles/filedetails/?id=1132466603",onSuccess,function() StormFox.SetNetworkData("workshopVersion",StormFox.Version) end)
+
+	hook.Add("PostGamemodeLoaded","StormFox.GM",function()
+		local GM = GM or GAMEMODE
+		if GM.StormFox then
+			print("[StormFox]: What are we going to do tonight?")
+			local mapsettings = GM.StormFox()
+			if not mapsettings then return end
+			print("[StormFox]: Alright .. got the settings.")
+			StormFox.SetMapSettings(mapsettings)
+		end
+	end)

@@ -8,14 +8,7 @@ local matLight = Material( "sprites/light_ignorez" )
 local matBeam = Material( "effects/lamp_beam" )
 local rmat = Material("models/props_combine/tpballglow")
 function ENT:Draw()
-	if self:GetPersistent() then return end
-	render.MaterialOverride(rmat)
-	self:DrawModel()
-	render.MaterialOverride()
-	local pos = EyeAngles():Forward() * -10
-		cam.Start3D2D(self:LocalToWorld(Vector(0,0,0)) + pos,Angle(0,EyeAngles().y + 270,90),0.2)
-			draw.DrawText("Press E to make persistent and invisible","BudgetLabel",0,0,Color(255,255,255),1)
-		cam.End3D2D()
+
 end
 
 function ENT:OnRemove()
@@ -28,12 +21,6 @@ function ENT:DrawTranslucent()
 
 	if ( halo.RenderedEntity() == self ) then return end
 	local dis = EyePos():DistToSqr(self:GetPos())
-	if dis < 200000 and not self:GetPersistent() then
-		local pos = EyeAngles():Forward() * -10
-		cam.Start3D2D(self:LocalToWorld(Vector(0,0,0)) + pos,Angle(0,EyeAngles().y + 270,90),0.2)
-			draw.DrawText("Press E to make persistent and invisible","BudgetLabel",0,0,Color(255,255,255),1)
-		cam.End3D2D()
-	end
 	local fon = self:GetNWBool("On",false)
 	if not fon or dis > 2000000 then
 		if self.flashlight and IsValid(self.flashlight) then

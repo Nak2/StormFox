@@ -49,7 +49,7 @@ _STORMFOX_REPLACETEX_STR = _STORMFOX_REPLACETEX_STR or {}
 	}
 	local whitelist = {"models/props_rooftop/dome005","models/props_foliage/branches_003","de_dust/groundsand03"}
 	local blacklist = {"concretefloor027a","swamp","indoor","foliage","model","dirtfloor005c","dirtground010"} -- "wood". dirtfloor005c see,s to be used a lot indoors
-	local forcedlist = {"models/props_foliage/branches_003","nature/gravelfloor004a","nature/dirtfloor012a","nature/blendtoxictoxic004a","nature/blenddirtgrass001b","concrete/concretefloor033k","concrete/concretefloor033c","nature/grassfloor002a","nature/dirtfloor011a","nature/dirtfloor006a","nature/dirtfloor005c"}
+	local forcedlist = {"customtext/gc textures/blends/grass_dirt_blend01","models/props_foliage/branches_003","nature/gravelfloor004a","nature/dirtfloor012a","nature/blendtoxictoxic004a","nature/blenddirtgrass001b","concrete/concretefloor033k","concrete/concretefloor033c","nature/grassfloor002a","nature/dirtfloor011a","nature/dirtfloor006a","nature/dirtfloor005c"}
 
 	-- Local function
 		local function tablescan(tab,str)

@@ -90,11 +90,17 @@ if SERVER then
 	util.AddNetworkString("StormFox - ThunderLight")
 	hook.Add("Think","StormFox - Thunder",function()
 		if nextHit > CurTime() then return end
-			nextHit = CurTime() + math.random(10,15)
+			nextHit = CurTime() + math.random(5,15)
 		if not StormFox.GetNetworkData("Thunder",false) then return end
 		local con = GetConVar("sf_disablelightningbolts")
-		if math.random(10) < 4 or con:GetBool() then
+		if math.random(10) < 7 or con:GetBool() then
 			StormFox.CLEmitSound("ambient/atmosphere/thunder" .. math.random(3,4) .. ".wav",nil,0.5)
+			if math.random(1,10)>=5 then
+				local thunder_length = math.Rand(1,2) / 10
+				local thunder_light = math.random(150,100)
+				StormFox.SetData("ThunderLight",thunder_light)
+				StormFox.SetData("ThunderLight",0,thunder_length)
+			end 
 		else
 			local thunder_length = math.Rand(1,2) / 10
 			local thunder_light = math.random(150,100)

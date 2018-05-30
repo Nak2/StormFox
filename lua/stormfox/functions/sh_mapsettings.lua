@@ -68,6 +68,12 @@ if SERVER then
 	-- Load mapdata
 		loadMapdata()
 		UpdateSettings()
+	function StormFox.SetMapSettings(data)
+		for k,v in pairs(data) do
+			mapSettings[k] = v
+		end
+		UpdateSettings()
+	end
 else
 	local clamp,abs,round = math.Clamp,math.abs,math.Round
 	local function getTemp(n)

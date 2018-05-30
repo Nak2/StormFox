@@ -15,6 +15,7 @@ if SERVER then
 else
 	net.Receive("StormFox - Sound",function(len)
 		if not LocalPlayer() then return end
+		if not IsValid(LocalPlayer()) then return end
 		local snd = net.ReadString()
 		local vol = net.ReadFloat() or 1
 		if not snd then return end

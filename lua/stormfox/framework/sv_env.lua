@@ -15,11 +15,6 @@
 		StormFox.SetShadowDisable(bool)
 
 	Sun
-		StormFox.SetSunAngle(ang,setShadow,forceday)
-		StormFox.SetSunSize(size [0-100])
-		StormFox.SetSunOverlaySize(size [0-100])
-		StormFox.SetSunColor(Color)
-		StormFox.SetSunOverlayColor(Color)
 		StormFox.DebugSun() -- Returns sun position
 
 	Maplight

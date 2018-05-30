@@ -50,7 +50,6 @@ local move_tab = {}
 		end
 		return false
 	end
-	function fmove_tab() return move_tab end
 
 -- Scan for props to be effected
 	local scanList,index = {},0
@@ -120,7 +119,7 @@ hook.Add("Think","StormFox - EffectProps",function()
 					constraint.RemoveConstraints( ent, "Weld" )
 				end
 			-- Do movement
-			local pNeeded = vol / 10
+			local pNeeded = vol / 13
 				pys:Wake()
 				pys:ApplyForceCenter(-windNorm * pNeeded)
 			-- Take damage (To stop all the wood props)

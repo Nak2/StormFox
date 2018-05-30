@@ -6,6 +6,7 @@ Breath
 	local m_mats = {(Material("particle/smokesprites_0001")),(Material("particle/smokesprites_0002")),(Material("particle/smokesprites_0003"))}
 	local function breath(ply,size)
 		if not StormFox.EFEnabled() then return end
+		if not ply:Alive() then return end
 		if size <= 0 then return end
 		if ply:WaterLevel() >= 3 then return end
 		if not emit then
@@ -58,4 +59,18 @@ Breath
 		local t = clamp(1 - (len / 400),0.2,1)
 			ply._sf_breath = math.Rand(t,t * 2) + SysTime()
 		breath(ply,5 - (len / 50))
+	end)
+--[[-------------------------------------------------------------------------
+HUD messages
+---------------------------------------------------------------------------]]
+local msg,msg_t = nil,0
+	function StormFox.HUDMessage(smsg,time)
+		msg_t = CurTime() + (time or 1)
+		msg = smsg
+	end
+	hook.Add("HUDPaint","StormFox_HUDMessages",function()
+		if not msg then return end
+		if msg_t < CurTime() then return end
+		draw.DrawText(msg,"SkyFox-Console_Medium",ScrW() / 2 - 1,ScrH() / 2 - 49,Color(0,0,0),1)
+		draw.DrawText(msg,"SkyFox-Console_Medium",ScrW() / 2,ScrH() / 2 - 50,Color(255,255,255),1)
 	end)

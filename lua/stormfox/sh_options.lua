@@ -280,6 +280,8 @@
 						StormFox.DisplayTip(xx,yy,"Allows clients to disable SF effects. (Clients might get an unfair advantage in heavy rain with this.)",RealFrameTime())
 					end
 				end
+			-- Follow localtime
+				adminTrickBox(panel,"sf_realtime")
 			-- Disable autoweather
 				adminTrickBox(panel,"sf_disable_autoweather")
 			-- Disable fog

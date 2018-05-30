@@ -19,7 +19,7 @@
 		t.HitPos = t.HitPos or (pos + pos2)
 		return t
 	end
-	function findSky(pos1,pos2,mask)
+	local function findSky(pos1,pos2,mask)
 		local skypos = nil
 		local pos = pos1
 		for i = 1,16 do

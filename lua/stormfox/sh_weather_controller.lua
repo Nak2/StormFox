@@ -46,8 +46,15 @@ if SERVER then
 
 	function StormFox.SetWeather( sWeatherId, flMagnitude, tTime )
 		if not StormFox.GetWeatherType( sWeatherId ) then print( "[StormFox] Weather not found:", sWeatherId ) return end
+		local old_w = StormFox.GetNetworkData("Weather","clear")
 		StormFox.SetNetworkData( "Weather",sWeatherId)
 		StormFox.SetNetworkData( "WeatherMagnitude", flMagnitude, tTime)
+
+		if flMagnitude <= 0 then
+			hook.Call("StormFox - NewWeather",nil,"clear",old_w)
+		else
+			hook.Call("StormFox - NewWeather",nil,sWeatherId,old_w)
+		end
 	end
 	StormFox.SetWeather("clear",0)
 end
@@ -210,14 +217,18 @@ if SERVER then
 	end)
 end
 
-function ET(pos,pos2,mask,filter)
+local function ET(pos,pos2,mask,filter)
+	if not pos or not pos2 then return {} end
 	local t = util.TraceLine( {
-	start = pos,
-	endpos = pos + pos2,
-	mask = mask,
-	filter = filter
-	} )
-	t.HitPos = t.HitPos or (pos + pos2)
+		start = pos,
+		endpos = pos + pos2,
+		mask = mask,
+		filter = filter
+		} )
+	if not t then return {} end -- Sometimes it returns nil??
+	if not t.HitPos then
+		t.HitPos = pos + pos2
+	end
 	return t
 end
 

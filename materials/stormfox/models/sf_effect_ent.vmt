@@ -1,0 +1,9 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "stormfox\tool\sf_screen"
+	"$surfaceprop" "tile"
+	"$selfillum" 1
+	"$additive" 1
+	"$bumpmap" "stormfox\tool\sf_screen"
+	"$basetexturetransform" "center .34 .34 scale 4 4 rotate 0 translate 0 0"
+}

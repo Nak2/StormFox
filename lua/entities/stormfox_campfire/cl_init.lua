@@ -48,6 +48,7 @@ end
 
 local ran,rand = math.random,math.Rand
 function ENT:Think()
+	if not StormFox then return end
 	if self:GetColor().r ~= 255 then self.ES = 1 return end
 	if self.ES > 0 then
 		self.ES = self.ES - FrameTime()

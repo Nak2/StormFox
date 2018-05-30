@@ -20,13 +20,6 @@ function ENT:DrawTranslucent()
 
 	if ( halo.RenderedEntity() == self ) then return end
 	local dis = EyePos():DistToSqr(self:GetPos())
-
-	if dis < 200000 and not self:GetPersistent() then
-		local pos = EyeAngles():Forward() * -20
-		cam.Start3D2D(self:LocalToWorld(Vector(0,0,20)) + pos,Angle(0,EyeAngles().y + 270,90),0.2)
-			draw.DrawText("Press E to make persistent","BudgetLabel",0,0,Color(255,255,255),1)
-		cam.End3D2D()
-	end
 	if self:GetMaterial() == "stormfox/models/combine_light_off" or dis > 2000000 then
 		if self.flashlight and IsValid(self.flashlight) then
 			self.flashlight:Remove()

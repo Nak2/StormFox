@@ -2,6 +2,7 @@ local app = math.Approach
 local max = math.max
 local smoothe,smooths = 10000, 10000
 local SkyFog = function(scale)
+	--if true then return end
 	if not scale then scale = 1 end
 	if not StormFox.GetData then return end
 	if not StormFox.EFEnabled() then return end

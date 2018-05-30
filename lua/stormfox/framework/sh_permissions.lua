@@ -52,11 +52,12 @@ function StormFox.CanEditSetting(ply,con,var)
 		--print(ply,"a")
 		if not b then ply:PrintMessage(HUD_PRINTTALK,"You don't have access to server settings.") return end
 		--print("b")
-		if not ConVarExists(con) then return end
+		if not StormFox.convars[con] then ply:PrintMessage(HUD_PRINTTALK,"Non SF server setting.") return end
 		--print("c",con,var)
 		print("[StormFox] " .. ply:Nick() .. " (" .. ply:SteamID() .. ") changed " .. con .. " to " .. tostring(var))
-		local con = GetConVar(con)
-			con:SetString(var)
+		local conVar = GetConVar(con)
+		if not conVar then ply:PrintMessage(HUD_PRINTTALK,"Unknown convar '" .. con .. "' (ERROR)") return end 
+			conVar:SetString(var)
 	end)
 end
 

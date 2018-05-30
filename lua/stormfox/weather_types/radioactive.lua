@@ -48,6 +48,7 @@ Radioactive.CalculatedData.MapDayLight = 87.5
 Radioactive.CalculatedData.MapNightLight = 0
 Radioactive.CalculatedData.Gauge = 2
 Radioactive.CalculatedData.SunColor = Color(155,255,155,15)
+Radioactive.CalculatedData.CloudsAlpha = 155
 
 Radioactive.DataCalculationFunctions.StarFade = function( flPercent ) return max( 1 - flPercent * 10, 0 ) end
 Radioactive.DataCalculationFunctions.SunSize = function( flPercent ) return max( 0, 10 - ( 10 * flPercent ) ) end

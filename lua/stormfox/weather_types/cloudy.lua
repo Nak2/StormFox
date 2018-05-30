@@ -49,11 +49,11 @@ Cloudy.TimeDependentData.Fogend = {
 }
 Cloudy.CalculatedData.MapDayLight = 25
 Cloudy.CalculatedData.MapNightLight = 0
-Cloudy.CalculatedData.CloudsAlpha = 1
+Cloudy.CalculatedData.CloudsAlpha = 255
 
 Cloudy.CalculatedData.SunColor = Color(255,255,255,15)
 
-Cloudy.DataCalculationFunctions.StarFade = function( flPercent ) return max( 1 - flPercent * 10, 0 ) end
+Cloudy.DataCalculationFunctions.StarFade = function( flPercent ) return max( 1 - flPercent * 5, 0 ) end
 Cloudy.DataCalculationFunctions.SunSize = function( flPercent ) return max( 0, 10 - ( 10 * flPercent ) ) end
 Cloudy.DataCalculationFunctions.MoonVisibility = function( flPercent ) return 100 - flPercent * 90 end
 

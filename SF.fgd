@@ -1,0 +1,30 @@
+//-------------------------------------------------------------------------
+//
+// Game data for StormFox
+//
+//-------------------------------------------------------------------------
+
+@include "base.fgd" 
+
+// Controllers
+@PointClass base(Targetname, Origin) studio("models/props_combine/combine_intmonitor003.mdl") = stormfox-weathercontroller : "StormFox WeatherController" []
+
+// Displays
+@PointClass base(Targetname, Origin) studio("models/props/cs_office/computer_monitor.mdl") = stormfox_weathermonitor : "StormFox Weather Monitor" []
+@PointClass base(Targetname, Origin) studio("models/props_phx/rt_screen.mdl") = stormfox_weekweather : "StormFox WeeklyWeather" []
+
+// Clocks
+@PointClass base(Targetname, Origin) studio("models/hunter/blocks/cube025x025x025.mdl") = stormfox_digitalclock : "StormFox Digital Clock" []
+@PointClass base(Targetname, Origin) studio("models/maxofs2d/motion_sensor.mdl") = stormfox_digitalclock2 : "StormFox Digital Clock2" []
+@PointClass base(Targetname, Origin) studio("models/props_combine/breenclock.mdl") = stormfox_miniclock : "StormFox Miniclock" []
+@PointClass base(Targetname, Origin) studio("models/props_trainstation/trainstation_clock001.mdl") = stormfox_clock : "StormFox Clock" []
+@PointClass base(Targetname, Origin) studio("models/props_trainstation/clock01.mdl") = stormfox_clock-outdoors : "StormFox Outdoor Clock" []
+
+// Lights
+@PointClass base(Targetname, Origin) studio("models/props_combine/combine_light001a.mdl") = stormfox_combinelight : "StormFox Combinelight" []
+@PointClass base(Targetname, Origin) studio("models/props/de_tides/tides_streetlight.mdl") = stormfox_parklight : "StormFox Parklight" []
+@PointClass base(Targetname, Origin) studio("models/props/de_tides/tides_light_fixture.mdl") = stormfox_parklight_hanging : "StormFox Parklight Hanging" []
+@PointClass base(Targetname, Origin) studio("models/props_c17/lamppost03a_off_dynamic.mdl") = stormfox_streetlight : "StormFox Streetlight" []
+
+// Others
+@PointClass base(Targetname, Origin) studio("models/props_debris/concrete_chunk02b.mdl") = stormfox_campfire : "StormFox Campfire" []

@@ -299,15 +299,27 @@ hook.Add("StormFox - NetDataChange","StormFox - lightfix",function(str,nowL)
 	nowL = var
 	updateTime = CurTime() + 4
 end)
+hook.Add("EntityFireBullets","StormFox.DetectBattle",function(ent)
+	if not ent then return end
+	if not type(ent) == "Player" then return end
+	ent.sf_lastshoot = CurTime()
+end)
+function canUpdate(ply)
+	if (ply.sf_lastshoot or 0) + 6 > CurTime() then return false end
+	if ply:GetVelocity():Length() > 20 then return false end
+	return true
+end
 hook.Add("Think","StormFox - LightThink",function()
 	if updateTime < 0 then return end
+	if not LocalPlayer() then return end
+	if not canUpdate(LocalPlayer()) then return end
 	if updateTime > CurTime() then return end
 	updateTime = -1
-	render.RedownloadAllLightmaps()
+	render.RedownloadAllLightmaps(true)
 end)
 hook.Add("StormFox - PostEntity","StormFox - FixMapBlackness",function()
 	timer.Simple(10,function()
-		render.RedownloadAllLightmaps()
+		render.RedownloadAllLightmaps(true)
 		canRedownload = true
 	end)
 end)

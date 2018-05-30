@@ -30,14 +30,9 @@ function ENT:SpawnFunction( ply, tr, ClassName )
 	ent:SetAngles(Angle(0,ang,0))
 	ent:Spawn()
 	ent:Activate()
-
-	ply:PrintMessage( HUD_PRINTCENTER, "Press E to make persistent" )
-
 	return ent
 
 end
-
-ENT.Use = StormFox.MakeEntityPersistance
 
 function ENT:Think()
 	if (self.lastT or 0) > SysTime() + 20 then

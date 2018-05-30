@@ -108,7 +108,7 @@
 		StarSpeed = 0.001,
 		StarScale = 0.7,
 		StarTexture = "skybox/starfield",
-		MoonTexture = "stormfox/moon_fix",
+		MoonTexture = "stormfox/effects/moon.png",
 		GaugeColor = Color(255,255,255),
 		EnableThunder = false
 	}

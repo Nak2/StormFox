@@ -45,7 +45,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 		return t
 	end
 
-	function ET(pos,pos2,mask)
+	local function ET(pos,pos2,mask)
 		local t = util.TraceLine( {
 		start = pos,
 		endpos = pos + pos2,

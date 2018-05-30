@@ -16,8 +16,6 @@ function ENT:Initialize()
 	self.lastT = 7
 end
 
-ENT.Use = StormFox.MakeEntityPersistance
-
 function ENT:SpawnFunction( ply, tr, ClassName )
 
 	if ( !tr.Hit ) then return end
@@ -30,8 +28,6 @@ function ENT:SpawnFunction( ply, tr, ClassName )
 	ent:SetAngles(tr.HitNormal:Angle())
 	ent:Spawn()
 	ent:Activate()
-
-	ply:PrintMessage( HUD_PRINTCENTER, "Press E to make persistent" )
 
 	return ent
 
