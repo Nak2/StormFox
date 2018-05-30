@@ -12,7 +12,7 @@ Definitions:
     - "[]" around an argument or result, means its optional. It can be left/return as a nil.
 
 # List of commen and useful functions:
-#### Time Functions
+## Time Functions
 | Functions        | Description| Eample of input  |
 | -------------------- |:-------------|:------|
 | StormFox.StringToTime([String](http://wiki.garrysmod.com/page/Category:string): time-string)  | returns time-value from a string. Incl AM/PM support. | "11:00 PM" or "23:00" |
@@ -42,7 +42,7 @@ Definitions:
 | StormFox.SetTemperature([number](http://wiki.garrysmod.com/page/Category:number): temperature, [boolean](http://wiki.garrysmod.com/page/Category:boolean): use_fahrenheit) | Sets the temperature |
 | StormFox.SetThunder( [boolean](http://wiki.garrysmod.com/page/Category:boolean) ) | Sets thunder |
 
-#### Sun/Moon Functions
+## Sun/Moon Functions
 | Functions        | Description           |
 | ------------- |:-------------|
 | StormFox.GetSunAngle([[number](http://wiki.garrysmod.com/page/Category:number): time-value]) | returns the angle of the sun. |
@@ -54,7 +54,7 @@ Definitions:
 | StormFox.GetSunVisibility() | returns sun visibility between 0-1 as a [number](http://wiki.garrysmod.com/page/Category:number) |
 | StormFox.GetSunRayVisibility() | returns sun-ray visibility between 0-1 as a [number](http://wiki.garrysmod.com/page/Category:number) |
 
-#### StormFox hooks
+## StormFox hooks
 | Hooks                 | Description                                               | Arguments |
 | -------------         |:-----------------------------------                       |:--------------|
 | StormFox - PostInit   | Called when StormFox has launched.                        |
