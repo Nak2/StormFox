@@ -27,7 +27,7 @@ Definitions:
 |**Server Side**|
 |StormFox.SetTime([number](http://wiki.garrysmod.com/page/Category:number): time-value) | Sets the current time (Don't call this often)| [number](http://wiki.garrysmod.com/page/Category:number) time-value or [String](http://wiki.garrysmod.com/page/Category:string) time-string|  
 
-#### Weather Functions
+## Weather Functions
 | Functions        | Description           |
 | ------------- |:-------------|
 | StormFox.IsRaining() | returns true if its raining |
