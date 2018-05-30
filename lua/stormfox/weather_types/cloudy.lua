@@ -2,7 +2,7 @@
 local Cloudy = StormFox.WeatherType( "cloudy" )
 local max = math.max
 Cloudy.CanGenerate = true
-Cloudy.StormMagnitudeMin = 0.2
+Cloudy.StormMagnitudeMin = 0.13
 Cloudy.StormMagnitudeMax = 0.8
 Cloudy.MaxLength = 1440 / 2
 

@@ -3,7 +3,7 @@
 local RainStorm = StormFox.WeatherType( "rain" )
 local max = math.max
 RainStorm.CanGenerate = true
-RainStorm.StormMagnitudeMin = 0.2
+RainStorm.StormMagnitudeMin = 0.13
 RainStorm.MaxLength = 1440 / 3
 
 RainStorm.TimeDependentData.SkyTopColor = {
