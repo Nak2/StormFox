@@ -309,12 +309,15 @@ function canUpdate(ply)
 	if ply:GetVelocity():Length() > 20 then return false end
 	return true
 end
+local updateTimeout = 0
 hook.Add("Think","StormFox - LightThink",function()
+	if updateTimeout >= CurTime() then return end
 	if updateTime < 0 then return end
 	if not LocalPlayer() then return end
 	if not canUpdate(LocalPlayer()) then return end
 	if updateTime > CurTime() then return end
 	updateTime = -1
+	updateTimeout = CurTime() + 30
 	render.RedownloadAllLightmaps(true)
 end)
 hook.Add("StormFox - PostEntity","StormFox - FixMapBlackness",function()
