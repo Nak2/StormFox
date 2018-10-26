@@ -109,3 +109,11 @@ hook.Add("StormFox - EnvUpdate","StormFox - WindSounds",function()
 	local nn = clamp(Wind / 20 * windAmount,0,1)
 	playSound("Wind",nn * 0.2,snd_windloop)
 end)
+
+hook.Add("EntityEmitSound","StormFox BlockSounds",function(data)
+--	if not StormFox.GetNetworkData("override_sounds") then return end
+	if not data.Entity:IsWorld() then return end
+	if data.OriginalSoundName:sub(0,8) == "ambient/" then
+		return false
+	end
+end)

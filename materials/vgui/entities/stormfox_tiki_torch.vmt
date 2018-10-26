@@ -1,6 +1,6 @@
 "UnlitGeneric" 
 { 
-	"$basetexture"		"vgui/entities/stormfox-weathercontroller" 
+	"$basetexture"		"vgui/entities/stormfox_tiki_torch" 
 	"$vertexcolor" 		1 
 	"$vertexalpha" 		1 
 	"$nolod" 			1 

@@ -48,7 +48,9 @@ Breath
 		breath(ply,5 + (len / 100))
 
 	end)
+	local con = GetConVar("sf_enable_breath")
 	hook.Add("Think","StormFox - CBreath",function()
+		if con:GetInt() ~=1 then return end
 		genabled = StormFox.GetNetworkData("Temperature",20) < 4 and (StormFox.Env.IsInRain() or StormFox.Env.IsOutside() or StormFox.Env.NearOutside())
 		if not genabled then return end
 		if not LocalPlayer() then return end

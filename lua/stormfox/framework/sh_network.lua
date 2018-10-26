@@ -69,7 +69,7 @@
 				if cdata[str] and cdata[str][1] > RealTime() then
 					return cdata[str][2]
 				end
-			local st = con:GetFloat()
+			local st = con:GetFloat() / 60
 			local t = CurTime()
 			local t_start = aimdata[str][2] or 0
 			local t_stop = t_start + aimdata[str][3] / math.max(st,0.5)
@@ -273,7 +273,7 @@
 			end
 
 		local t = CurTime()
-		local st = con:GetFloat()
+		local st = con:GetFloat() / 60
 		local t_start = network_aimdata[str][2] or 0
 		local t_stop = t_start + (network_aimdata[str][3] or 0) / math.max(st,0.5)
 		-- Is it old aimdata?

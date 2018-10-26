@@ -8,7 +8,7 @@ end
 local cos,sin,rad,min,max = math.cos,math.sin,math.rad,math.min,math.max
 local mat = Material("models/props_combine/combine_intmonitor001_disp_off")
 
-surface.CreateFont( "SkyFox-Console_B", {
+	surface.CreateFont( "SkyFox-Console_B", {
 			font = "Arial", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
 			extended = false,
 			size = 30,
@@ -24,8 +24,8 @@ surface.CreateFont( "SkyFox-Console_B", {
 			shadow = false,
 			additive = false,
 			outline = false,
-		} )
-		surface.CreateFont( "SkyFox-Console", {
+	} )
+	surface.CreateFont( "SkyFox-Console", {
 			font = "Arial", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
 			extended = false,
 			size = 20,
@@ -41,7 +41,7 @@ surface.CreateFont( "SkyFox-Console_B", {
 			shadow = false,
 			additive = false,
 			outline = false,
-		} )
+	} )
 
 -- Thanks wiki
 local function WorldToScreen(vWorldPos,vPos,vScale,aRot)
@@ -207,7 +207,7 @@ function ENT:Draw()
 		end
 		surface.DrawRect(60,205,120,2)
 		local temp = StormFox.GetNetworkData("Temperature",20)
-		surface.DrawRect(100 + temp * 4,201,2,10)
+		surface.DrawRect(100 + temp * 2,201,2,10)
 		draw.DrawText( round(temp,1) .. "°C - " .. round(StormFox.CelsiusToFahrenheit(temp),1) .. "°F", "SkyFox-Console", 120, 180, col, 1 )
 
 		-- Wind
@@ -219,7 +219,7 @@ function ENT:Draw()
 		end
 		surface.DrawRect(60,255,120,2)
 		local wind = StormFox.GetNetworkData("Wind",0)
-		surface.DrawRect(60 + wind * 6,251,2,10)
+		surface.DrawRect(60 + wind * 2.4,251,2,10)
 		local b,str = StormFox.GetBeaufort(wind)
 		draw.DrawText( "Wind speed:" .. str, "SkyFox-Console", 120, 230, col, 1 )
 
@@ -258,10 +258,10 @@ function ENT:Draw()
 			elseif selected == 4 then
 				self:SetDataWeather("Thunder",not thunder)
 			elseif selected == 5 then
-				local p = math.floor(math.Clamp((ax - 100) / 4,-10,20))
+				local p = math.floor(math.Clamp((ax - 100) / 2,-10,40))
 				self:SetDataWeather("Temperature",p)
 			elseif selected == 6 then
-				local p = math.floor(math.Clamp((ax - 60) / 6,0,20))
+				local p = math.floor(math.Clamp((ax - 60) / 2.4,0,50))
 				self:SetDataWeather("Wind",p)
 			elseif selected == 7 then
 				local p = math.floor(math.Clamp((ax - 60) * 3,0,360))

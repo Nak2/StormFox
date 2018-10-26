@@ -9,7 +9,7 @@
  ---------------------------------------------------------------------------]]
 local mmin,clamp = math.min,math.Clamp
 local BASE_TIME = CurTime() -- The base time we will use to calculate current time with.
-local TIME_SPEED = ( GetConVar("sf_timespeed") and GetConVar("sf_timespeed"):GetFloat() or 1 ) or 1
+local TIME_SPEED = (( GetConVar("sf_timespeed") and GetConVar("sf_timespeed"):GetFloat() or 1 ) or 1 ) / 60
 function StormFox.GetBASE_TIME()
 	return BASE_TIME
 end
@@ -61,15 +61,15 @@ end
 
 		-- Update our local TIME_SPEED variable if the convar is changed
 		cvars.AddChangeCallback( "sf_timespeed", function( sConvarName, sOldValue, sNewValue )
-			local flNewValue = tonumber( sNewValue ) or 1
+			local flNewValue = (tonumber( sNewValue ) or 1)
 			local flOldTime = StormFox.GetTime()
-			if flNewValue > 66 then
-				MsgN( "[StormFox] WARNING: Timespeed was set to higer than 66.0. Reverting to a value of 66.0.")
-				GetConVar( "sf_timespeed" ):SetFloat( 66.0 )
+			if flNewValue > 3960 then
+				MsgN( "[StormFox] WARNING: Timespeed was set to higer than 3960.0. Reverting to a value of 3960.")
+				GetConVar( "sf_timespeed" ):SetFloat( 3960.0 )
 				TIME_SPEED = 66
-			elseif flNewValue > 0 and flNewValue < 0.001 then
-				MsgN( "[StormFox] WARNING: Timespeed can't be between 0 and 0.001. Reverting to the value of 0.001.")
-				GetConVar( "sf_timespeed" ):SetFloat( 0.001 )
+			elseif flNewValue > 0 and flNewValue < 0.06 then
+				MsgN( "[StormFox] WARNING: Timespeed can't be between 0 and 0.06. Reverting to the value of 0.06.")
+				GetConVar( "sf_timespeed" ):SetFloat( 0.06 )
 				TIME_SPEED = 0.001
 			elseif flNewValue <= 0 then
 				if flNewValue < 0 then
@@ -81,17 +81,17 @@ end
 				TIME_SPEED = 0
 			else
 				MsgN( "[StormFox] Timespeed changed to: " .. flNewValue )
-				TIME_SPEED = flNewValue
+				TIME_SPEED = flNewValue / 60
 			end
 			if TIME_SPEED <= 0 then
-				timer.Pause("StormFox-tick")
+				timer.Pause("StormFox - tick")
 				BASE_TIME = flOldTime
 			else
 				BASE_TIME = CurTime() - ( flOldTime / TIME_SPEED )
 				if tonumber(sOldValue) <= 0 then
-					timer.UnPause("StormFox-tick")
+					timer.UnPause("StormFox - tick")
 				end
-				timer.Adjust( "StormFox-tick", 1 / TIME_SPEED,0)
+				timer.Adjust( "StormFox - tick", 1 / TIME_SPEED,0)
 			end
 			updateClientsTimeVars() -- Update the vars
 		end, "StormFox_TimeSpeedChanged" )
@@ -134,23 +134,23 @@ end
 			if StormFox.GetTimeSpeed() <= 0 then return end
 			local time = StormFox.GetTime()
 			if not SUNRISE_CALLED and time >= SUN_RISE and time < SUN_SET then
-				hook.Call( "StormFox-Sunrise" )
+				hook.Call( "StormFox - Sunrise" )
 				SUNRISE_CALLED = true
 				SUNSET_CALLED = false
 			elseif not SUNSET_CALLED and ( time < SUN_RISE or time >= SUN_SET ) then
-				hook.Call( "StormFox-Sunset" )
+				hook.Call( "StormFox - Sunset" )
 				SUNRISE_CALLED = false
 				SUNSET_CALLED = true
 				NEWDAY_CALLED = false
 			elseif time < StormFox.GetTimeSpeed() and not NEWDAY_CALLED then
-				hook.Call( "StormFox-NewDay" )
+				hook.Call( "StormFox - NewDay" )
 				NEWDAY_CALLED = true
 			end
 
-			hook.Call( "StormFox-Tick", nil, StormFox.GetTime() )
+			hook.Call( "StormFox - Tick", nil, StormFox.GetTime() )
 		end
-		timer.Create( "StormFox-tick", 1, 0, timerfunction )
-		hook.Add("StormFox - Timeset","StormFox-Newdayfix",function()
+		timer.Create( "StormFox - tick", 1, 0, timerfunction )
+		hook.Add("StormFox - Timeset","StormFox - Newdayfix",function()
 			NEWDAY_CALLED = false
 		end)
 	else -- CLIENT
@@ -208,8 +208,32 @@ end
 
 if SERVER then
 	StormFox.SetTime( os.time() % 1440 )
+	cvars.AddChangeCallback( "sf_realtime", function( convar_name, value_old, value_new )
+		if value_new == "1" then
+			RunConsoleCommand("sf_timespeed",1) -- match the real world timespeed. Seconds of gametime pr second
+			local dt = string.Explode(":",os.date("%H:%M:%S"))
+			StormFox.SetTime(dt[1] * 60 + dt[2] + (dt[3] / 60))
+			print("[StormFox] Setting time to localtime (" .. os.date("%H:%M:%S") .. ")")
+		end
+	end, "StormFox - SF_REALTIMESET" )
+	timer.Create("StormFox - SF_KeepRealTime",6,0,function()
+		local con = GetConVar("sf_realtime")
+		if con:GetInt() ~= 1 then return end
+		-- In case of desync
+		local con2 = GetConVar("sf_timespeed")
+		if con2:GetInt() ~= 1 then
+			StormFox.Msg("sf_timespeed desync detected while running sf_timespeed.")
+			RunConsoleCommand("sf_timespeed",1) -- match the real world timespeed. Seconds of gametime pr second
+		end
+		local dt = string.Explode(":",os.date("%H:%M:%S"))
+		local t = dt[1] * 60 + dt[2] + (dt[3] / 60)
+		if StormFox.GetTime() ~= t then
+			--StormFox.Msg("Desync detected while running sf_timespeed.")
+			StormFox.SetTime(dt[1] * 60 + dt[2] + (dt[3] / 60))
+		end
+	end)
 end
-
+	
 -- Setup server varables
 	if SERVER then
 		hook.Add("StormFox - PostInit","StormFox - StartTime",function()
@@ -217,11 +241,8 @@ end
 			local con2 = GetConVar("sf_realtime")
 			
 			-- Realtime setting
-				if con2 and con2:GetString() ~= "0" then
-					if not cookie.GetString("sfold_timespeed") then
-						cookie.Set("sfold_timespeed",GetConVar("sf_timespeed"):GetString())
-					end
-					RunConsoleCommand("sf_timespeed",1/60) -- match the real world timespeed. Minutes of gametime pr second
+				if con2 and con2:GetString() == "1" then
+					RunConsoleCommand("sf_timespeed",1) -- match the real world timespeed. Seconds of gametime pr second
 					local dt = string.Explode(":",os.date("%H:%M:%S"))
 					StormFox.SetTime(dt[1] * 60 + dt[2] + (dt[3] / 60))
 					print("[StormFox] sf_start_time: Setting time to localtime (" .. os.date("%H:%M:%S") .. ")")
@@ -235,7 +256,7 @@ end
 				print("[StormFox] sf_start_time: Setting time to: " .. str)
 				StormFox.SetTime(n)
 			else
-				local cookie = cookie.GetString("StormFox-ShutDown",nil)
+				local cookie = cookie.GetString("StormFox - ShutDown",nil)
 				if cookie then
 					local a = string.Explode("|",cookie)
 					local diff_time = os.time() - tonumber(a[2])
@@ -247,10 +268,10 @@ end
 					print("[StormFox] Loaded time.")
 				end
 			end
-			cookie.Delete("StormFox-ShutDown") -- Always delete
+			cookie.Delete("StormFox - ShutDown") -- Always delete
 		end)
 		hook.Add("ShutDown","StormFox - OnShutdown",function()
-			cookie.Set("StormFox-ShutDown",StormFox.GetTime() .. "|" .. os.time( ))
+			cookie.Set("StormFox - ShutDown",StormFox.GetTime() .. "|" .. os.time( ))
 			print("[StormFox] Saved time.")
 		end)
 	end

@@ -52,6 +52,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 		mask = mask or LocalPlayer(),
 		filter = LocalPlayer():GetViewEntity() or LocalPlayer()
 		} )
+		if not t then return end
 		t.HitPos = t.HitPos or (pos + pos2)
 		return t
 	end
@@ -99,13 +100,17 @@ local Gauge = StormFox.GetData("Gauge",0)
 		if not StormFox.EFEnabled() then return end
 		local lp = LocalPlayer()
 		if not lp or not IsValid(lp) then return end
-		local pos,ang = StormFox.GetEyePos(),EyeAngles()
+
+		local view = StormFox.GetCalcViewResult()
+		local pos,ang = view.pos,view.ang
 		local angf = ang:Forward()
 			angf.z = 0
 		local vel = lp:GetVelocity() * 0.6
 			vel.z = 0
-		mainpos = pos + angf * (rain_range * 0.8)
-		mainpos = ET(mainpos,Vector(0,0,rain_range - ran(50))).HitPos + (lp:GetShootPos() - lp:GetPos()) * 2 + vel
+		local _tmainpos = pos + angf * (rain_range * 0.8)
+			_tmainpos = ET(_tmainpos,Vector(0,0,rain_range - ran(50))).HitPos + (lp:GetShootPos() - lp:GetPos()) * 2 + vel
+		if not _tmainpos then return end
+		mainpos = _tmainpos
 			--debugoverlay.Box(mainpos,Vector(0,0,0),Vector(5,5,5),1,Color( 255, 255, 255 ))
 	end)
 	timer.Create("StormFox - Downfallupdater",1,0,function()
@@ -116,9 +121,9 @@ local Gauge = StormFox.GetData("Gauge",0)
 				materials.RainMultiTexture 	= StormFox.GetData("RainMultiTexture") or Material("stormfox/raindrop-multi.png","noclamp smooth")
 				materials.RainSmoke 	 	= StormFox.GetData("RainSmoke") or Material("particle/smokesprites_0001")
 
-				materials.Snow 				= StormFox.GetData("SnowTexture") or Material("particle/snow")
+				materials.Snow 				= StormFox.GetData("SnowTexture") or materials.RainSmoke or materials.Rain or Material("particle/snow")
 				materials.SnowSmoke			= StormFox.GetData("SnowSmoke") or Material("particle/smokesprites_0001")
-				materials.SnowMultiTexture	= StormFox.GetData("SnowMultiTexture") or Material("stormfox/snow-multi.png","noclamp smooth")
+				materials.SnowMultiTexture	= StormFox.GetData("SnowMultiTexture") or materials.RainMultiTexture or Material("stormfox/snow-multi.png","noclamp smooth")
 			snowEnabled,GaugeColor = StormFox.GetData("EnableSnow",true),StormFox.GetData("GaugeColor") or Color(255,255,255)
 
 		Gauge = StormFox.GetData("Gauge",0)
@@ -149,7 +154,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 			end
 		-- Calc max particles
 			local exp = StormFox.GetExspensive()
-			local maxparticles = max(exp,1) * 48
+			local maxparticles = max(exp,1) * 38
 
 			local maxbg = 32 + max(exp,1) * 64 * (Gauge / 10)
 			if not IsRain then maxbg = maxbg * 0.5 end
@@ -513,11 +518,11 @@ local rain_particles = { (Material("stormfox/effects/raindrop")), (Material("sto
 					table.remove(screenParticles,i)
 				end
 			end
-		-- Safty first
-			if #screenParticles > 200 then return end
 		-- Is it even raining?
 			local Gauge = StormFox.GetData("Gauge",0)
 			if Gauge <= 0 then table.Empty(screenParticles) return end
+		-- Safty first
+			if #screenParticles > 200 then return end
 		-- Are you standing in the rain?
 			if not StormFox.Env.IsInRain() then return end
 		-- Get the temp and type

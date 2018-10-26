@@ -40,8 +40,8 @@
 			TIME_SUNSET = Color(0, 1.5, 5.25),
 			TIME_NIGHT = Color(0, 1.5, 5.25)
 		},
-		FadeBias = { -- TODO: Nak, what is this? Please add a comment
-			TIME_SUNRISE = 0.3,
+		FadeBias = { -- 
+			TIME_SUNRISE = 0.2,
 			TIME_SUNSET = 0.16,
 			TIME_NIGHT = 0.06
 		},
@@ -56,18 +56,18 @@
 			 TIME_SUNSET = 0.7,
 			 TIME_NIGHT = 0
 		},
-		HDRScale = { -- TODO: Nak, what is this? Please add a comment
+		HDRScale = { -- 
 			 TIME_SUNRISE = 0.66,
 			 TIME_NOON = 0.5,
 			 TIME_SUNSET = 0.1
 		},
-		Fogdensity = { -- TODO: Nak, what is this? Please add a comment
+		Fogdensity = { -- 
 			 TIME_SUNRISE = 0.8,
 			 TIME_SUNSET = 0.9
 		},
-		Fogend = { -- TODO: Nak, what is this? Please add a comment
-			 TIME_SUNRISE = 108000,
-			 TIME_SUNSET = 60000
+		Fogend = { -- 
+			 TIME_SUNRISE = 108000 * 2,
+			 TIME_SUNSET = 30000 * 1.5
 		},
 		StarFade = {
 				TIME_SUNRISE = 0.2,
@@ -84,8 +84,8 @@
 				TIME_SUNRISE = 1,
 				TIME_SUNSET = 1
 			},
-		Fogstart = 0, -- TODO: Nak, what is this? Please add a comment
-		Fogcolor = nil -- TODO: Nak, what is this? Please add a comment
+		Fogstart = 0, -- 
+		Fogcolor = nil -- 
 	}
 	-- Data that is either static or computed. If you set the value to be a function then when the storms power changes these values will update
 	StormFox.WeatherType.CalculatedData = {
@@ -158,6 +158,20 @@
 			return "TIME_NIGHT"
 		end
 	end
+	function StormFox.GetTimeEnumeratedValue(t)
+		if not t then t = StormFox.GetTime() end
+		if t <= StormFox.Weather.TIME_SUNRISE - 60 then
+			return "TIME_NIGHT"
+		elseif t < StormFox.Weather.TIME_SUNRISE then
+			return "TIME_SUNRISE"
+		elseif t < StormFox.Weather.TIME_SUNSET then
+			return "TIME_NOON"
+		elseif t < StormFox.Weather.TIME_SUNSET + 60 then
+			return "TIME_SUNSET"
+		else
+			return "TIME_NIGHT"
+		end
+	end
 
 	function StormFox.WeatherType:GetData( sVariableName, flTime, dontcheck )
 		if self.TimeDependentData[ sVariableName ] then
@@ -204,6 +218,7 @@ StormFox.WeatherTypes = StormFox.WeatherTypes or {
 }
 
 StormFox.Weather = StormFox.Weather or StormFox.WeatherTypes[ "clear" ] -- Current weather
+StormFox.AddMapSetting("weather_clear",true)
 
 function StormFox.AddWeatherType( metaWeatherType )
 	if not metaWeatherType.id then
@@ -211,6 +226,7 @@ function StormFox.AddWeatherType( metaWeatherType )
 	end
 
 	StormFox.WeatherTypes[ metaWeatherType.id ] = metaWeatherType
+	StormFox.AddMapSetting("weather_" .. metaWeatherType.id,metaWeatherType.CanGenerate or false)
 	MsgN( "[StormFox] Weather Type: " .. metaWeatherType.id .. " initialized." )
 end
 

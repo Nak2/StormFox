@@ -1,0 +1,7 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "stormfox/models/torch_cap"
+	"$surfaceprop" "wood"
+	"$model" 1
+	//"$selfillum" 1
+}

@@ -19,18 +19,7 @@
 
 -- SpawnMenu
 	if SERVER then
-
 		util.AddNetworkString("StormFox_Settings")
-		net.Receive("StormFox_Settings",function(len,ply)
-			if not ply then return end
-			if (ply.SF_LAST or 0) > SysTime() then return end
-				ply.SF_LAST = SysTime() + 0.2
-			local con = net.ReadString()
-			local arg = net.ReadString()
-			if not con then return end
-			if not StormFox.convars[con] then return end -- whitelist
-			StormFox.CanEditSetting(ply,con,arg or nil)
-		end)
 	else
 		local function requestSetting(con,arg)
 			if type(arg) == "boolean" then
@@ -162,6 +151,10 @@
 				clientTrickBox(panel,"sf_renderscreenspace_effects")
 			-- Dynamic shadows
 				clientTrickBox(panel,"sf_allow_dynamicshadow")
+			-- Breath effect
+				clientTrickBox(panel,"sf_enable_breath")
+			-- Dynamic lights
+				clientTrickBox(panel,"sf_enablespooky")
 			-- Dynamic shadows light
 				local qt = panel:AddControl( "Slider", { Label = "Dynamiclight Amount", Type = "float", Command = "sf_dynamiclightamount", Min = "0", Max = "5" } )
 				local con = GetConVar("sf_dynamiclightamount")
@@ -234,77 +227,6 @@
 					sf_icon:SetImageColor(Color(255,255,0))
 				panel:AddPanel(sf_frame)
 				panel:AddControl( "Header", { Description = "StormFox Server-Settings (Admin only)" } )
-			-- MoonScale
-				local con = GetConVar("sf_moonscale")
-				local ms = 6
-				if con then
-					ms = con:GetFloat() or 6
-				end
-				local moon_scale = vgui.Create("DNumSlider",panel)
-					moon_scale:SetText("Moon Scale")
-					moon_scale:SetMin(0)
-					moon_scale:SetMax(80)
-					moon_scale:SetDecimals(0)
-					moon_scale:SetValue(ms)
-					moon_scale:SizeToContents()
-					moon_scale:SetDark( true )
-				function moon_scale:OnValueChanged(n)
-					requestSetting("sf_moonscale",math.Round(n) .. "")
-				end
-				panel:AddItem(moon_scale)
-			-- SunMoonAngle
-				local con = GetConVar("sf_sunmoon_yaw")
-				local ms = 270
-				if con then
-					ms = con:GetFloat() or 270
-				end
-				local moon_scale = vgui.Create("DNumSlider",panel)
-					moon_scale:SetText(con:GetHelpText())
-					moon_scale:SetMin(0)
-					moon_scale:SetMax(360)
-					moon_scale:SetDecimals(0)
-					moon_scale:SetValue(ms)
-					moon_scale:SizeToContents()
-					moon_scale:SetDark( true )
-				function moon_scale:OnValueChanged(n)
-					requestSetting("sf_sunmoon_yaw",math.Round(n) .. "")
-				end
-				panel:AddItem(moon_scale)
-			-- Allow people to disable effects
-				local de_button = adminTrickBox(panel,"sf_allowcl_disableeffects")
-				function de_button:Think2()
-					local xx,yy = self:LocalToScreen(0,0 )
-					local x,y = gui.MousePos()
-					local w,h = self:GetSize()
-					if x > xx and y > yy and x < xx + w and y < yy + h then
-						StormFox.DisplayTip(xx,yy,"Allows clients to disable SF effects. (Clients might get an unfair advantage in heavy rain with this.)",RealFrameTime())
-					end
-				end
-			-- Follow localtime
-				adminTrickBox(panel,"sf_realtime")
-			-- Disable autoweather
-				adminTrickBox(panel,"sf_disable_autoweather")
-			-- Disable fog
-				adminTrickBox(panel,"sf_disablefog")
-			-- Disable windpush
-				adminTrickBox(panel,"sf_disable_windpush")
-			-- Disable damage and debuffs
-				adminTrickBox(panel,"sf_disableweatherdebuffs")
-			-- Disable lightning bolts
-				adminTrickBox(panel,"sf_disablelightningbolts")
-			-- Disable skybox
-				adminTrickBox(panel,"sf_disableskybox")
-			-- Disable light bloom
-				adminTrickBox(panel,"sf_disable_mapbloom")
-			-- Disable sf mapbrowser changing maps
-				adminTrickBox(panel,"sf_disblemapbrowser")
-			-- Disable mapsupport
-				adminTrickBox(panel,"sf_disable_mapsupport")
-				local textbox = vgui.Create("DLabel",panel)
-					textbox:SetSize(120,14)
-					textbox:SetDark(true)
-					textbox:SetText("        (Requires mapchange to work.)")
-				panel:AddPanel(textbox)
 			-- Weather Menu
 				local ds_button = vgui.Create("DButton",panel)
 					ds_button:SetSize(120,30)
@@ -319,13 +241,14 @@
 			-- Map settings
 				local ms_button = vgui.Create("DButton",panel)
 					ms_button:SetSize(120,30)
-					ms_button:SetText("Open map settings.")
+					ms_button:SetText("Open settings.")
 					ms_button:SetDark(true)
 					ms_button.DoClick = function()
-						StormFox.MapSettings()
+						net.Start("sf_mapsettings")
+							net.WriteString("menu")
+						net.SendToServer()
 						LocalPlayer():EmitSound("ui/buttonclickrelease.wav")
 					end
-
 				panel:AddPanel(ms_button)
 			-- Map browser
 				local ds_button = vgui.Create("DButton",panel)
@@ -381,8 +304,6 @@
 	if SERVER then
 		util.AddNetworkString("StormFox - WeatherC")
 		net.Receive("StormFox - WeatherC",function(len,ply)
-			if not ply:IsAdmin() then ply:EmitSound("common/wpn_denyselect.wav") return end -- Noooope
-			if not ply:GetEyeTrace().Entity then ply:EmitSound("common/wpn_denyselect.wav") return end
 			ply:EmitSound("common/bugreporter_succeeded.wav")
 			local msg = net.ReadBool()
 			local str = net.ReadString()
@@ -925,7 +846,7 @@
 					net.SendToServer()
 				end
 			-- Time options
-				local ampm = cookie.GetNumber("stormfox-ampm",0)
+				local ampm = cookie.GetNumber("StormFox - ampm",0)
 				local settimeoption = vgui.Create("DPanel",panel)
 					settimeoption:SetSize(pw - 40,24)
 					settimeoption:SetPos(20,280)
@@ -933,7 +854,7 @@
 					for k,v in pairs(settimeoption:GetChildren()) do
 						v:Remove()
 					end
-					local ampm = cookie.GetNumber("stormfox-ampm",0)
+					local ampm = cookie.GetNumber("StormFox - ampm",0)
 					local sw,sh = settimeoption:GetSize()
 					local time = StormFox.GetRealTime(nil,ampm == 1)
 					local h = string.match(time,"(%d+):")
@@ -1017,7 +938,7 @@
 					LocalPlayer():EmitSound("ui/buttonclick.wav")
 					ampm = 1 - ampm
 					ampmtoggle.text = ampm == 0 and "AM/PM" or "24 clock"
-					cookie.Set("stormfox-ampm",ampm .. "")
+					cookie.Set("StormFox - ampm",ampm .. "")
 					SetTimeOption()
 				end
 				local settimebutton = CreateButton(panel,"SetTime")
@@ -1046,7 +967,7 @@
 				end
 				function symbol:DoClick()
 					local cur = StormFox.GetTimeSpeed()
-					local default = self.default or 1
+					local default = self.default or 60
 					if cur > 0 then
 						self.default = cur
 						-- Set 0
@@ -1112,7 +1033,7 @@
 					net.Start("StormFox - WeatherC")
 						net.WriteBool(true)
 						net.WriteString("time_speed")
-						net.WriteType(speed .. "")
+						net.WriteType(speed * 60 .. "")
 					net.SendToServer()
 				end
 				function time_speed:Think()

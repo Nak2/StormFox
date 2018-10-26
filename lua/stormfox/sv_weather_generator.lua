@@ -49,9 +49,10 @@ local function PickRandomWeather(current)
 		local pickable = {}
 		local weathers = StormFox.GetWeathers()
 		for i,id in ipairs(weathers) do
-			if id ~= "clear" and StormFox.GetWeatherType(id).CanGenerate and id ~= current then
+			local canGenerate = StormFox.GetMapSetting("weather_" .. id,StormFox.GetWeatherType(id).CanGenerate)
+			if id ~= "clear" and canGenerate and id ~= current then
 				local tfunc = StormFox.GetWeatherType(id).GenerateCondition
-				if not tfunc or tfunc() then
+				if not tfunc or tfunc() then -- If not aviable, then add it
 					table.insert(pickable,id)
 				end
 			end
@@ -132,10 +133,9 @@ hook.Add("StormFox - PostInit","StormFox - GenerateFirstWeather",function()
 end)
 
 local selected,clearWD = false
-local autocon = GetConVar("sf_disable_autoweather")
-hook.Add("StormFox-NewDay", "StormFox-SendNextDay", function()
-	if not StormFox.GetMapSetting("autoweather") then return end
-	if autocon and autocon:GetBool() then return end
+local autocon = GetConVar("sf_autoweather")
+hook.Add("StormFox - NewDay", "StormFox - SendNextDay", function()
+	if autocon and not autocon:GetBool() then return end
 	StormFox.GenerateNewDay( )
 	if clearWD and clearWD >= 1440 then
 		clearWD = clearWD - 1339
@@ -144,10 +144,8 @@ hook.Add("StormFox-NewDay", "StormFox-SendNextDay", function()
 end )
 
 local max = math.max
-
-hook.Add("StormFox-Tick", "StormFox - WeatherAIThink",function(n)
+hook.Add("StormFox - Tick", "StormFox - WeatherAIThink",function(n)
 	if #week < 1 then return end
-	if not StormFox.GetMapSetting("autoweather") then return end
 	if autocon and autocon:GetBool() then return end
 	if clearWD and clearWD <= n then
 		StormFox.SetWeather("clear",0)

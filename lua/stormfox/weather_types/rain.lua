@@ -1,7 +1,6 @@
 
-
 local RainStorm = StormFox.WeatherType( "rain" )
-local max = math.max
+local max,min,round = math.max,math.min,math.Round
 RainStorm.CanGenerate = true
 RainStorm.StormMagnitudeMin = 0.13
 RainStorm.MaxLength = 1440 / 3
@@ -11,9 +10,11 @@ RainStorm.TimeDependentData.SkyTopColor = {
 	TIME_SUNSET = Color(0.4, 0.2, 0.54),
 }
 
+local rc = Color(143,148,152)
+local a,aa = 0.1,0.4
 RainStorm.TimeDependentData.SkyBottomColor = {
-	TIME_SUNRISE = Color(3.0, 2.9, 3.5),
-	TIME_SUNSET = Color(0, 0.15, 0.525),
+	TIME_SUNRISE = Color(rc.r * aa,rc.g * aa,rc.b * aa),
+	TIME_SUNSET = Color(rc.r * a,rc.g * a,rc.b * a),
 }
 
 RainStorm.TimeDependentData.DuskColor = {
@@ -33,20 +34,31 @@ RainStorm.TimeDependentData.HDRScale = {
 	TIME_SUNSET = 0.1
 }
 
-RainStorm.TimeDependentData.Fogdensity = {
-	TIME_SUNRISE = 0.9,
-	TIME_SUNSET = 0.95
-}
+RainStorm.DataCalculationFunctions.Fogdensity = function(flPercent)
+	return 0.50 + 0.4 * flPercent
+end
+RainStorm.DataCalculationFunctions.Fogend = function(flPercent)
+	local tv = StormFox.GetTimeEnumeratedValue()
+	if tv == "TIME_SUNRISE" or tv == "TIME_NOON" then
+		--day
+		return 75600 - 74600*flPercent -- 1000
+	else
+		--night
+		return 16000 - 15200*flPercent -- 800
+	end
+end
+RainStorm.DataCalculationFunctions.Fogstart = function(flPercent)
+	local tv = StormFox.GetTimeEnumeratedValue()
+	local rp = 1 - flPercent
+	if tv == "TIME_SUNRISE" or tv == "TIME_NOON" then
+		--day
+		return 3000 * rp
+	else
+		--night
+		return 2000 * rp
+	end
+end
 
-RainStorm.TimeDependentData.Fogstart = {
-	TIME_SUNRISE = 0,
-	TIME_SUNSET = -1000
-}
-
-RainStorm.TimeDependentData.Fogend = {
-	TIME_SUNRISE = 54000,
-	TIME_SUNSET = 30000
-}
 RainStorm.TimeDependentData.MapBloom = {
 	TIME_SUNRISE = 1.2,
 	TIME_SUNSET = 1.4
@@ -74,12 +86,47 @@ RainStorm.StaticData.RainTexture = Material("stormfox/raindrop.png","noclamp smo
 RainStorm.StaticData.RainMultiTexture = Material("stormfox/raindrop-multi.png","noclamp smooth")
 RainStorm.StaticData.SnowTexture = Material("particle/snow")
 RainStorm.StaticData.SnowMultiTexture = Material("stormfox/snow-multi.png","noclamp smooth")
-RainStorm.StaticData.SnowMapMaterial = "nature/snowfloor001a"
+
+--[[-------------------------------------------------------------------------
+MapMaterial controls the material on the ground. 
+This function will stay, even after weather change. Until it returns nil or gets replaced by another.
+	return:
+		#1
+			nil = Remove replaced materials and self
+			string = Replace all material
+		#2 lvl (This can only increase)
+			0 = none
+			1 = ground only
+			2 = ground, pavement and roofs
+			3 = ground, pavement, roofs and roads
+		#3 snd (Footstep sound)
+			string or table
+---------------------------------------------------------------------------]]
+local snd = {
+	"stormfox/footstep/footstep_snow0.ogg",
+	"stormfox/footstep/footstep_snow1.ogg",
+	"stormfox/footstep/footstep_snow2.ogg",
+	"stormfox/footstep/footstep_snow3.ogg",
+	"stormfox/footstep/footstep_snow4.ogg",
+	"stormfox/footstep/footstep_snow5.ogg",
+	"stormfox/footstep/footstep_snow6.ogg",
+	"stormfox/footstep/footstep_snow7.ogg",
+	"stormfox/footstep/footstep_snow8.ogg",
+	"stormfox/footstep/footstep_snow9.ogg"
+}
+-- Temp: -2 = 0.3, -6 = 1
+function RainStorm.DataCalculationFunctions.MapMaterial(amount,temp)
+	if temp > -2 then -- Rain
+		return
+	end
+	local lvl = round(amount * 3) * min(max(temp * -0.166,0),1)
+	return "nature/snowfloor001a",lvl,snd -- ,"nature/snowfloor002a","nature/snowfloor003a" doesn't look seemless together
+end
 
 function RainStorm:GetName( nTemperature, nWindSpeed, bThunder )
-		nWindSpeed = nWindSpeed or StormFox.GetNetworkData("Wind",0)
-		bThunder = bThunder or StormFox.GetNetworkData("Thunder",false)
-		nTemperature = nTemperature or StormFox.GetNetworkData("Temperature",20)
+	nWindSpeed = nWindSpeed or StormFox.GetNetworkData("Wind",0)
+	bThunder = bThunder or StormFox.GetNetworkData("Thunder",false)
+	nTemperature = nTemperature or StormFox.GetNetworkData("Temperature",20)
 	if nWindSpeed >= 10 then
 		return "Storm"
 	end
@@ -94,9 +141,9 @@ local m3 = Material("stormfox/symbols/RainingSnowing.png")
 local m4 = Material("stormfox/symbols/Snowing.png")
 local m5 = Material("stormfox/symbols/Raining - Windy.png")
 function RainStorm:GetIcon( nTemperature, nWindSpeed, bThunder )
-		nWindSpeed = nWindSpeed or StormFox.GetNetworkData("Wind",0)
-		bThunder = bThunder or StormFox.GetNetworkData("Thunder",false)
-		nTemperature = nTemperature or StormFox.GetNetworkData("Temperature",20)
+	nWindSpeed = nWindSpeed or StormFox.GetNetworkData("Wind",0)
+	bThunder = bThunder or StormFox.GetNetworkData("Thunder",false)
+	nTemperature = nTemperature or StormFox.GetNetworkData("Temperature",20)
 	if bThunder then return m2 end
 	if nWindSpeed > 14 then return m5 end
 	if nTemperature < 0 then return m4 end

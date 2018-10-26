@@ -1,0 +1,14 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "phoenix_storms/pack2/glass"
+	"$translucent" 1
+	"$surfaceprop" "glass"
+	"$reflectentities" 1
+	"$reflecttexture" "_rt_WaterReflection" 
+	"$envmap" "env_cubemap"
+	"$envmaptint" "[ 1 1 1 ]"
+	"$model" 1
+	"$halflambert" 1
+}
+
+

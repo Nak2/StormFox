@@ -80,7 +80,7 @@ end
 		local texscale = 512
 		local half_texscale = texscale / 2 
 		for i=1,4 do
-			sky_rts[i] = GetRenderTargetEx( "StormFox-Sky" .. i, texscale, texscale, 1, MATERIAL_RT_DEPTH_NONE, 2, CREATERENDERTARGETFLAGS_UNFILTERABLE_OK, IMAGE_FORMAT_RGBA8888)
+			sky_rts[i] = GetRenderTargetEx( "StormFox - Sky" .. i, texscale, texscale, 1, MATERIAL_RT_DEPTH_NONE, 2, CREATERENDERTARGETFLAGS_UNFILTERABLE_OK, IMAGE_FORMAT_RGBA8888)
 		end
 
 	local cloudbig = Material("stormfox/clouds_big.png","nocull noclamp smooth")
@@ -123,7 +123,7 @@ end
 		end
 
 	-- Cloud movement
-		hook.Add("HUDPaint","StormFox-Cloud-Think",function()
+		hook.Add("HUDPaint","StormFox - Cloud-Think",function()
 			local w_ang = rad(StormFox.GetNetworkData("WindAngle",0))
 			local w_force = max(StormFox.GetNetworkData("Wind",0) * (FrameTime() / 8),0.01)
 			local x_w,y_w = cos(w_ang) * w_force,sin(w_ang) * w_force
@@ -280,7 +280,7 @@ end
 
 -- render.CullMode(1) render render.CullMode(0) will change the render
 -- Cloud layer
-hook.Add("StormFox - MiddleSkyRender","StormFox-CloudsRender",function()
+hook.Add("StormFox - MiddleSkyRender","StormFox - CloudsRender",function()
 	--if true then return end
 	if not StormFox.MapOBBCenter or not StormFox.GetEyePos then return end
 	local mC = StormFox.MapOBBCenter() or Vector(0,0,0)

@@ -1,14 +1,5 @@
 
 -- Local Functions
-	local function GetMoonAngle(time) -- Same as the sun .. tbh
-		time = time or StormFox.GetTime()
-		local pitch = ((time / 360) - 1) * 90
-		if pitch < 0 then pitch = pitch + 360 end
-		local n = true
-		if pitch > 180 then pitch = pitch - 180 n = false end
-		local ang = Angle(pitch,StormFox.GetSunMoonAngle(), 0)
-		return ang,n
-	end
 	local function ET(pos,pos2,mask)
 		local t = util.TraceLine( {
 			start = pos,
@@ -44,7 +35,7 @@ local lcon = GetConVar("sf_dynamiclightamount")
 hook.Add("RenderScene","StormFox - Suntest",function(eyepos,eyeang)
 	if not LocalPlayer() then return end
 	local con = GetConVar("sf_allow_dynamicshadow")
-	if not con:GetBool() or not StormFox.GetNetworkData("dynamiclight") or not StormFox.EFEnabled() then
+	if not con:GetBool() or not StormFox.GetMapSetting("dynamiclight") or not StormFox.EFEnabled() then
 		if STORMFOX_SUN then
 			STORMFOX_SUN:Remove()
 		end
@@ -54,83 +45,69 @@ hook.Add("RenderScene","StormFox - Suntest",function(eyepos,eyeang)
 		return
 	end
 	local thunder_light = StormFox.GetData("ThunderLight",0)
-	-- Get angle and alpha
-		local sunAngle,isDay = nil,true
+	-- Get ambient color
+		local light_angle,isDay = nil,true
+		local light_amount = 0
+		local light_color = Color(255,255,255,0)
 		if thunder_light > 10 then
-			sunAngle = Angle(90,0,0)
+			light_angle = Angle(90,0,0)
+			light_color = Color(255,255,255,thunder_light * 1.3)
 		else
-			sunAngle,isDay = GetMoonAngle()
-		end
-		local cA = sunAngle.p < 135 and min((sunAngle.p - 15) / 15,2) or min(((180 - sunAngle.p) - 15) / 15,2) -- ColorAlpha
-		local alpha = min(1,cA)
-		local colMult = max(0,cA - 1)
-	-- Get color
-		local col = nil
-		if isDay then
-			col = Color(255,155 + 100 * colMult,60 + 195 * colMult)
-		else
-			col = Color(160,200,255)
+			light_color,light_angle = StormFox.GetAmbientLight()		
 		end
 	-- Find skyhit
-	local search_distance = StormFox.Is3DSkybox() and 22000 or 4300
-	local skypos = findSky(eyepos,-sunAngle:Forward(),MASK_SOLID_BRUSHONLY)
-	if skypos then
-		skypos = ET(skypos-sunAngle:Forward() * 10,-sunAngle:Forward() * search_distance,MASK_SOLID_BRUSHONLY).HitPos
-		local d = min(skypos:Distance(eyepos),24000)
-			distance = max(d,4300)
-	else
-	--	distance = StormFox.Is3DSkybox() and 18000 or 4300
-	end
+		local search_distance = StormFox.Is3DSkybox() and 22000 or 4300
+		local skypos = findSky(eyepos,-light_angle:Forward(),MASK_SOLID_BRUSHONLY)
+		if skypos then
+			skypos = ET(skypos-light_angle:Forward() * 10,-light_angle:Forward() * search_distance,MASK_SOLID_BRUSHONLY).HitPos
+			local d = min(skypos:Distance(eyepos),24000)
+				distance = max(d,4300)
+		else
+		--	distance = StormFox.Is3DSkybox() and 18000 or 4300
+		end
+	-- Apply pos and angle
+		local lppos = eyepos + light_angle:Forward() * -distance
+		if not STORMFOX_SUN or not IsValid(STORMFOX_SUN) then
+			--print("create")
+			STORMFOX_SUN = ProjectedTexture()
+			STORMFOX_SUN:SetPos(lppos)
+			STORMFOX_SUN:SetAngles(light_angle)
 
-	local lppos = eyepos + sunAngle:Forward() * -distance
-	if not STORMFOX_SUN or not IsValid(STORMFOX_SUN) then
-		--print("create")
-		STORMFOX_SUN = ProjectedTexture()
-		STORMFOX_SUN:SetPos(lppos)
-		STORMFOX_SUN:SetAngles(sunAngle)
+			STORMFOX_SUN:SetEnableShadows(true)
 
-		STORMFOX_SUN:SetEnableShadows(true)
+			STORMFOX_SUN:SetNearZ( 1200 )
 
-		STORMFOX_SUN:SetNearZ( 1200 )
+			STORMFOX_SUN:SetTexture("engine/depthwrite")
+			STORMFOX_SUN:Update()
+		end
+		if not STORMFOX_SUN_distance or not IsValid(STORMFOX_SUN_distance)  then
+			STORMFOX_SUN_distance = ProjectedTexture()
+			STORMFOX_SUN_distance:SetPos(lppos)
+			STORMFOX_SUN_distance:SetAngles(light_angle)
 
-		STORMFOX_SUN:SetTexture("engine/depthwrite")
-		STORMFOX_SUN:Update()
-	end
-	if not STORMFOX_SUN_distance or not IsValid(STORMFOX_SUN_distance)  then
-		STORMFOX_SUN_distance = ProjectedTexture()
-		STORMFOX_SUN_distance:SetPos(lppos)
-		STORMFOX_SUN_distance:SetAngles(sunAngle)
+			STORMFOX_SUN_distance:SetEnableShadows(true)
 
-		STORMFOX_SUN_distance:SetEnableShadows(true)
+			STORMFOX_SUN_distance:SetNearZ( 1200 )
+			STORMFOX_SUN_distance:SetFOV( 80 )
 
-		STORMFOX_SUN_distance:SetNearZ( 1200 )
-		STORMFOX_SUN_distance:SetFOV( 80 )
-
-		STORMFOX_SUN_distance:SetTexture("lights/white003_nochop")
-		STORMFOX_SUN_distance:Update()
-	end
-	local tlight = 0
+			STORMFOX_SUN_distance:SetTexture("lights/white003_nochop")
+			STORMFOX_SUN_distance:Update()
+		end
+	-- Apply color and tex
 	STORMFOX_SUN:SetTexture("stormfox/small_shadow_sprite")
 	local l = 500
 	local f = StormFox.GetNetworkData("has_light_environment",false)
-		STORMFOX_SUN:SetColor(col)
-		STORMFOX_SUN_distance:SetColor(col)
-	if isday then
-		tlight = alpha * StormFox.GetData("SunSize",20) * 0.5
-	else
-		tlight = alpha * StormFox.GetData("MoonVisibility",100) * 0.05 - 2
-	end
-	if f then
-		tlight = tlight * 5
-	end
+		STORMFOX_SUN:SetColor(light_color)
+		STORMFOX_SUN_distance:SetColor(light_color)
+	local brightness = light_color.a / 25.5
 	if lcon then
-		tlight = tlight * clamp(lcon:GetFloat(),0,5)
+		brightness = brightness * clamp(lcon:GetFloat(),0,5) * 2
 	end
-	tlight = tlight * clamp(distance / 22500,0,1)
+	brightness = brightness * clamp(distance / 22500,0,1)
 	STORMFOX_SUN:SetOrthographic(true,l,l,l,l)
 	STORMFOX_SUN:SetFarZ( distance * 1.3 )
-	STORMFOX_SUN:SetBrightness(max(tlight,thunder_light))
-	STORMFOX_SUN:SetAngles(sunAngle)
+	STORMFOX_SUN:SetBrightness(brightness)
+	STORMFOX_SUN:SetAngles(light_angle)
 	STORMFOX_SUN:SetPos(lppos)
 	STORMFOX_SUN:Update()
 
@@ -138,9 +115,9 @@ hook.Add("RenderScene","StormFox - Suntest",function(eyepos,eyeang)
 	STORMFOX_SUN_distance:SetTexture("stormfox/shadow_sprite")
 	STORMFOX_SUN_distance:SetOrthographic(true,l,l,l,l)
 	STORMFOX_SUN_distance:SetFarZ( distance * 1.3  )
-	STORMFOX_SUN_distance:SetBrightness(max(tlight,thunder_light))
+	STORMFOX_SUN_distance:SetBrightness(brightness)
 	STORMFOX_SUN_distance:SetPos(lppos )
-	STORMFOX_SUN_distance:SetAngles(sunAngle)
+	STORMFOX_SUN_distance:SetAngles(light_angle)
 
 	STORMFOX_SUN_distance:Update()
 end)

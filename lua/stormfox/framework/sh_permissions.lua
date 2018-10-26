@@ -19,12 +19,12 @@ if CLIENT then
 	concommand.Add("sf_map_change")
 	return
 end
-local con = GetConVar("sf_disblemapbrowser")
+local con = GetConVar("sf_enable_mapbrowser")
 concommand.Add("sf_map_change",function(ply,_,args)
 	CAMI.PlayerHasAccess(ply,"StormFox Changemap",function(b)
 		if not b then ply:PrintMessage(HUD_PRINTTALK,"You don't have access to change the map.") return end
-		if con and con:GetBool() then
-			ply:PrintMessage(HUD_PRINTTALK,"Mapchange is disabled on this server. (sf_disblemapbrowser 1)")
+		if con and not con:GetBool() then
+			ply:PrintMessage(HUD_PRINTTALK,"Mapchange is disabled on this server. (sf_enable_mapbrowser 0)")
 			return
 		end
 		print("[StormFox] " .. (ply and ply:Nick() .. " is changing the map to" or "Changing map to") .. " " .. args[1] .. ".")
@@ -57,6 +57,7 @@ function StormFox.CanEditSetting(ply,con,var)
 		print("[StormFox] " .. ply:Nick() .. " (" .. ply:SteamID() .. ") changed " .. con .. " to " .. tostring(var))
 		local conVar = GetConVar(con)
 		if not conVar then ply:PrintMessage(HUD_PRINTTALK,"Unknown convar '" .. con .. "' (ERROR)") return end 
+			ply:PrintMessage(HUD_PRINTTALK,"StormFox: " .. con .. " " .. var .. ".")
 			conVar:SetString(var)
 	end)
 end

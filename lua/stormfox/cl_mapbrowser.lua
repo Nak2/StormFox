@@ -231,7 +231,7 @@ local IgnoreMaps = {
 	local bonus_t = {}
 		bonus_t["trigger"] = "This map have extra light-effects and triggers."
 
-	function GetMapData()
+	local function GetMapData()
 		local t_l = table.GetKeys(t)
 		local data = {}
 		local n,totaln = 0,1
@@ -328,14 +328,14 @@ local IgnoreMaps = {
 		surface.DrawTexturedRectRotated(w - 10 ,h / 2,20,h,180)
 		surface.DrawTexturedRectRotated(10 ,h / 2,20,h,0)
 		if not self.mapdata.percent_support then
-			draw.DrawText("Not scanned","SkyFox-Console",w / 2,0,Color(255,255,255),1)
+			draw.DrawText("Not scanned","mgui_default",w / 2,0,Color(255,255,255),1)
 			return
 		end
-		draw.DrawText("Map Entities","SkyFox-Console_Tiny",w / 2,0,Color(255,255,255),1)
+		draw.DrawText("Map Entities","mgui_default",w / 2,0,Color(255,255,255),1)
 		local y = 0
 		local i = 0
 		local checkVersion = self
-		surface.SetFont("SkyFox-Console_Tiny")
+		surface.SetFont("mgui_default")
 		for str,helptext in pairs(t) do
 			i = i + 1
 			local b = self.mapdata[str]
@@ -378,7 +378,7 @@ local IgnoreMaps = {
 		surface.DrawTexturedRect(5,y,10,10)
 
 		if (self.mapdata["bonus"] or 0) > 0 then
-			draw.DrawText("Extra map support","SkyFox-Console_Tiny",w / 2,y + 15,Color(255,255,255),1)
+			draw.DrawText("Extra map support","mgui_default",w / 2,y + 15,Color(255,255,255),1)
 			surface.SetTextPos(18,y + 25)
 			surface.SetTextColor(0,255,0)
 			surface.SetDrawColor(255,255,255)
@@ -419,7 +419,7 @@ local IgnoreMaps = {
 				CreateMaplist()
 			end
 
-			local panel = vgui.Create("DFrame")
+			local panel = mgui.Create("DFrame")
 			local w,h = 160 + 10 + (browserIcon_width + 8) * 6,550
 			panel:SetSize(w,h)
 			panel:SetTitle("StormFox Map Browser")
@@ -431,14 +431,14 @@ local IgnoreMaps = {
 				surface.DrawRect(0,0,w,24)
 			end
 
-			local side_panel = vgui.Create("DPanel",panel)
-			local category_list = vgui.Create("DScrollPanel",side_panel)
+			local side_panel = mgui.Create("DPanel",panel)
+			local category_list = mgui.Create("DScrollPanel",side_panel)
 				panel.category_list = category_list
 				category_list.on = nil
 			side_panel:SetPos(0,24)
 			side_panel:SetSize(160,h)
 			-- Create maplist
-				local d_map_list = vgui.Create("DScrollPanel",panel)
+				local d_map_list = mgui.Create("DScrollPanel",panel)
 				d_map_list:SetPos(160,24)
 				d_map_list:SetSize(w - 160,h - 24)
 
@@ -450,13 +450,13 @@ local IgnoreMaps = {
 				end
 				if not map_list[category] then return end
 				--panel:PerformLayout()
-				local map_table = vgui.Create( "DIconLayout", d_map_list )
+				local map_table = mgui.Create( "DIconLayout", d_map_list )
 					map_table:Dock( FILL )
 					map_table:SetBorder(5)
 					map_table:SetSpaceX( 5 )
 					map_table:SetSpaceY( 5 )
 				panel.map_table = map_table
-			-- List Logic and mapbuttons
+				-- List Logic and mapbuttons
 				category_list.on = category
 				map_table:SetSize(w - 160,200 + math.ceil(#map_list[category] / 4) * (browserIcon_height + 10) - 24)
 				for _,map in ipairs(map_list[category]) do

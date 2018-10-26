@@ -50,9 +50,7 @@ local ran,rand = math.random,math.Rand
 function ENT:Think()
 	if not StormFox then return end
 	if self:GetColor().r ~= 255 then self.ES = 1 return end
-	if self.ES > 0 then
-		self.ES = self.ES - FrameTime()
-	end
+	self.ES = ran(0.2,0.3)
 	if self.t2 <= CurTime() then
 		self.t2 = CurTime() + ran(0.2,0.5)
 		local dlight = DynamicLight( self:EntIndex() )
@@ -83,7 +81,7 @@ function ENT:Think()
 		local t = table.Random({"particles/fire1"})
 		local p = self.Emitter:Add(t,i * -windvec * 0.1 + self:LocalToWorld(Vector(ran(-5,5), ran(-5,5), i * -2)))
 			p:SetDieTime(rand(0.5,0.9) - wind / 40)
-			p:SetStartSize(ran(10,15) + self.ES * 15)
+			p:SetStartSize(ran(10,15) + self.ES)
 			p:SetGravity(Vector(0,0,30))
 			p:SetEndAlpha(0)
 			p:SetVelocity(Vector(ran(-4,4),ran(-4,4),60) + windvec * 5)

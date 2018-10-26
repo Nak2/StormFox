@@ -22,8 +22,10 @@ if SERVER then
 		t.HitPos = t.HitPos or (pos + pos2)
 		return t,t.HitSky
 	end
+	local con2 = GetConVar("sf_weatherdebuffs")
 	local function EntityHit(ent)
 		if not ent or not IsValid(ent) then return end
+		if not con2:GetInt() then return end
 		local effectdata = EffectData()
 		effectdata:SetOrigin( ent:GetPos() )
 		effectdata:SetEntity(ent)
@@ -43,7 +45,6 @@ if SERVER then
 		ent:TakeDamageInfo(ctd)
 	end
 	local function CalcLightningStrike(pos,size)
-
 		local line = {}
 		table.insert(line,pos)
 		local bottom = ET(pos,Vector(0,0,-64000))
@@ -92,8 +93,8 @@ if SERVER then
 		if nextHit > CurTime() then return end
 			nextHit = CurTime() + math.random(5,15)
 		if not StormFox.GetNetworkData("Thunder",false) then return end
-		local con = GetConVar("sf_disablelightningbolts")
-		if math.random(10) < 7 or con:GetBool() then
+		local con = GetConVar("sf_lightningbolts")
+		if (math.random(10) < 7 or not con:GetBool()) then
 			StormFox.CLEmitSound("ambient/atmosphere/thunder" .. math.random(3,4) .. ".wav",nil,0.5)
 			if math.random(1,10)>=5 then
 				local thunder_length = math.Rand(1,2) / 10

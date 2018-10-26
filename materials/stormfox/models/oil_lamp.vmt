@@ -1,0 +1,8 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "phoenix_storms/MetalSet_1-2"
+	"$surfaceprop" "metal"
+	"$halflambert"	1
+}
+
+

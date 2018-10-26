@@ -5,8 +5,9 @@ include("shared.lua")
 
 function ENT:Initialize()
 	self:SetModel( "models/props_c17/lamppost03a_off_dynamic.mdl" )
-	self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_NONE )
+	self:PhysicsInit( SOLID_VPHYSICS )
+	
 
 	self.RenderMode = 1
 

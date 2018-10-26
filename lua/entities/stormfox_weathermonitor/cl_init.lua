@@ -83,7 +83,7 @@ function ENT:Draw()
 		if wind > 0 then
 			surface.SetDrawColor(255,255,0,55)
 			surface.SetMaterial(part)
-			local a = - self:GetAngles().y + StormFox.GetData("WindAngle",0)
+			local a = - self:GetAngles().y + StormFox.GetNetworkData("WindAngle",0)
 			surface.DrawTexturedRectRotated(posx, posy + 20, size - 2 ,size - 2,a)
 		end
 

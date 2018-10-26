@@ -24,11 +24,11 @@
 local round,clamp = math.Round,math.Clamp
 
 -- Support unamed entities
-local con = GetConVar("sf_disable_mapsupport")
+local con = GetConVar("sf_enable_mapsupport")
 local con2 = GetConVar("sf_block_lightenvdelete")
 local function SetNameFix( ent )
 	if not IsValid(ent) then return end
-	if con and con:GetBool() then return end
+	if con and not con:GetBool() then return end
 	if con2 and not con2:GetBool() then return end
 	if ent:GetClass() == "light_environment" then
 		if not ent:GetName() or ent:GetName() == "" then
@@ -42,9 +42,9 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 -- Scan/create mapentities
 	local function GetOrCreate(str)
 		local l = ents.FindByClass(str)
-		local con = GetConVar("sf_disable_mapsupport")
+		local con = GetConVar("sf_enable_mapsupport")
 		if #l > 0 then return l[1] end
-		if con:GetBool() then return end -- Disabled mapsupport
+		if not con:GetBool() then return end -- Disabled mapsupport
 		local ent = ents.Create(str)
 		ent:Spawn();
 		ent:Activate();
@@ -63,8 +63,8 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 
 	local function FindEntities()
 		print( "[StormFox] Scanning mapentities ..." )
-		local con = GetConVar("sf_disable_mapsupport")
-		if not con or not con:GetBool() then
+		local con = GetConVar("sf_enable_mapsupport")
+		if con and con:GetBool() then
 			local tSunlist = ents.FindByClass( "env_sun" )
 			for i = 1, #tSunlist do -- Remove any env_suns there should be only one but who knows
 				tSunlist[ i ]:Fire( "TurnOff" )
@@ -76,9 +76,10 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 		StormFox.env_fog_controller = StormFox.env_fog_controller or GetOrCreate( "env_fog_controller" ) or nil
 		StormFox.shadow_control = StormFox.shadow_control or ents.FindByClass( "shadow_control" )[1] or nil
 		StormFox.env_tonemap_controller = StormFox.env_tonemap_controller or ents.FindByClass("env_tonemap_controller")[1] or nil
+		StormFox.env_wind = StormFox.env_wind or ents.FindByClass("env_wind")[1] or nil
 
-		local con = GetConVar("sf_disableskybox")
-		if not con or not con:GetBool() then
+		local con = GetConVar("sf_skybox")
+		if con or con:GetBool() then
 			StormFox.env_skypaint = GetOrCreate("env_skypaint") or nil
 		end
 
@@ -123,12 +124,12 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 
 -- MapBloom
 	local nbloom
-	local disable_bloom = (GetConVar("sf_disable_mapbloom") and GetConVar("sf_disable_mapbloom"):GetFloat() or 0 ) or 0
-	cvars.AddChangeCallback( "sf_disable_mapbloom", function( _, _, sNewValue )
-		disable_bloom = tonumber( sNewValue ) or 0
+	local bloom = (GetConVar("sf_mapbloom") and GetConVar("sf_mapbloom"):GetFloat() or 0 ) or 0
+	cvars.AddChangeCallback( "sf_mapbloom", function( _, _, sNewValue )
+		bloom = tonumber( sNewValue ) or 0
 	end, "StormFox_MapBloomChanged" )
 	function StormFox.SetMapBloom(n)
-		if disable_bloom > 0 or (nbloom and nbloom == n) then
+		if bloom <= 0 or (nbloom and nbloom == n) then
 			return
 		end
 		nbloom = n
@@ -137,7 +138,7 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 	end
 	local nbloom
 	function StormFox.SetMapBloomAutoExposureMin(n)
-		if disable_bloom > 0 or (nbloom and nbloom == n) then
+		if bloom <= 0 or (nbloom and nbloom == n) then
 			return
 		end
 		nbloom = n
@@ -146,7 +147,7 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 	end
 	local nbloom
 	function StormFox.SetMapBloomAutoExposureMax(n)
-		if disable_bloom > 0 or (nbloom and nbloom == n) then
+		if bloom <= 0 or (nbloom and nbloom == n) then
 			return
 		end
 		nbloom = n
@@ -155,7 +156,7 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 	end
 	local nbloom2
 	function StormFox.SetBlendTonemapScale(target,duration)
-		if disable_bloom > 0 then return end
+		if bloom <= 0 then return end
 		local str = target .. " " .. duration
 		if nbloom2 and nbloom2 == str then
 			return
@@ -165,7 +166,7 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 	end
 	local nscale
 	function StormFox.SetTonemapScale(n,dur)
-		if disable_bloom > 0 then return end
+		if bloom <= 0 then return end
 		if nscale and nscale == n then
 			return
 		end
@@ -176,7 +177,7 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 
 -- Maplight
 	local oldls = "-"
-	--local con = GetConVar("sf_enable_ekstra_lightsupport")
+	local con = GetConVar("sf_enable_ekstra_lightsupport")
 	local blockSpam = SysTime() + 30
 	hook.Add("StormFox - PostEntityScan","StormFox - FixMapBlackness",function()
 		blockSpam = SysTime() + 10
@@ -185,12 +186,13 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 		if not light then return end
 		if blockSpam > SysTime() then return end
 		local getChar = string.char(97 + round(clamp(light,0,100) / 4)) -- a - z
+		if light < 4 then return end
 
 		--oldls = getChar
 		if oldls ~= getChar then
-			if con:GetBool() then
+			--if con:GetBool() then
 				engine.LightStyle(0,getChar)
-			end
+			--end
 			if IsValid(StormFox.light_environment)  then
 				for _,light in ipairs(StormFox.light_environments) do
 					light:Fire("FadeToPattern", getChar ,0)
@@ -200,6 +202,18 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 			StormFox.SetNetworkData("MapLightChar",getChar)
 			oldls = getChar
 		end
+	end
+
+-- MapWind
+	function StormFox.SetMinWind(n)
+		if not StormFox.env_wind then return false end
+		StormFox.env_wind:Fire("Min normal speed",n)
+		return true
+	end
+	function StormFox.SetMaxWind(n)
+		if not StormFox.env_wind then return false end
+		StormFox.env_wind:Fire("Max normal speed",n)
+		return true
 	end
 
 -- Support for envcitys sky-entity

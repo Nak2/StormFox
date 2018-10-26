@@ -1,7 +1,6 @@
 "VertexLitGeneric"
 {
 	"$baseTexture"			"stormfox/models/moon_edit"
-	"$bumpmap"				"null-bumpmap"
 	"$model"				"1"	
 	"$phong"				"1"
 	"$phongexponent"		"20"

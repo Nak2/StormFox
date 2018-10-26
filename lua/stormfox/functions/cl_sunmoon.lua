@@ -29,27 +29,32 @@ end)
 		local moonAng,sunAng = Angle(0,0,0),Angle(0,0,0)
 		local moonVisible,sunVisible,sunRayVis = 0,0,0
 		local BG_Color = Vector(0,0,0) -- This is the "moon color" for the unlit moon area
+		local moon_lock = GetConVar("sf_moonphase")
 		hook.Add("Think","StormFox_CalcSunMon",function()
 			local t = StormFox.GetTime()
 			local pitch = ((t / 360) - 1) * 90
 			if pitch < 0 then pitch = pitch + 360 end
 
+			local ang = Angle(pitch,StormFox.GetSunMoonAngle(), 0)
 			-- Moon angle
-				local ang = Angle(pitch,StormFox.GetSunMoonAngle(), 0)
-				local p_offset,r_offset = StormFox.GetNetworkData("Moon-offset_p",0),StormFox.GetNetworkData("Moon-offset_r",0)
+				if moon_lock:GetInt() ~= 1 then
+					moonAng = Angle(ang.p,ang.y,ang.r)
+				else
+					local p_offset,r_offset = StormFox.GetNetworkData("Moon-offset_p",0),StormFox.GetNetworkData("Moon-offset_r",0)
 
-				-- Smooth clientside move
-					local p = t / 1440
-					local c_offset_p = max(12.2 * p,catch_p)
-					local c_offset_r = max(0.98 * p,catch_r)
-						catch_p = max(catch_p,c_offset_p)
-						catch_r = max(catch_r,c_offset_r)
-			
-				moonAng = Angle((ang.p + p_offset + c_offset_p) % 360,ang.y,ang.r)
-				moonAng:RotateAroundAxis(moonAng:Up(),math.cos((r_offset + c_offset_r) % 360) * 28.5)
-				moonAng = moonAng:Forward():Angle()
+					-- Smooth clientside move
+						local p = t / 1440
+						local c_offset_p = max(12.2 * p,catch_p)
+						local c_offset_r = max(0.98 * p,catch_r)
+							catch_p = max(catch_p,c_offset_p)
+							catch_r = max(catch_r,c_offset_r)
+				
+					moonAng = Angle((ang.p + p_offset + c_offset_p) % 360,ang.y,ang.r)
+					moonAng:RotateAroundAxis(moonAng:Up(),math.cos((r_offset + c_offset_r) % 360) * 28.5)
+					moonAng = moonAng:Forward():Angle()
 
-				moonAng = moonAngG or moonAng
+					moonAng = moonAngG or moonAng
+				end
 			-- SunAngle
 				sunAng = Angle(ang.p + 180,ang.y,ang.r)
 			-- Calc moon_bgcolor
@@ -276,7 +281,7 @@ local atan2 = math.atan2
 						local roll = math.deg(math.atan2(ang.z,ang.y))
 
 						local currentPhase = 2.5 - (5.5 * dot) / 2
-
+					StormFox.SetNetworkData("MoonPhase",clamp( currentPhase * 1.00,0,5) * 20) -- Override server data
 					RenderMoonPhase( -sa - roll + 0   ,clamp( currentPhase * 1.00,0,5))
 				local c = StormFox.GetData("MoonColor",Color(205,205,205))
 				local a = StormFox.GetData("MoonVisibility",100)

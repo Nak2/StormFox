@@ -1,5 +1,5 @@
 local scan_id = 1
-local con = GetConVar("sf_disable_windpush")
+local con = GetConVar("sf_windpush")
 local count = table.Count
 
 
@@ -74,7 +74,7 @@ local move_tab = {}
 
 -- Add newly spawned props
 hook.Add("PlayerSpawnedProp","StormFox - PropCreate",function(ply,model,ent)
-	if con:GetBool() then return end
+	if not con:GetBool() then return end
 	if not IsValid(ent) then return end
 	CheckProp(ent)
 end)
@@ -82,7 +82,8 @@ end)
 -- Effect props
 local t = 0
 hook.Add("Think","StormFox - EffectProps",function()
-	if con:GetBool() then return end
+	if not con:GetBool() then return end
+	--local constraint = StormFox.GetMapSetting("wind_breakconstraints",true)
 	local r = {}
 	for ent,v in pairs(move_tab) do
 		if not ent or not IsValid(ent) then
@@ -109,15 +110,17 @@ hook.Add("Think","StormFox - EffectProps",function()
 					table.insert(r,ent) -- Remove asap
 					break
 				end
-			-- Undfreeze if wind > 20
-				if not pys:IsMoveable() and wind > 20 then
-					pys:EnableMotion(true)
-				end
-			-- Unweld if wind > 30
-				if wind > 30 and constraint.FindConstraint( ent, "Weld" ) then
-					ent:EmitSound("physics/wood/wood_box_break" .. math.random(1,2) .. ".wav")
-					constraint.RemoveConstraints( ent, "Weld" )
-				end
+			if constraint then
+				-- Undfreeze if wind > 20
+					if not pys:IsMoveable() and wind > 20 then
+						pys:EnableMotion(true)
+					end
+				-- Unweld if wind > 30
+					if wind > 30 and constraint.FindConstraint( ent, "Weld" ) then
+						ent:EmitSound("physics/wood/wood_box_break" .. math.random(1,2) .. ".wav")
+						constraint.RemoveConstraints( ent, "Weld" )
+					end
+			end
 			-- Do movement
 			local pNeeded = vol / 13
 				pys:Wake()

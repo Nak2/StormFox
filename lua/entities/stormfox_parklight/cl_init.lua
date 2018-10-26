@@ -34,7 +34,7 @@ function ENT:DrawTranslucent()
 	local dis = EyePos():DistToSqr(self:GetPos())
 	if self:GetMaterial() == "stormfox/models/parklight_off" then return end
 
-	if dis > 3000000 then return end
+	if dis > 30000000 then return end
 	local lpos = self:LocalToWorld(Vector(0, 0, 65))
 	self.on = true
 
@@ -53,8 +53,8 @@ function ENT:DrawTranslucent()
 
 			if ( !Visibile ) then return end
 			local Size = math.Clamp( Distance * Visibile * ViewDot * 2, 64, 512 / 2 )
-			Distance = math.Clamp( Distance, 32, 800 )
-			local Alpha = math.Clamp( ( 800 - Distance ) * Visibile * ViewDot, 0, 100 ) * 0.5
+			Distance = math.Clamp( Distance, 32, 8000 )
+			local Alpha = math.Clamp( ( 8000 - Distance ) * Visibile * ViewDot, 0, 200 ) * 0.15
 			local Col = self:GetColor()
 			Col.a = Alpha
 			render.DrawSprite( lpos + ViewNormal, Size, Size, Col, Visibile * ViewDot )

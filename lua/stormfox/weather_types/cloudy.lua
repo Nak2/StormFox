@@ -11,10 +11,13 @@ Cloudy.TimeDependentData.SkyTopColor = {
 	TIME_SUNSET = Color(0.4, 0.2, 0.54),
 }
 
+local rc = Color(143,148,152)
+local a,aa = 0.1,0.4
 Cloudy.TimeDependentData.SkyBottomColor = {
-	TIME_SUNRISE = Color(3.0, 2.9, 3.5),
-	TIME_SUNSET = Color(0, 0.15, 0.525),
+	TIME_SUNRISE = Color(rc.r * aa,rc.g * aa,rc.b * aa),
+	TIME_SUNSET = Color(rc.r * a,rc.g * a,rc.b * a),
 }
+
 
 Cloudy.TimeDependentData.DuskColor = {
 	TIME_SUNRISE = Color(3, 2.9, 3.5),
@@ -44,8 +47,8 @@ Cloudy.TimeDependentData.Fogstart = {
 }
 
 Cloudy.TimeDependentData.Fogend = {
-	TIME_SUNRISE = 54000,
-	TIME_SUNSET = 30000
+	 TIME_SUNRISE = 108000 * 2,
+	 TIME_SUNSET = 30000 * 1.5
 }
 Cloudy.CalculatedData.MapDayLight = 25
 Cloudy.CalculatedData.MapNightLight = 0

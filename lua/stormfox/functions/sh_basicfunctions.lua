@@ -1,6 +1,18 @@
 --[[-------------------------------------------------------------------------
 	This is some easy shared functions to help SF-addons and other varables.
 ---------------------------------------------------------------------------]]
+local clamp = math.Clamp
+local min,max = math.min,math.max
+local mad = math.AngleDifference
+
+local function ColorMixer(c1,c2) -- c2 alpha controls the color applied
+	local c2a = c2.a / 255
+	local c2an = 1 - c2a
+	local r = c1.r * c2an + c2.r * c2a
+	local g = c1.g * c2an + c2.g * c2a
+	local b = c1.b * c2an + c2.b * c2a
+	return Color(r,g,b,c1.a)
+end
 
 -- Time functions
 	function StormFox.IsNight()
@@ -34,7 +46,7 @@
 		return num * 1.8 + 32
 	end
 
-	-- Beaufort scale
+	-- Beaufort scale and Saffir–Simpson hurricane scale
 		local bfs = {}
 			bfs[0] = "Calm"
 			bfs[0.3] = "Light Air"
@@ -49,6 +61,11 @@
 			bfs[24.5] = "Storm"
 			bfs[28.5] = "Violent Storm"
 			bfs[32.7] = "Hurricane"
+			bfs[43] = "Category 2"
+			bfs[50] = "Category 3"
+			bfs[58] = "Category 4"
+			bfs[70] = "Category 5"
+
 		local bfkey = table.GetKeys(bfs)
 		table.sort(bfkey,function(a,b) return a < b end)
 	function StormFox.GetBeaufort(ms)
@@ -141,10 +158,10 @@
 
 	if SERVER then
 		StormFox.SetNetworkData("MoonPhase",StormFox.GetMoonPhaseNumber())
-		hook.Add("StormFox-NewDay", "StormFox-CalcMoonphase", function()
+		hook.Add("StormFox - NewDay", "StormFox - CalcMoonphase", function()
 			StormFox.SetNetworkData("MoonPhase",StormFox.GetMoonPhaseNumber())
 		end )
-		hook.Add("StormFox - Timeset","StormFox-CalcMoonphaseTS",function()
+		hook.Add("StormFox - Timeset","StormFox - CalcMoonphaseTS",function()
 			timer.Simple(0,function()
 				StormFox.SetNetworkData("MoonPhase",StormFox.GetMoonPhaseNumber())
 			end)
@@ -165,3 +182,72 @@
 			return "New",currentMoonPhase_num
 		end
 	end
+-- Map light functions
+	-- Sun light amount
+		local tt,cc = -1,-1
+		function StormFox.GetSunLightAmount()
+			if tt > CurTime() then return cc end
+				tt = CurTime() + 1
+			cc = StormFox.GetData("DayLightAmount",100) / 100 -- 1 at day, 0 at night
+			return cc
+		end
+	-- Moon light amount	
+		local t,c = -1,-1
+		function StormFox.GetMoonLightAmount()
+			if t > CurTime() then return c end
+				t = CurTime() + 1
+			local a = StormFox.GetMoonAngle()
+			local light_aa = clamp(mad(a.p,360) / -90 * 5,0,1) -- 1 if moon is on the sky, 0 if it isn't
+			local vis = (StormFox.GetData("MoonVisibility",100)-50) / 60
+			light_aa = vis * light_aa -- Use the moon visibility
+
+			local _,pla = StormFox.GetMoonPhase() -- Get the light amount for the current phase (0-100)
+
+			c = clamp(light_aa * (pla / 100),0,1)
+
+			return c
+		end
+	-- Sky light
+		local ttt,ccc,aaa = -1,Color(0,0,0,0),0
+		function StormFox.GetAmbientLight() -- Returns color and angle
+			if ttt > CurTime() then return ccc,aaa end
+				ttt = CurTime() + 0.5
+			local sun_l = StormFox.GetSunLightAmount()
+			local c,a
+			if sun_l > 0 then
+				-- Sun is in the sky
+				local sc = StormFox.GetData("SunColor", Color(255,255,255))
+				c,a = Color(sc.r,sc.g,sc.b,sun_l * 255),StormFox.GetSunAngle()
+			else
+				-- Moon
+				local m_l = StormFox.GetMoonLightAmount()
+				local mc = StormFox.GetData("MoonColor",Color(205,205,205))
+				c,a = Color(mc.r * 0.62,mc.g * 0.78,mc.b,m_l * 150),StormFox.GetMoonAngle() -- 150,200,255
+			end
+			a = Angle(a.p,a.y,a.r)
+			-- Add sunset and sunrise
+			local sun_riseset = StormFox.GetSun_SetRise()
+			if sun_riseset >= 0.1 then -- ignore the moon
+				local sa = StormFox.GetSunAngle()
+				a = Angle(sa.p,sa.y,sa.r)
+				if a.p > 90 and a.p < 270 then -- sunrise
+					a.p = max(a.p,190)
+				else
+					if a.p > 180 then
+						a.p = min(a.p,350)
+					else
+						a.p = max(a.p,350)
+					end
+				end
+			end
+			local sun_rise = Color(250, 214, 165,sun_riseset * 255) -- from wiki https://en.wikipedia.org/wiki/Sunset_(color)
+			local c = ColorMixer(c,sun_rise)
+				ca = c.a / 255
+			a.p = a.p + 180
+			ccc = Color(c.r * ca,c.g * ca,c.b * ca),a
+			aaa = a
+			return ccc,aaa
+		end
+
+-- StormFox.GetData("SunColor", Color(255,255,255))
+-- StormFox.GetData("MoonColor",Color(205,205,205))
