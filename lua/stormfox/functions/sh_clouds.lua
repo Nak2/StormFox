@@ -123,17 +123,16 @@ end
 		end
 
 	-- Cloud movement
-		hook.Add("HUDPaint","StormFox - Cloud-Think",function()
+		hook.Add("Think","StormFox - Cloud-Think",function()
 			local w_ang = rad(StormFox.GetNetworkData("WindAngle",0))
 			local w_force = max(StormFox.GetNetworkData("Wind",0) * (FrameTime() / 8),0.01)
 			local x_w,y_w = cos(w_ang) * w_force,sin(w_ang) * w_force
 			for i=1,4 do
 				local ri = 5 - i
 				local x,y = offset[i][1],offset[i][2]
-				offset[i] = {x + x_w * ri,y + y_w * ri}
+				offset[i] = {x + x_w * ri ,y + y_w * ri}
 			end
 		end)
-
 	-- Cloud-Rendering
 	--[[-------------------------------------------------------------------------
 		- Render the layer:

@@ -308,7 +308,6 @@ hook.Add("StormFox - NetDataChange","StormFox - lightfix",function(str,nowL)
 	if not checkCon() then return false end
 	if nowL == lastL then return end
 	lastL = nowL
-	print("RDLM; ",lastL,nowL)
 	updateTime = CurTime() + 4
 end)
 hook.Add("EntityFireBullets","StormFox.DetectBattle",function(ent)

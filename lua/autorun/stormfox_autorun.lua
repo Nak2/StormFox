@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.38
+StormFox.Version = 1.39
 StormFox.WorkShopVersion = false--game.IsDedicated()
 
 function StormFox.Msg(...)
@@ -202,26 +202,20 @@ end
 		end
 	end)
 
-	_NODES = _NODES or {["node"] = {},["hint"] = {},["climb"] = {}}
-	hook.Add("EntityRemoved","Nodetest",function(ent)
-		local class = ent:GetClass()
-		if class == "info_node" then
-			table.insert(_NODES["node"],ent:GetPos())
-		elseif class == "info_node_hint" then
-			table.insert(_NODES["hint"],ent:GetPos())
-			table.insert(_NODES["node"],ent:GetPos()) -- hint is also used as a normal node
-		elseif class == "info_node_climb" then
-			table.insert(_NODES["climb"],ent:GetPos())
+-- Sandbox load support
+	-- Hack to stop cleanupmap breaking SF
+		STORMFOX_CLEANUPMAP = STORMFOX_CLEANUPMAP or game.CleanUpMap
+		function game.CleanUpMap( dontSendToClients, ExtraFilters )
+			ExtraFilters = ExtraFilters or {}
+			table.insert(ExtraFilters,"light_environment")
+			table.insert(ExtraFilters,"env_fog_controller")
+			table.insert(ExtraFilters,"shadow_control")
+			table.insert(ExtraFilters,"env_tonemap_controller")
+			table.insert(ExtraFilters,"env_wind")
+			table.insert(ExtraFilters,"env_skypaint")
+			STORMFOX_CLEANUPMAP(dontSendToClients,ExtraFilters)
 		end
-	end)
-	function findInfoNode(pos,class)
-        local _dis,curpos = -1,nil
-        for _,npos in pairs(_NODES[class or "node"]) do
-            local n_dis = pos:DistToSqr(npos)
-            if _dis > n_dis or _dis < 0 then
-                _dis = n_dis
-                curpos = npos
-            end
-        end
-        return curpos
-    end
+	-- Rescan a map when loaded from a save
+		hook.Add("LoadGModSave","StormFox - SandboxLoadSupport",function()
+			hook.Call( "StormFox - PostEntity" )
+		end)

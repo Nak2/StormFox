@@ -184,6 +184,7 @@ Material scanner
 		"stormfox/symbols/Sunny.png",
 		"stormfox/symbols/Thunder.png",
 		"stormfox/symbols/Windy.png",
+		"stormfox/symbols/Radioactive.png",
 		"stormfox/symbols/time_default.png",
 		"stormfox/symbols/time_pause.png",
 		"stormfox/symbols/time_slow.png",

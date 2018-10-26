@@ -73,6 +73,6 @@ local msg,msg_t = nil,0
 	hook.Add("HUDPaint","StormFox_HUDMessages",function()
 		if not msg then return end
 		if msg_t < CurTime() then return end
-		draw.DrawText(msg,"SkyFox-Console_Medium",ScrW() / 2 - 1,ScrH() / 2 - 49,Color(0,0,0),1)
-		draw.DrawText(msg,"SkyFox-Console_Medium",ScrW() / 2,ScrH() / 2 - 50,Color(255,255,255),1)
+		draw.DrawText(msg,"mgui_default",ScrW() / 2 - 1,ScrH() / 2 - 49,Color(0,0,0),1)
+		draw.DrawText(msg,"mgui_default",ScrW() / 2,ScrH() / 2 - 50,Color(255,255,255),1)
 	end)

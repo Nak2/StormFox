@@ -28,9 +28,9 @@ local con = GetConVar("sf_enable_mapsupport")
 local con2 = GetConVar("sf_block_lightenvdelete")
 local function SetNameFix( ent )
 	if not IsValid(ent) then return end
-	if con and not con:GetBool() then return end
-	if con2 and not con2:GetBool() then return end
 	if ent:GetClass() == "light_environment" then
+		if con and not con:GetBool() then return end
+		if con2 and not con2:GetBool() then return end
 		if not ent:GetName() or ent:GetName() == "" then
 			ent:SetKeyValue("targetname", "lightenv")
 			ent.targetname_set = true
@@ -71,8 +71,8 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 				SafeRemoveEntity( tSunlist[ i ] )
 			end
 		end
-		StormFox.light_environment = StormFox.light_environment or ents.FindByClass( "light_environment" )[1] or nil-- ents.FindByName("lightenv")[1] or nil
-		StormFox.light_environments = StormFox.light_environments or ents.FindByClass( "light_environment" ) or {}
+		StormFox.light_environment = ents.FindByClass( "light_environment" )[1] or nil-- ents.FindByName("lightenv")[1] or nil
+		StormFox.light_environments = ents.FindByClass( "light_environment" ) or {}
 		StormFox.env_fog_controller = StormFox.env_fog_controller or GetOrCreate( "env_fog_controller" ) or nil
 		StormFox.shadow_control = StormFox.shadow_control or ents.FindByClass( "shadow_control" )[1] or nil
 		StormFox.env_tonemap_controller = StormFox.env_tonemap_controller or ents.FindByClass("env_tonemap_controller")[1] or nil
