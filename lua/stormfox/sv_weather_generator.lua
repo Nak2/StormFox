@@ -146,7 +146,7 @@ end )
 local max = math.max
 hook.Add("StormFox - Tick", "StormFox - WeatherAIThink",function(n)
 	if #week < 1 then return end
-	if autocon and autocon:GetBool() then return end
+	if autocon and not autocon:GetBool() then return end
 	if clearWD and clearWD <= n then
 		StormFox.SetWeather("clear",0)
 		clearWD = nil
