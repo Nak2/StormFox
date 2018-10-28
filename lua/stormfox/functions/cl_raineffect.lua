@@ -52,7 +52,11 @@ local Gauge = StormFox.GetData("Gauge",0)
 		mask = mask or LocalPlayer(),
 		filter = LocalPlayer():GetViewEntity() or LocalPlayer()
 		} )
-		if not t then return pos end
+		if not t then -- tracer failed, this should not happen. Create a fake result.
+			local t = {}
+				t.HitPos = pos + pos2
+			return t 
+		end
 		t.HitPos = t.HitPos or (pos + pos2)
 		return t
 	end
