@@ -7,9 +7,7 @@ if SERVER then
 	--StormFox.SetNetworkData("CloudSeed",math.random(100))
 	hook.Add("StormFox - NewWeather","StormFox - CloudSeed",function(weather,old_weather)
 		if old_weather ~= "clear" then return end
-		timer.Create("StormFox - SoundSeed",time or 0,1,function()
-			StormFox.SetNetworkData("CloudSeed",math.random(100))
-		end)
+		StormFox.SetNetworkData("CloudSeed",math.random(100))
 	end)
 	return
 end

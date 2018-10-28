@@ -52,7 +52,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 		mask = mask or LocalPlayer(),
 		filter = LocalPlayer():GetViewEntity() or LocalPlayer()
 		} )
-		if not t then return end
+		if not t then return pos end
 		t.HitPos = t.HitPos or (pos + pos2)
 		return t
 	end
