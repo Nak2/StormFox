@@ -9,7 +9,11 @@
  ---------------------------------------------------------------------------]]
 local mmin,clamp = math.min,math.Clamp
 local BASE_TIME = CurTime() -- The base time we will use to calculate current time with.
-local TIME_SPEED = (( GetConVar("sf_timespeed") and GetConVar("sf_timespeed"):GetFloat() or 1 ) or 1 ) / 60
+local c = GetConVar("sf_timespeed")
+local TIME_SPEED = 1 / 60
+if c then
+	TIME_SPEED = (c:GetFloat() or 1) / 60
+end
 function StormFox.GetBASE_TIME()
 	return BASE_TIME
 end

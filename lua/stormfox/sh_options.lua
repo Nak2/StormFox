@@ -153,8 +153,6 @@
 				clientTrickBox(panel,"sf_allow_dynamicshadow")
 			-- Breath effect
 				clientTrickBox(panel,"sf_enable_breath")
-			-- Dynamic lights
-				clientTrickBox(panel,"sf_enablespooky")
 			-- Dynamic shadows light
 				local qt = panel:AddControl( "Slider", { Label = "Dynamiclight Amount", Type = "float", Command = "sf_dynamiclightamount", Min = "0", Max = "5" } )
 				local con = GetConVar("sf_dynamiclightamount")
@@ -183,37 +181,15 @@
 						local x,y = gui.MousePos()
 						local w,h = self:GetSize()
 						if x > xx and y > yy and x < xx + w and y < yy + h then
-							StormFox.DisplayTip(xx,yy,"Disabled as it causes light-errors turning this off.",RealFrameTime())
+							StormFox.DisplayTip(xx,yy,"Turning this off, will cause light-errors.",RealFrameTime())
 						end
-						return true
+						return false
 					end)
 				local textbox = vgui.Create("DLabel",panel)
-					textbox:SetSize(120,26)
 					textbox:SetDark(true)
-					textbox:SetText("Warning! This option might require you to rejoin when \ndisabled and can cause lag on large maps.")
+					textbox:SetText("Warning! Disabling this will make the map look strange.")
+					textbox:SizeToContentsX(2)
 				panel:AddPanel(textbox)
-		end
-		local function adminTrickBox(panel,con_name)
-			local con = GetConVar(con_name)
-			if not con then return end
-			local tickbox = vgui.Create("DCheckBoxLabel",panel)
-			tickbox:SetText(con:GetHelpText() or "Unknown setting.")
-			tickbox:SetValue(con:GetBool())
-			tickbox.con_name = con_name
-			tickbox:SetDark( true )
-			function tickbox:OnChange(b)
-				requestSetting(self.con_name,b and "1" or "0")
-			end
-			function tickbox:Think()
-				if self.Think2 then self:Think2() end
-				if not self.con_name then return end
-				local ucon = StormFox.GetNetworkData("con_" .. self.con_name)
-				if (ucon == "1") ~= self:GetValue() then
-					self:SetChecked(ucon == "1")
-				end
-			end
-			panel:AddItem(tickbox)
-			return tickbox
 		end
 		local function admin_settings(panel)
 			-- Icon
@@ -226,7 +202,7 @@
 					sf_icon:SetKeepAspect(false)
 					sf_icon:SetImageColor(Color(255,255,0))
 				panel:AddPanel(sf_frame)
-				panel:AddControl( "Header", { Description = "StormFox Server-Settings (Admin only)" } )
+				panel:AddControl( "Header", { Description = "StormFox Server-Settings" } )
 			-- Weather Menu
 				local ds_button = vgui.Create("DButton",panel)
 					ds_button:SetSize(120,30)
@@ -259,38 +235,7 @@
 						RunConsoleCommand("sf_open_mapbrowser")
 						LocalPlayer():EmitSound("ui/buttonclickrelease.wav")
 					end
-
 				panel:AddPanel(ds_button)
-			-- Debugger
-				adminTrickBox(panel,"sf_debugcompatibility")
-				local textbox = vgui.Create("DLabel",panel)
-				textbox:SetSize(120,14)
-					textbox:SetDark(true)
-					textbox:SetText("        (Requires mapchange and will override hook.Call)")
-				panel:AddPanel(textbox)
-			-- Ekstra lightsupport
-				adminTrickBox(panel,"sf_enable_ekstra_lightsupport")
-				local textbox = vgui.Create("DLabel",panel)
-				textbox:SetSize(120,14)
-					textbox:SetDark(true)
-					textbox:SetText("        (Can lag on large maps!)")
-				panel:AddPanel(textbox)
-			-- Block removal of light_environment
-				local block = adminTrickBox(panel,"sf_block_lightenvdelete")
-				local textbox = vgui.Create("DLabel",panel)
-				textbox:SetSize(120,14)
-					textbox:SetDark(true)
-					textbox:SetText("        (Can cause light-flickering)")
-				panel:AddPanel(textbox)
-				function block:Think2()
-					local xx,yy = self:LocalToScreen(0,0 )
-					local x,y = gui.MousePos()
-					local w,h = self:GetSize()
-					if x > xx and y > yy and x < xx + w and y < yy + h then
-						StormFox.DisplayTip(xx,yy,"Prevents the entity from getting deleted. However this can cause some light-flickering and requires map-restart when toggled.",RealFrameTime())
-					end
-				end
-
 		end
 		hook.Add( "PopulateToolMenu", "Populate StormFox Menus", function()
 			spawnmenu.AddToolMenuOption( "Options", "StormFox", "User_StormFox", "Client Settings", "", "", client_settings )

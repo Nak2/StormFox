@@ -79,6 +79,11 @@ Outdoor varables
 			mask = mask or LocalPlayer(),
 			filter = filter
 			} )
+			if not t then -- tracer failed, this should not happen. Create a fake result.
+				local t = {}
+					t.HitPos = pos + pos2
+				return t 
+			end
 			t.HitPos = t.HitPos or (pos + pos2)
 			return t
 		end
@@ -292,52 +297,54 @@ Outdoor varables
 --[[-------------------------------------------------------------------------
 Non light_env support
 ---------------------------------------------------------------------------]]
---local con1 = GetConVar("sf_enable_ekstra_lightsupport")
+local con = GetConVar("sf_enable_ekstra_lightsupport")
 local con2 = GetConVar("sf_redownloadlightmaps")
---local con3 = GetConVar("sf_enable_ekstra_lightsupport")
-local function checkCon()
-	if con2 and con2:GetInt() ~= 1 then return false end
-	--if con3 and con3:GetInt() ~= 1 then return false end
-	return true
-end
-local lastL,nowL = "-","-"
-local canRedownload = false
-local updateTime = -1
-hook.Add("StormFox - NetDataChange","StormFox - lightfix",function(str,nowL)
-	if str ~= "MapLightChar" then return end
-	if not checkCon() then return false end
-	if nowL == lastL then return end
-	lastL = nowL
-	updateTime = CurTime() + 4
-end)
-hook.Add("EntityFireBullets","StormFox.DetectBattle",function(ent)
-	if not ent then return end
-	if type(ent) ~= "Player" then return end
-	ent.sf_lastshoot = CurTime()
-end)
-function canUpdate(ply)
-	if (ply.sf_lastshoot or 0) + 6 > CurTime() then return false end
-	if ply:GetVelocity():Length() > 20 then return false end
-	return true
-end
+	-- Check settings
+		local function checkCon()
+			if con and con:GetInt() ~= 1 then return false end
+			if con2 and con2:GetInt() ~= 1 then return false end
+			return true
+		end
+	-- Deletect lightchange
+		local lastL,nowL = "-","-"
+		local canRedownload = false
+		local updateTime = -1
+		hook.Add("StormFox - NetDataChange","StormFox - lightfix",function(str,nowL)
+			if str ~= "MapLightChar" then return end
+			if not checkCon() then return false end
+			if nowL == lastL then return end
+			lastL = nowL
+			updateTime = CurTime() + 4
+		end)
+	-- Only allow to change the maplight when inactive
+		hook.Add("EntityFireBullets","StormFox.DetectBattle",function(ent)
+			if not ent then return end
+			if type(ent) ~= "Player" then return end
+			ent.sf_lastshoot = CurTime()
+		end)
+		local function canUpdate(ply)
+			if (ply.sf_lastshoot or 0) + 6 > CurTime() then return false end
+			if ply:GetVelocity():Length() > 20 then return false end
+			return true
+		end
+
 local updateTimeout = 0
 hook.Add("Think","StormFox - LightThink",function()
-	if updateTimeout >= CurTime() then return end
-	if not canRedownload then return end
-	if updateTime < 0 then return end
-	if not LocalPlayer() then return end
-	if not canUpdate(LocalPlayer()) then return end
+	if updateTimeout >= CurTime() then return end 	-- Only every 20 seconds
+	if not canRedownload then return end 			-- Only after 10 seconds the map loaded
+	if updateTime < 0 then return end 				-- Only after 4 seconds the value have changed
 	if updateTime > CurTime() then return end
-	if not checkCon() then return false end
 	updateTime = -1
-	updateTimeout = CurTime() + 30
+	if not checkCon() then 
+		updateTimeout = CurTime() + 10
+		return false 
+	end
+	updateTimeout = CurTime() + 20
 	render.RedownloadAllLightmaps(true)
 end)
 hook.Add("StormFox - PostEntity","StormFox - FixMapBlackness",function()
 	timer.Simple(10,function()
-		if not checkCon() then return false end
-		render.RedownloadAllLightmaps(true)
-		canRedownload = true
+		canRedownload = true -- Allow lightmap to update
 	end)
 end)
 

@@ -34,19 +34,26 @@ local wind = StormFox.GetNetworkData("Wind",0)
 local temp = StormFox.GetNetworkData("Temperature",20)
 local Gauge = StormFox.GetData("Gauge",0)
 -- Downfall functions
+	local util_TraceLine = util.TraceLine
+	local util_TraceHull = util.TraceHull
 	local function ETPos(pos,pos2,mask)
-		local t = util.TraceLine( {
+		local t = util_TraceLine( {
 		start = pos,
 		endpos = pos2,
 		mask = mask or LocalPlayer(),
 		filter = LocalPlayer():GetViewEntity() or LocalPlayer()
 		} )
+		if not t then -- tracer failed, this should not happen. Create a fake result.
+			local t = {}
+				t.HitPos = pos + pos2
+			return t 
+		end
 		t.HitPos = t.HitPos or (pos + pos2)
 		return t
 	end
 
 	local function ET(pos,pos2,mask)
-		local t = util.TraceLine( {
+		local t = util_TraceLine( {
 		start = pos,
 		endpos = pos + pos2,
 		mask = mask or LocalPlayer(),
@@ -62,7 +69,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 	end
 
 	local function ETHull(pos,pos2,size,mask)
-		local t = util.TraceHull( {
+		local t = util_TraceHull( {
 			start = pos,
 			endpos = pos + pos2,
 			maxs = Vector(size,size,4),
@@ -70,6 +77,11 @@ local Gauge = StormFox.GetData("Gauge",0)
 			mask = mask or LocalPlayer(),
 			filter = LocalPlayer():GetViewEntity() or LocalPlayer()
 			} )
+		if not t then
+			local t = {}
+			t.HitPos = pos + pos2
+			return t
+		end
 		return t
 	end
 
@@ -421,6 +433,9 @@ local Gauge = StormFox.GetData("Gauge",0)
 		end
 	end)
 -- Render the raindrops
+	local render_DrawBeam = render.DrawBeam
+	local render_DrawSprite = render.DrawSprite
+	local render_SetMaterial = render.SetMaterial
 	local RenderRain = function(depth, sky)
 		--if depth or sky then return end
 		--if true then return end
@@ -435,56 +450,56 @@ local Gauge = StormFox.GetData("Gauge",0)
 		local sky_col = StormFox.GetData("Bottomcolor",Color(204,255,255))
 			sky_col = Color(max(sky_col.r,4),max(sky_col.g,55),max(sky_col.b,55),max(alpha,155))
 		for id,data in ipairs(particles.main) do
-			render.SetMaterial(data.material or materials.Rain)
+			render_SetMaterial(data.material or materials.Rain)
 			if data.rain then
 				if data.smoke then
-					render.DrawSprite(data.pos, data.size, data.size,Color(GaugeColor.r * 0.5,GaugeColor.g * 0.5,GaugeColor.b * 0.5,15))
+					render_DrawSprite(data.pos, data.size, data.size,Color(GaugeColor.r * 0.5,GaugeColor.g * 0.5,GaugeColor.b * 0.5,15))
 				else
-					render.DrawBeam(  data.pos,  data.pos - data.norm * data.size * data.length_m, 10 * data.size, 1, 0, Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,5))
+					render_DrawBeam(  data.pos,  data.pos - data.norm * data.size * data.length_m, 10 * data.size, 1, 0, Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,5))
 				end
 			else
 				if data.smoke then
-					render.DrawSprite(data.pos, data.size * 1.4, data.size * 1.4,Color(GaugeColor.r * 0.5,GaugeColor.g * 0.5,GaugeColor.b * 0.5,max(5,Gauge * 2)))
+					render_DrawSprite(data.pos, data.size * 1.4, data.size * 1.4,Color(GaugeColor.r * 0.5,GaugeColor.g * 0.5,GaugeColor.b * 0.5,max(5,Gauge * 2)))
 				else
 					local d = data.pos.z - data.endpos.z + data.r
 					local n = sin(d / 100)
 					local s = data.size
 					local nn = max(0,16 - wind)
-					render.DrawSprite(data.pos + Vector(n * nn,n * nn,0), s, s,Color(GaugeColor.r * 0.5,GaugeColor.g * 0.5,GaugeColor.b * 0.5))
+					render_DrawSprite(data.pos + Vector(n * nn,n * nn,0), s, s,Color(GaugeColor.r * 0.5,GaugeColor.g * 0.5,GaugeColor.b * 0.5))
 				end
 			end
 			if raindebug then
-				render.SetMaterial(Material("sprites/sent_ball"))
+				render_SetMaterial(Material("sprites/sent_ball"))
 				if data.smoke then
-					render.DrawSprite(data.endpos, 10,10,Color(0,0,255))
+					render_DrawSprite(data.endpos, 10,10,Color(0,0,255))
 				else
-					render.DrawSprite(data.endpos, 10,10,Color(0,255,0))
+					render_DrawSprite(data.endpos, 10,10,Color(0,255,0))
 				end
 			end
 		end
 		for id,data in ipairs(particles.bg) do
-			render.SetMaterial(data.material)
+			render_SetMaterial(data.material)
 			if data.rain then
 				if data.smoke then
-					render.DrawBeam(  data.pos,  data.pos - data.norm * data.size * data.length_m, 6 * data.size, 1, 0, Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,3))
+					render_DrawBeam(  data.pos,  data.pos - data.norm * data.size * data.length_m, 6 * data.size, 1, 0, Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,3))
 				else
-					render.DrawBeam(  data.pos,  data.pos - data.norm * data.size * data.length_m, data.size, 1, 0, Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,5))
+					render_DrawBeam(  data.pos,  data.pos - data.norm * data.size * data.length_m, data.size, 1, 0, Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,5))
 				end
 			else
 				if data.smoke then
 					data.a = max(data.a + RealFrameTime() * 0.1,5)
-					render.DrawBeam(  data.pos,  data.pos - data.norm * data.size * data.length_m,  data.size * 10, 1, 0, Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,data.a))
+					render_DrawBeam(  data.pos,  data.pos - data.norm * data.size * data.length_m,  data.size * 10, 1, 0, Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,data.a))
 				else
 					local d = data.pos.z - data.endpos.z + data.r
 					local n = sin(d / 100)
 					local s = data.size * 10
 					local nn = clamp(20 - Gauge * 2,0,16)
-					render.DrawSprite(data.pos + Vector(n * nn,n * nn,0) + data.ang:Forward() * 10, s, s,Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,55))
+					render_DrawSprite(data.pos + Vector(n * nn,n * nn,0) + data.ang:Forward() * 10, s, s,Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,55))
 				end
 			end
 			if raindebug then
-				render.SetMaterial(Material("sprites/sent_ball"))
-				render.DrawSprite(data.endpos, 10,10,Color(255,0,0))
+				render_SetMaterial(Material("sprites/sent_ball"))
+				render_DrawSprite(data.endpos, 10,10,Color(255,0,0))
 			end
 		end
 	end

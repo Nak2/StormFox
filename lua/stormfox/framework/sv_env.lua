@@ -23,7 +23,9 @@
  ---------------------------------------------------------------------------]]
 local round,clamp = math.Round,math.Clamp
 
--- Support unamed entities
+--[[ The entity is sadly broken after saving it.
+-- Support unamed entities 
+
 local con = GetConVar("sf_enable_mapsupport")
 local con2 = GetConVar("sf_block_lightenvdelete")
 local function SetNameFix( ent )
@@ -31,13 +33,15 @@ local function SetNameFix( ent )
 	if ent:GetClass() == "light_environment" then
 		if con and not con:GetBool() then return end
 		if con2 and not con2:GetBool() then return end
-		if not ent:GetName() or ent:GetName() == "" then
-			ent:SetKeyValue("targetname", "lightenv")
+		if (ent:GetName() or "") == "" then
+			print("SF SET TARGET CAUSE NAME IS " .. ent:GetName())
+			--ent:SetKeyValue("targetname", "lightenv")
+
 			ent.targetname_set = true
 		end
 	end
 end
-hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
+hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)]]
 
 -- Scan/create mapentities
 	local function GetOrCreate(str)
@@ -88,6 +92,7 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 		printEntFoundStatus( StormFox.env_fog_controller, "env_fog_controller" )
 		printEntFoundStatus( StormFox.env_tonemap_controller, "env_tonemap_controller" )
 		printEntFoundStatus( StormFox.shadow_control, "shadow_control" )
+
 		hook.Call( "StormFox - PostEntityScan" )
 	end
 	hook.Add( "StormFox - PostEntity", "StormFox - ScanForEntities", FindEntities )
@@ -186,18 +191,18 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)
 		if not light then return end
 		if blockSpam > SysTime() then return end
 		local getChar = string.char(97 + round(clamp(light,0,100) / 4)) -- a - z
-		if light < 4 then return end
-
 		--oldls = getChar
 		if oldls ~= getChar then
-			--if con:GetBool() then
-				engine.LightStyle(0,getChar)
-			--end
-			if IsValid(StormFox.light_environment)  then
-				for _,light in ipairs(StormFox.light_environments) do
-					light:Fire("FadeToPattern", getChar ,0)
-					light:Activate()
+			if con:GetBool() then
+				if light < 4 then
+					engine.LightStyle(0,"b")
+				else
+					engine.LightStyle(0,getChar)
 				end
+			end
+			for _,light in ipairs(StormFox.light_environments) do
+				light:Fire("FadeToPattern", getChar ,0)
+				light:Activate()
 			end
 			StormFox.SetNetworkData("MapLightChar",getChar)
 			oldls = getChar

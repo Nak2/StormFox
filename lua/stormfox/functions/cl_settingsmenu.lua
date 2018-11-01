@@ -457,14 +457,14 @@ function StormFox.OpenServerSettings()
 					sp.var = StormFox.GetMapSetting("minlight",4)
 					sp.var2 = StormFox.GetMapSetting("maxlight",80)
 					function sp:TextEditor(str)
-						local n = math.max(4,tonumber(str))
+						local n = math.max(0,tonumber(str))
 						return math.Round(n / 4) * 4 .. "%"
 					end
 					function sp:OnReleased()
-						local minlight = math.max(4,tonumber(self.var))
+						local minlight = math.max(0,tonumber(self.var))
 							minlight = math.Round(minlight / 4) * 4
 							setmapdata("minlight",minlight)
-						local maxlight = math.max(4,tonumber(self.var2))
+						local maxlight = math.max(0,tonumber(self.var2))
 							maxlight = math.Round(maxlight / 4) * 4
 							setmapdata("maxlight",maxlight)
 						mgui.AccpetSnd()
@@ -477,11 +477,31 @@ function StormFox.OpenServerSettings()
 						l:SetText("Allow dynamiclight for all clients.")
 						l:SizeToContentsX(5)
 						l:SetTall(20)
+				-- Adv light
+					local t = makeTitle(panel,"Adv Light")
+					t:SetSize(340,20)
+					t:SetPos(0,10 + element_size * 11)
+				-- Extra lightsupport
+					local el,label = serverToggle(panel,"sf_enable_ekstra_lightsupport")
+						el:SetPos(20,10 + element_size * 12)
+						label:SetPos(30 + el:GetWide(),10 + element_size * 12)
+						label:SetText(label:GetText() .. "(Requires mapchange)")
+						label:SizeToContentsX(5)
+						label:SetTall(20)
+						local warning =  mgui.Create("Label",panel)
+						warning:SetText("Warning! Will lag on large maps and slow clients.")
+						warning:SetPos(30 + el:GetWide(),10 + element_size * 13)
+						warning:SizeToContentsX(2)
 		-- Weather
 			local panel = menu.board["Weather"]
 				local t = makeTitle(panel,"Weather")
 					t:SetSize(340,20)
 					t:SetPos(0,10)
+				local l = mgui.Create("DLabel",panel)
+					l:SetText("Current Weather")
+					l:SetSize(140,20)
+					l:SetTextAlingn(1)
+					l:SetPos(panel:GetWide() - 140,10)
 				local weatherinfo = mgui.Create("Panel",panel)
 				weatherinfo:SetSize(140,140)
 				weatherinfo:SetPos(panel:GetWide() - 140,30)
@@ -819,12 +839,16 @@ function StormFox.OpenServerSettings()
 			local t = makeTitle(panel,"Troubleshooting")
 					t:SetSize(340,20)
 					t:SetPos(0,10)
+				local el,label = serverToggle(panel,"sf_autopilot")
+					el:SetPos(20,10 + element_size * 1)
+					label:SetPos(30 + el:GetWide(),10 + element_size * 1)
+				
 				local t = mgui.Create("DLabel",panel)
-					t:SetPos(20,30)
+					t:SetPos(20,10 + element_size * 2)
 					t:SetText("This will display the most common problems with the current settings.")
 					t:SizeToContentsX(4)
 				local problemlist = mgui.Create("DScrollPanel",panel)
-					problemlist:SetPos(20,50)
+					problemlist:SetPos(20,10 + element_size * 3)
 					problemlist:SetSize(panel:GetWide() - 40,panel:GetTall() - 60)
 					function problemlist:UpdateList()
 						for k,v in pairs(self:GetCanvas():GetChildren()) do
@@ -875,25 +899,32 @@ end
 local function convar_check(str,var)
 	local c = GetConVar(str)
 	if not c then ErrorNoHalt("Unknown convar: " .. str) return end
-	return c:GetString() == var
+	return c:GetInt() == var
 end
 -- Commen problems:
 	-- sf_enable_ekstra_lightsupport on huge maps
 	AddCommenProblem(function()
 		local mapsize = StormFox.MapOBBMaxs() - StormFox.MapOBBMins()
 		local unit = mapsize:Length()
-		return unit > 30000
-		end,"Source lightsupport on large maps can lag clients (No fixes)",function()
+		return unit > 20000 and convar_check("sf_enable_ekstra_lightsupport",1) 
+		end,"Ekstra lightsupport on large maps, can lag clients and cause problems.",function()
+		StormFox.SetConvarSetting("sf_enable_ekstra_lightsupport",0)
+	end)
+	-- No light_environment and no ekstra lightsupport
+	AddCommenProblem(function()
+		return not StormFox.GetNetworkData("has_light_environment",false) and convar_check("sf_enable_ekstra_lightsupport",0) 
+		end,"No light_environment found. Map requires sf_enable_ekstra_lightsupport to work.",function()
+		StormFox.SetConvarSetting("sf_enable_ekstra_lightsupport",1)
 	end)
 	-- sf_enable_mapsupport being disabled
 	AddCommenProblem(function() 
-		return convar_check("sf_enable_mapsupport","0") 
+		return convar_check("sf_enable_mapsupport",0) 
 		end,"All map-support is disabled [sf_enable_mapsupport 0]",function()
 		StormFox.SetConvarSetting("sf_enable_mapsupport",1)
 	end)
-	-- sf_disable_mapsupport being enabled
+	-- sf_skybox being enabled
 	AddCommenProblem(function() 
-		return convar_check("sf_skybox","0") 
+		return convar_check("sf_skybox",0) 
 		end,"Skybox-support is disabled. [sf_skybox 0] (Requires a restart to fix)",function()
 		StormFox.SetConvarSetting("sf_skybox",1)
 	end)
@@ -906,7 +937,7 @@ end
 	end)
 	-- Dynamic light with treesway
 	AddCommenProblem(function() 
-		return StormFox.GetMapSetting("dynamiclight") and convar_check("sf_foliagesway","1") 
+		return StormFox.GetMapSetting("dynamiclight") and convar_check("sf_foliagesway",1) 
 		end,"Dynamic light and foliagesway can cause materials flickering.",function()
 		StormFox.SetMapSetting("dynamiclight",false)
 	end)

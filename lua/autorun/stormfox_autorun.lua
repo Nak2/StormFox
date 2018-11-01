@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.394
+StormFox.Version = 1.398
 StormFox.WorkShopVersion = false--game.IsDedicated()
 
 function StormFox.Msg(...)
@@ -38,6 +38,7 @@ end
 		CreateConVar(str,default, { FCVAR_REPLICATED, FCVAR_ARCHIVE }, helptext)
 		-- FCVAR_REPLICATED is not 100% accurate for some reason
 	end
+	AddConVar("sf_autopilot",0,"Try fix all problems on launch.")
 
 	AddConVar("sf_timespeed",60,"Seconds of gametime pr real second.")
 	AddConVar("sf_moonscale",6,"The scale of the moon.")
@@ -50,7 +51,7 @@ end
 	AddConVar("sf_sunmoon_yaw",270,"The sun/moon yaw.")
 	AddConVar("sf_debugcompatibility",0,"Enable SF compatability-debugger.")
 	AddConVar("sf_skybox",1,"Enable SF-skybox.")
-	--AddConVar("sf_enable_ekstra_lightsupport",1,"Enable ekstra lightsupport (engine.LightStyle)")
+	AddConVar("sf_enable_ekstra_lightsupport",0,"Enable ekstra lightsupport (Lags on large maps)")
 	AddConVar("sf_start_time","","Start the server at a specific time.")
 	AddConVar("sf_mapbloom",0,"Allow SF editing light-bloom.")
 	AddConVar("sf_enable_mapbrowser",game.IsDedicated() and 0 or 1,"Allow admins changing the map with SF-browser.")
@@ -72,13 +73,11 @@ end
 		CreateClientConVar("sf_allow_sunbeams","1",true,false,"Enable sunbeams.")
 		CreateClientConVar("sf_allow_dynamicshadow","0",true,false,"Enable dynamic light/shadows.")
 		CreateClientConVar("sf_dynamiclightamount","0",true,false,"Controls the dynamic-light amount.")
-		CreateClientConVar("sf_redownloadlightmaps","1",true,false,"Lighterrors and light_environment fix (Can lagspike)")
+		CreateClientConVar("sf_redownloadlightmaps","1",true,false,"Update lightmaps (Can lag on large maps)")
 		CreateClientConVar("sf_allow_raindrops","1",true,false,"Enable raindrops on the screen")
 		CreateClientConVar("sf_renderscreenspace_effects","1",true,false,"Enable RenderScreenspaceEffects")
 		CreateClientConVar("sf_useAInode","1",true,false,"Use AI nodes for more reliable sounds and effects.")
 		CreateClientConVar("sf_enable_breath","1",true,false,"Enable cold breath-effect.")
-		CreateClientConVar("sf_enablespooky","1",true,false,"Enable Halloween effect.")
-
 	end
 -- Add resources
 	if SERVER then

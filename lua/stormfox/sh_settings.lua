@@ -3,7 +3,7 @@ local defaultSettings = {}
 	defaultSettings["mintemp"] = -10 				--
 	defaultSettings["maxtemp"] = 20					--
 	defaultSettings["maxwind"] = 30					--
-	defaultSettings["minlight"] = 2				--
+	defaultSettings["minlight"] = 4				--
 	defaultSettings["maxlight"] = 80				--
 	defaultSettings["dynamiclight"] = true 			--
 	defaultSettings["material_replacment"] = true 		--
@@ -115,3 +115,54 @@ else
 		net.SendToServer()
 	end)
 end
+
+if CLIENT then return end
+-- Auto pilot
+	local function convar_check(str,var)
+		local c = GetConVar(str)
+		if not c then ErrorNoHalt("Unknown convar: " .. str) return end
+		return c:GetString() == var
+	end
+local function RunPilot()
+	if not convar_check("sf_autopilot","1") then return end
+	StormFox.Msg("[AutoPilot] Checking settings ..")
+	-- Light settings
+		if StormFox.light_environment then
+			-- Check for large map with ekstra lightsupport. We don't need the ektra lightsupport it.
+			if convar_check("sf_enable_ekstra_lightsupport","1") then
+				local mapsize = StormFox.MapOBBMaxs() - StormFox.MapOBBMins()
+				local unit = mapsize:Length()
+				if unit > 20000 then
+					StormFox.Msg("[AutoPilot] Large map detected: sf_enable_ekstra_lightsupport 0")
+					RunConsoleCommand("sf_enable_ekstra_lightsupport",0)
+				elseif game.IsDedicated() then
+					StormFox.Msg("[AutoPilot] No need for sf_enable_ekstra_lightsupport")
+					RunConsoleCommand("sf_enable_ekstra_lightsupport",0)
+				end
+			end
+		elseif convar_check("sf_enable_ekstra_lightsupport","0") then
+			-- No light control. We need sf_enable_ekstra_lightsupport on 1
+			StormFox.Msg("[AutoPilot] No light_environment detected: sf_enable_ekstra_lightsupport 1")
+			RunConsoleCommand("sf_enable_ekstra_lightsupport",1)
+		end
+	-- Mapsupport
+		if convar_check("sf_enable_mapsupport","0") then
+			StormFox.Msg("[AutoPilot] No mapsupport. Requires restart: sf_enable_mapsupport 1")
+			RunConsoleCommand("sf_enable_mapsupport",1)
+		end
+	-- Skybox
+		if convar_check("sf_skybox","0") then
+			StormFox.Msg("[AutoPilot] No skybox. Requires restart: sf_skybox 1")
+			RunConsoleCommand("sf_skybox",1)
+		end
+	-- Dynamic light on 2D map
+		if StormFox.GetMapSetting("dynamiclight") and not StormFox.Is3DSkybox() then
+			StormFox.Msg("[AutoPilot] Disabled dynamic light: 2D map")
+			StormFox.SetMapSetting("dynamiclight",false)
+		end
+	-- TreeSway isn't really that important
+
+end
+hook.Add("StormFox - PostEntityScan","StormFox - RunAutopilot",function()
+	timer.Simple(1,RunPilot)
+end)
