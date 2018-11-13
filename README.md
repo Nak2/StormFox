@@ -14,10 +14,10 @@ This project is licensed under the [Apache License 2.0.][3]
 
 You can find commen and useful functions [here.][5]
 
-## Early beta
+## Fresh out of beta
 Please report any bugs via the issue tracker.
 
-As this is early beta, expect some bugs, changelogs can be found on the Steam Workshop Page [here.][4]
+Changelogs can be found on the Steam Workshop Page [here.][4]
 
 
 
