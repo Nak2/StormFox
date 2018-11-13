@@ -222,7 +222,7 @@ if SERVER then
 	end, "StormFox - SF_REALTIMESET" )
 	timer.Create("StormFox - SF_KeepRealTime",6,0,function()
 		local con = GetConVar("sf_realtime")
-		if con:GetInt() ~= 1 then return end
+		if not con:GetBool() then return end
 		-- In case of desync
 		local con2 = GetConVar("sf_timespeed")
 		if con2:GetInt() ~= 1 then
@@ -245,7 +245,7 @@ end
 			local con2 = GetConVar("sf_realtime")
 			
 			-- Realtime setting
-				if con2 and con2:GetString() == "1" then
+				if con2 and con2:GetBool() then
 					RunConsoleCommand("sf_timespeed",1) -- match the real world timespeed. Seconds of gametime pr second
 					local dt = string.Explode(":",os.date("%H:%M:%S"))
 					StormFox.SetTime(dt[1] * 60 + dt[2] + (dt[3] / 60))

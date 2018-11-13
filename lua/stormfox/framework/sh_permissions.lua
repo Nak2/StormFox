@@ -42,7 +42,7 @@ end
 function StormFox.CanEditMapSetting(ply,func,...)
 	local argz = {...}
 	CAMI.PlayerHasAccess(ply,"StormFox Settings",function(b)
-		if not b then ply:PrintMessage(HUD_PRINTTALK,"You don't have access to map settings.") return end
+		if not b then ply:PrintMessage(HUD_PRINTTALK,"You don't have access to server settings.") return end
 		func(unpack(argz))
 	end)
 end

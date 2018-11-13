@@ -30,7 +30,7 @@ local materials = {}
 	materials.SnowSmoke			= Material("particle/smokesprites_0001")
 	materials.SnowMultiTexture	= Material("stormfox/snow-multi.png","noclamp smooth")
 local snowEnabled,GaugeColor = true,Color(255,255,255)
-local wind = StormFox.GetNetworkData("Wind",0)
+local wind = StormFox.GetNetworkData("Wind",0) * 0.75
 local temp = StormFox.GetNetworkData("Temperature",20)
 local Gauge = StormFox.GetData("Gauge",0)
 -- Downfall functions
@@ -146,7 +146,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 		temp = StormFox.GetNetworkData("Temperature",20)
 		if Gauge <= 0 then return end
 
-		wind = StormFox.GetNetworkData("Wind",0)
+		wind = StormFox.GetNetworkData("Wind",0) * 0.75
 		local windangle = StormFox.GetNetworkData("WindAngle",0)
 
 		local downspeed = -max(1.56 * Gauge + 1.22,10) -- Base on realworld stuff .. and some tweaking (Was too slow)
@@ -170,9 +170,9 @@ local Gauge = StormFox.GetData("Gauge",0)
 			end
 		-- Calc max particles
 			local exp = StormFox.GetExspensive()
-			local maxparticles = max(exp,1) * 38
+			local maxparticles = max(exp,1) * 32
 
-			local maxbg = 32 + max(exp,1) * 64 * (Gauge / 10)
+			local maxbg = 32 + max(exp,1) * 16 * (Gauge / 10)
 			if not IsRain then maxbg = maxbg * 0.5 end
 		-- Calk weight and dir
 			local weight = IsRain and 1 or 0.2
@@ -185,11 +185,11 @@ local Gauge = StormFox.GetData("Gauge",0)
 					-- Make a rain/snowdrop
 
 					local testpos = mainpos + Vector(ran(-random_side,random_side) + fDN.x * -(20 / weight) ,ran(-random_side,random_side) + fDN.y * -(20 / weight),1 / weight * 30)
-						testpos.z = math.min(testpos.z,mainpos.z) - ran(20)
-					local smoke = ran(100) < clamp(wind / 0.7,0,70) - 14
+						testpos.z = math.min(testpos.z,mainpos.z) - ran(40)
+					local smoke = ran(100) < clamp(wind * 2,0,70) - 14
 					local size = IsRain and (smoke and 20 * Gauge or clamp(Gauge / ran(3,5),1,3)) or (smoke and ran(10,30) * Gauge or clamp(Gauge / ran(3,5),1,3))
 					local tr = ETCalcTrace(testpos,size,fDN)
-					local break_ = IsRain and 1 or max(wind / 50,0.4)
+					local break_ = IsRain and 1 or max(wind / 25,0.4)
 					if tr then
 						local drop = {}
 							drop.smoke = smoke
@@ -240,10 +240,9 @@ local Gauge = StormFox.GetData("Gauge",0)
 						yy = ran(mindistance,random_side * 4) * -1
 						xx = ran(random_side * -2,random_side * 2)
 					end
-
 					local testpos = mainpos + Vector(xx + fDN.x * -(20 / weight) ,yy + fDN.y * -(20 / weight),1 / weight * 30)
-					local smoke = ran(100) < clamp(wind / 0.7,0,70) - 14
-					local size = smoke and (IsRain and 30 or 20 * Gauge) or (clamp(Gauge / ran(3,5),1,3) * (IsRain and 64 or 32))
+					local smoke = ran(100) < clamp(wind * 2,0,70) - 14
+					local size = smoke and (IsRain and 30 or 20 * Gauge) or (clamp(Gauge / ran(3,5),1,3) * (IsRain and 32 or 32))
 					local tr = ETCalcTrace(testpos,size,fDN)
 					if tr then
 						local drop = {}
@@ -368,7 +367,6 @@ local Gauge = StormFox.GetData("Gauge",0)
 				table.remove(particles.main,i)
 			end
 		end
-
 		for id,data in ipairs(particles.bg) do
 			if data.alive then
 				local speed = data.norm * -FT
@@ -398,7 +396,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 									p:SetCollide(true)
 									p:SetBounce(0)
 									p:SetAirResistance(20)
-									p:SetVelocity(Vector(downfallNorm.x * wind * 1,downfallNorm.y * 1 * wind,0) + data.hitnorm * -10)
+									p:SetVelocity(Vector(downfallNorm.x * wind,downfallNorm.y * wind,0) + data.hitnorm * -10)
 									p:SetCollideCallback( pf )
 									--	p:SetStartLength(1)
 						elseif false then
@@ -481,9 +479,10 @@ local Gauge = StormFox.GetData("Gauge",0)
 			render_SetMaterial(data.material)
 			if data.rain then
 				if data.smoke then
-					render_DrawBeam(  data.pos,  data.pos - data.norm * data.size * data.length_m, 6 * data.size, 1, 0, Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,3))
+					--render.DrawBeam(startPos,  endPos                    ,number width,number textureStart,number textureEnd,table color)
+					render_DrawBeam(  data.pos,  data.pos - data.norm * data.size * data.length_m, 6 * data.size, 1, 0, Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,6))
 				else
-					render_DrawBeam(  data.pos,  data.pos - data.norm * data.size * data.length_m, data.size, 1, 0, Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,5))
+					render_DrawBeam(  data.pos,  data.pos - data.norm * data.size * data.length_m, data.size, 2, 0, Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,25))
 				end
 			else
 				if data.smoke then
@@ -511,91 +510,89 @@ local Gauge = StormFox.GetData("Gauge",0)
 	end)
 
 -- 2D Rain
-
-local screenParticles = {}
-local l = 0
-local w = 0
-local rand = math.Rand
-local viewAmount = 0
-local rainAmount = 0
-local snow_particles = {(Material("particle/smokesprites_0001")),(Material("particle/smokesprites_0002")),(Material("particle/smokesprites_0003"))}
-local rain_particles = { (Material("stormfox/effects/raindrop")), (Material("stormfox/effects/raindrop2"))}--, (Material("stormfox/effects/raindrop2")) }
--- Create 2D raindrops
-	hook.Add("Think","StormFox - RenderFalldownScreenThink",function()
-		if not LocalPlayer() then return end
-		if not StormFox.EFEnabled() then table.Empty(screenParticles) return end
-		if LocalPlayer():WaterLevel() >= 3 then
-			if #screenParticles > 0 then
-				table.Empty(screenParticles)
+	local screenParticles = {}
+	local l = 0
+	local w = 0
+	local rand = math.Rand
+	local viewAmount = 0
+	local rainAmount = 0
+	local snow_particles = {(Material("particle/smokesprites_0001")),(Material("particle/smokesprites_0002")),(Material("particle/smokesprites_0003"))}
+	local rain_particles = { (Material("stormfox/effects/raindrop")), (Material("stormfox/effects/raindrop2"))}--, (Material("stormfox/effects/raindrop2")) }
+	-- Create 2D raindrops
+		hook.Add("Think","StormFox - RenderFalldownScreenThink",function()
+			if not LocalPlayer() then return end
+			if not StormFox.EFEnabled() then table.Empty(screenParticles) return end
+			if LocalPlayer():WaterLevel() >= 3 then
+				if #screenParticles > 0 then
+					table.Empty(screenParticles)
+				end
+				return
 			end
-			return
+			if l > SysTime() then return end
+			-- Bin old particles
+				for i = #screenParticles,1,-1 do
+					if screenParticles[i].life < SysTime() then
+						table.remove(screenParticles,i)
+					end
+				end
+			-- Is it even raining?
+				local Gauge = StormFox.GetData("Gauge",0)
+				if Gauge <= 0 then table.Empty(screenParticles) return end
+			-- Safty first
+				if #screenParticles > 200 then return end
+			-- Are you standing in the rain?
+				if not StormFox.Env.IsInRain() then return end
+			-- Get the temp and type
+				local temp = StormFox.GetNetworkData("Temperature",20)
+				local rain = temp > 0
+			-- Get the dot
+				local fDN = Vector(downfallNorm.x,downfallNorm.y,downfallNorm.z * 1)
+					fDN:Normalize()
+				local a = EyeAngles():Forward():Dot(fDN)
+			viewAmount = -a
+			if viewAmount <= 0 then viewAmount = 0 return end
+			rainAmount = max((10 - Gauge) / 10,0.1) -- 0 in heavy rain, 1 in light
+			-- Next rainrop
+				l = SysTime() + (rand(rainAmount,rainAmount * 2) / viewAmount * 0.01 * (rain and 1 or 100))
+			local drop = {}
+				drop.life = SysTime() + ran(0.4,1)
+				drop.x = ran(ScrW())
+				drop.y = ran(ScrH())
+				drop.size = 25 + rand(2,3) * Gauge * (rain and 1 or 2)
+				drop.weight = ran(0,1)
+				drop.rain = rain
+				drop.r = ran(360)
+				drop.p = rain and ran(1,#rain_particles) or ran(1,#snow_particles)
+			table.insert(screenParticles,drop)
+		end)
+	-- 2D rainscreenfunctions
+		local ceil = math.ceil
+		local function drawSemiRandomUV(x,y,w,h,length,height)
+			local nw = ceil(w / length)
+			local nh = ceil(h / height)
+			local flipi = 0
+			local flip = 1
+			local flipy = 1
+			for ih = 1,nh do
+				for i = 1,nw do
+					flipi = flipi + 1
+					if flipi == 2 then
+						flip = 1 - flip
+					end
+					if flipi > 3 then
+						flipy = 1 - flipy
+					end
+					surface.DrawTexturedRectUV(x + (i - 1) * length,y + (ih - 1) * height,length,height,1 - flip,1 - flipy,flip,flipy)
+				end
+			end
 		end
-		if l > SysTime() then return end
-		-- Bin old particles
-			for i = #screenParticles,1,-1 do
-				if screenParticles[i].life < SysTime() then
-					table.remove(screenParticles,i)
-				end
-			end
-		-- Is it even raining?
-			local Gauge = StormFox.GetData("Gauge",0)
-			if Gauge <= 0 then table.Empty(screenParticles) return end
-		-- Safty first
-			if #screenParticles > 200 then return end
-		-- Are you standing in the rain?
-			if not StormFox.Env.IsInRain() then return end
-		-- Get the temp and type
-			local temp = StormFox.GetNetworkData("Temperature",20)
-			local rain = temp > 0
-		-- Get the dot
-			local fDN = Vector(downfallNorm.x,downfallNorm.y,downfallNorm.z * 1)
-				fDN:Normalize()
-			local a = EyeAngles():Forward():Dot(fDN)
-		viewAmount = -a
-		if viewAmount <= 0 then viewAmount = 0 return end
-		rainAmount = max((10 - Gauge) / 10,0.1) -- 0 in heavy rain, 1 in light
-		-- Next rainrop
-			l = SysTime() + (rand(rainAmount,rainAmount * 2) / viewAmount * 0.01 * (rain and 1 or 100))
-		local drop = {}
-			drop.life = SysTime() + ran(0.4,1)
-			drop.x = ran(ScrW())
-			drop.y = ran(ScrH())
-			drop.size = 25 + rand(2,3) * Gauge * (rain and 1 or 2)
-			drop.weight = ran(0,1)
-			drop.rain = rain
-			drop.r = ran(360)
-			drop.p = rain and ran(1,#rain_particles) or ran(1,#snow_particles)
-		table.insert(screenParticles,drop)
-	end)
 
--- 2D rainscreenfunctions
-	local ceil = math.ceil
-	local function drawSemiRandomUV(x,y,w,h,length,height)
-		local nw = ceil(w / length)
-		local nh = ceil(h / height)
-		local flipi = 0
-		local flip = 1
-		local flipy = 1
-		for ih = 1,nh do
-			for i = 1,nw do
-				flipi = flipi + 1
-				if flipi == 2 then
-					flip = 1 - flip
-				end
-				if flipi > 3 then
-					flipy = 1 - flipy
-				end
-				surface.DrawTexturedRectUV(x + (i - 1) * length,y + (ih - 1) * height,length,height,1 - flip,1 - flipy,flip,flipy)
-			end
-		end
-	end
-
-local RainScreen_RT = GetRenderTarget("StormFox RainScreenRT",ScrW(),ScrH())
-local ScreenDummy = Material("stormfox/effects/rainscreen_dummy")
-local mat_Copy		= Material( "pp/fb" )
-local rainscreen_mat = Material("stormfox/effects/rainscreen")
-local old_raindrop = Material("sprites/heatwave")
 -- Draw drain on screen
+	local RainScreen_RT = GetRenderTarget("StormFox RainScreenRT",ScrW(),ScrH())
+	local ScreenDummy = Material("stormfox/effects/rainscreen_dummy")
+	local mat_Copy		= Material( "pp/fb" )
+	local rainscreen_mat = Material("stormfox/effects/rainscreen")
+	local old_raindrop = Material("sprites/heatwave")
 	local rainscreen_alpha = 0
 	hook.Add("HUDPaint","StormFox - RenderRainScreen",function()
 		if not LocalPlayer() then return end

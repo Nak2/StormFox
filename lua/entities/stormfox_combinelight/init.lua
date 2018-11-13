@@ -16,6 +16,9 @@ function ENT:Initialize()
 	self:SetMaterial("stormfox/models/combine_light_off")
 	self.lastT = SysTime() + 7
 	self:SetUseType(SIMPLE_USE )
+
+	self:SetKeyValue("fademindist", 1500)
+	self:SetKeyValue("fademaxdist", 1500)
 end
 
 function ENT:SpawnFunction( ply, tr, ClassName )

@@ -35,6 +35,9 @@ function ENT:Initialize()
 		Wire_TriggerOutput(self, "Thunder", StormFox.GetNetworkData("Thunder",false) and 1 or 0)
 		Wire_TriggerOutput(self, "Weather", StormFox.Weather:GetName())
 	end
+
+	self:SetKeyValue("fademindist", 2000)
+	self:SetKeyValue("fademaxdist", 2000)
 end
 
 local function SetWire(self,data,value)

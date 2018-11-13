@@ -187,6 +187,17 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)]]
 	hook.Add("StormFox - PostEntityScan","StormFox - FixMapBlackness",function()
 		blockSpam = SysTime() + 10
 	end)
+	local conc = GetConVar("sf_enable_ekstra_entsupport")
+	local function WakeAllEntites()
+		if not conc then return end
+		if not conc:GetBool() then return end
+		for k,v in pairs(ents.GetAll()) do
+			local p = v:GetPhysicsObject()
+			if IsValid(p) then
+				p:Wake()
+			end
+		end
+	end
 	function StormFox.SetMapLight(light) -- 0-100
 		if not light then return end
 		if blockSpam > SysTime() then return end
@@ -199,8 +210,9 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)]]
 				else
 					engine.LightStyle(0,getChar)
 				end
+				WakeAllEntites() -- Bad bad BAD hack. But entnties don't update their light for some odd reason.
 			end
-			for _,light in ipairs(StormFox.light_environments) do
+			for _,light in ipairs(StormFox.light_environments or {}) do
 				light:Fire("FadeToPattern", getChar ,0)
 				light:Activate()
 			end

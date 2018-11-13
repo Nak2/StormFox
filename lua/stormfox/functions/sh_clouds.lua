@@ -272,13 +272,12 @@ end
 				surface.DrawTexturedRect(0,0,texscale,texscale,0,0)
 			RTEnd(sky_mats[2])
 			]]
-
 	end
 
 -- render.CullMode(1) render render.CullMode(0) will change the render
 -- Cloud layer
 hook.Add("StormFox - MiddleSkyRender","StormFox - CloudsRender",function()
-	--if true then return end
+	if not StormFox.EFEnabled() then return end
 	if not StormFox.MapOBBCenter or not StormFox.GetEyePos then return end
 	local mC = StormFox.MapOBBCenter() or Vector(0,0,0)
 	local c_pos = StormFox.GetEyePos() or EyePos()

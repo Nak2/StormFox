@@ -14,6 +14,9 @@ function ENT:Initialize()
 	self:SetColor(Color(255,255,255))
 	self.on = false
 	self.lastT = SysTime() + 7
+
+	self:SetKeyValue("fademindist", 2100)
+	self:SetKeyValue("fademaxdist", 2100)
 end
 
 function ENT:SpawnFunction( ply, tr, ClassName )

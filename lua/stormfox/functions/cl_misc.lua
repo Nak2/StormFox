@@ -3,6 +3,7 @@
 Breath
 ---------------------------------------------------------------------------]]
 	local emit
+	local con = GetConVar("sf_enable_breath")
 	local m_mats = {(Material("particle/smokesprites_0001")),(Material("particle/smokesprites_0002")),(Material("particle/smokesprites_0003"))}
 	local function breath(ply,size)
 		if not StormFox.EFEnabled() then return end
@@ -40,17 +41,16 @@ Breath
 	local clamp = math.Clamp
 	local genabled = false
 	hook.Add("PostPlayerDraw","StormFox - Breath",function(ply)
+		if not con:GetBool() then return end
 		if not genabled then return end
 		if (ply._sf_breath or 0) > SysTime() then return end
 		local len = ply:GetVelocity():Length()
 		local t = clamp(1 - (len / 100),0.2,1)
 			ply._sf_breath = math.Rand(t,t * 2) + SysTime()
 		breath(ply,5 + (len / 100))
-
 	end)
-	local con = GetConVar("sf_enable_breath")
 	hook.Add("Think","StormFox - CBreath",function()
-		if con:GetInt() ~=1 then return end
+		if not con:GetBool() then return end
 		genabled = StormFox.GetNetworkData("Temperature",20) < 4 and (StormFox.Env.IsInRain() or StormFox.Env.IsOutside() or StormFox.Env.NearOutside())
 		if not genabled then return end
 		if not LocalPlayer() then return end

@@ -21,6 +21,9 @@ function ENT:Initialize()
 	self:EmitSound("ambient/fire/mtov_flame2.wav")
 	self:SetCollisionGroup(COLLISION_GROUP_WORLD)
 	self.ignite_list = {}
+
+	self:SetKeyValue("fademindist", 2800)
+	self:SetKeyValue("fademaxdist", 2800)
 end
 
 function ENT:SpawnFunction( ply, tr, ClassName )

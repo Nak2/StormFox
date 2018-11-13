@@ -23,6 +23,9 @@ function ENT:Initialize()
 		Wire_TriggerOutput(self, "Clock_24", StormFox.GetRealTime(nil))
 		Wire_TriggerOutput(self, "Clock_12", StormFox.GetRealTime(nil,true))
 	end
+
+	self:SetKeyValue("fademindist", 1500)
+	self:SetKeyValue("fademaxdist", 1500)
 end
 
 local function SetWire(self,data,value)

@@ -15,6 +15,9 @@ function ENT:Initialize()
 	self:SetNWBool("24Clock",true)
 	self.t = SysTime() + 5
 	self.w = false
+
+	self:SetKeyValue("fademindist", 2000)
+	self:SetKeyValue("fademaxdist", 2000)
 end
 
 local l = 0

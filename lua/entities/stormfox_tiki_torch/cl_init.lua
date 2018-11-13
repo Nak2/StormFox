@@ -38,8 +38,15 @@ end
 local function isWater(vec)
 	return bit.band( util.PointContents( vec ), CONTENTS_WATER ) == CONTENTS_WATER
 end
-
+local function GetDis(ent)
+	if (ent.time_dis or 0) > CurTime() then return ent.time_dis_v or 0 end
+		ent.time_dis = CurTime() + 1
+	if not LocalPlayer() then return 0 end
+	ent.time_dis_v = LocalPlayer():GetShootPos():DistToSqr(ent:GetPos())
+	return ent.time_dis_v
+end
 function ENT:Think()
+	if GetDis(self) > 4500000 then return end
 	if (self.nextFlame or 0) > CurTime() then return end
 	local rm = StormFox.GetData("Gauge",0) * 10
 	local ml = StormFox.GetData("MapLight",100) * max(rm,1)

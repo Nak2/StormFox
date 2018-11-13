@@ -13,6 +13,9 @@ function ENT:Initialize()
 	self:SetRenderMode(RENDERMODE_TRANSALPHA)
 	self:SetMaterial("stormfox/models/parklight_off")
 	self.lastT = CurTime() + 7
+
+	self:SetKeyValue("fademindist", 2100)
+	self:SetKeyValue("fademaxdist", 2100)
 end
 
 function ENT:SpawnFunction( ply, tr, ClassName )
@@ -28,7 +31,6 @@ function ENT:SpawnFunction( ply, tr, ClassName )
 	ent:Spawn()
 	ent:Activate()
 	return ent
-
 end
 
 function ENT:Think()

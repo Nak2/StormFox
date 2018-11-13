@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.398
+StormFox.Version = 1.4
 StormFox.WorkShopVersion = false--game.IsDedicated()
 
 function StormFox.Msg(...)
@@ -38,14 +38,14 @@ end
 		CreateConVar(str,default, { FCVAR_REPLICATED, FCVAR_ARCHIVE }, helptext)
 		-- FCVAR_REPLICATED is not 100% accurate for some reason
 	end
-	AddConVar("sf_autopilot",0,"Try fix all problems on launch.")
+	AddConVar("sf_autopilot", game.SinglePlayer() and 1 or 0,"Try fix all problems on launch.")
 
 	AddConVar("sf_timespeed",60,"Seconds of gametime pr real second.")
 	AddConVar("sf_moonscale",6,"The scale of the moon.")
 	AddConVar("sf_moonphase",1,"Enable moon-phases.")
 	AddConVar("sf_enablefog",1,"Allow SF editing the fog.")
 	AddConVar("sf_weatherdebuffs",game.IsDedicated() and 0 or 1,"Enable weather debuffs/damage/impact.")
-	AddConVar("sf_windpush",game.IsDedicated() and 0 or 1,"Enable wind-push on props.")
+	AddConVar("sf_windpush",0,"Enable wind-push on props.")
 	AddConVar("sf_lightningbolts",1,"Enable lightning strikes.")
 	AddConVar("sf_enable_mapsupport",1,"Enable entity-support for maps.")
 	AddConVar("sf_sunmoon_yaw",270,"The sun/moon yaw.")
@@ -60,6 +60,11 @@ end
 	AddConVar("sf_block_lightenvdelete",1,"Set light_environment's targetname.")
 	AddConVar("sf_realtime",0,"Follow the local time.")
 	AddConVar("sf_foliagesway",1,"Enable foliagesway.")
+	AddConVar("sf_disableambient_sounds",0,"Disable map-ambient.")
+
+		local enable = engine.ActiveGamemode() == "sandbox"
+		if enable and game.IsDedicated() then enable = false end
+		AddConVar("sf_enable_ekstra_entsupport",enable and 1 or 0,"Update all entites on lightchange. Taxing for servers!")
 	--	AddConVar("sf_disable_autoweather_cold",0,"Disable autoweather creating snow.")
 	--	AddConVar("sf_sv_material_replacment",1,"Enable material-replacment for weather effects.")
 	--	AddConVar("sf_replacment_dirtgrassonly",0,"Only replace dirt and grass. (Useful on crazy maps)")
@@ -74,10 +79,11 @@ end
 		CreateClientConVar("sf_allow_dynamicshadow","0",true,false,"Enable dynamic light/shadows.")
 		CreateClientConVar("sf_dynamiclightamount","0",true,false,"Controls the dynamic-light amount.")
 		CreateClientConVar("sf_redownloadlightmaps","1",true,false,"Update lightmaps (Can lag on large maps)")
-		CreateClientConVar("sf_allow_raindrops","1",true,false,"Enable raindrops on the screen")
+		CreateClientConVar("sf_allow_raindrops","0",true,false,"Enable raindrops on the screen")
 		CreateClientConVar("sf_renderscreenspace_effects","1",true,false,"Enable RenderScreenspaceEffects")
 		CreateClientConVar("sf_useAInode","1",true,false,"Use AI nodes for more reliable sounds and effects.")
 		CreateClientConVar("sf_enable_breath","1",true,false,"Enable cold breath-effect.")
+		CreateClientConVar("sf_enable_windoweffect","1",true,false,"Enable raindrops on breakable windows.")
 	end
 -- Add resources
 	if SERVER then

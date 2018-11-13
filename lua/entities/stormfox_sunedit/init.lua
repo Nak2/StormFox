@@ -9,6 +9,9 @@ function ENT:Initialize()
 	self:SetUseType( ONOFF_USE )
 	self:SetBodygroup( 1, 1 )
 	self:SetMaterial( "stormfox/models/sun_edit" )
+
+	self:SetKeyValue("fademindist", 2000)
+	self:SetKeyValue("fademaxdist", 2000)
 end
 
 function ENT:SpawnFunction( ply, tr, ClassName )

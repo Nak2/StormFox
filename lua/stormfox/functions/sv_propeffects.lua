@@ -1,8 +1,6 @@
 local scan_id = 1
 local con = GetConVar("sf_windpush")
 local count = table.Count
-
-
 local max = math.max
 local windNorm,wind = Vector(0,0,1),0
 -- Mini functions

@@ -16,6 +16,8 @@ function ENT:Initialize()
 	self.lastT = SysTime() + 7
 	self.hp = 10
 	self.respawn = -1
+	self:SetKeyValue("fademindist", 2000)
+	self:SetKeyValue("fademaxdist", 2000)
 end
 
 function ENT:OnTakeDamage(cmd)

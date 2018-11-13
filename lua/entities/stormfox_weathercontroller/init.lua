@@ -12,6 +12,9 @@ function ENT:Initialize()
 	self:SetRenderMode(RENDERMODE_TRANSALPHA)
 	self:SetUseType( SIMPLE_USE )
 	self:SetNWString("W_C","")
+
+	self:SetKeyValue("fademindist", 2000)
+	self:SetKeyValue("fademaxdist", 2000)
 end
 
 function ENT:SpawnFunction( ply, tr, ClassName )

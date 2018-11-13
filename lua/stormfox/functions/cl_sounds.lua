@@ -110,10 +110,13 @@ hook.Add("StormFox - EnvUpdate","StormFox - WindSounds",function()
 	playSound("Wind",nn * 0.2,snd_windloop)
 end)
 
+local conVar = GetConVar("sf_disableambient_sounds")
 hook.Add("EntityEmitSound","StormFox BlockSounds",function(data)
---	if not StormFox.GetNetworkData("override_sounds") then return end
+	if not conVar then return end
+	if not conVar:GetInt() then return end
+	if not IsValid(data.Entity) then return end
 	if not data.Entity:IsWorld() then return end
-	if data.OriginalSoundName:sub(0,8) == "ambient/" then
-		return false
-	end
+	if data.OriginalSoundName:sub(0,8) ~= "ambient/" then return end
+
+	return false
 end)

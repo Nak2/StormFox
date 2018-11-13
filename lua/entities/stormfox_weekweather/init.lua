@@ -12,6 +12,9 @@ function ENT:Initialize()
 	self._Freedom = false
 	self:SetUseType( SIMPLE_USE )
 	self:SetRenderMode(RENDERMODE_TRANSALPHA)
+
+	self:SetKeyValue("fademindist", 2000)
+	self:SetKeyValue("fademaxdist", 2000)
 end
 function ENT:Use()
 	self._Freedom = not self._Freedom

@@ -52,6 +52,13 @@ Misc
 			- sf_useAInode
 
 ---------------------------------------------------------------------------]]	
+concommand.Add("sf_opensettings",function()
+	net.Start("sf_mapsettings")
+		net.WriteString("menu")
+		net.WriteInt(-1,4)
+	net.SendToServer()
+end,nil,"Opens the server-settings.")
+
 local cos,sin,rad = math.cos,math.sin,math.rad
 local settingList = {}
 local mapsettingList = {}
@@ -147,7 +154,7 @@ local function serverMapToggle(parent,setting)
 	end
 	return p
 end
-function StormFox.OpenServerSettings()
+function StormFox.OpenServerSettings( open_panel )
 	if _STORMFOX_CLMENU then
 		_STORMFOX_CLMENU:Remove()
 	end
@@ -187,7 +194,7 @@ function StormFox.OpenServerSettings()
 		surface.SetDrawColor(Color(c.r,c.g,c.b,255))
 		surface.DrawRect(0,0,w,h)
 	end
-	local l = {"Time","Weather", "Misc", "Troubleshooting","Changelog"}
+	local l = {"Time","Weather", "Misc", "Troubleshooting","Map Browser","Changelog"}
 
 	menu.buttons = {}
 	menu.board = {}
@@ -478,7 +485,7 @@ function StormFox.OpenServerSettings()
 						l:SizeToContentsX(5)
 						l:SetTall(20)
 				-- Adv light
-					local t = makeTitle(panel,"Adv Light")
+					local t = makeTitle(panel,"Adv light options")
 					t:SetSize(340,20)
 					t:SetPos(0,10 + element_size * 11)
 				-- Extra lightsupport
@@ -489,9 +496,25 @@ function StormFox.OpenServerSettings()
 						label:SizeToContentsX(5)
 						label:SetTall(20)
 						local warning =  mgui.Create("Label",panel)
-						warning:SetText("Warning! Will lag on large maps and slow clients.")
+						warning:SetText("Warning! Can lag on some clients.")
 						warning:SetPos(30 + el:GetWide(),10 + element_size * 13)
 						warning:SizeToContentsX(2)
+				-- sf_enable_ekstra_entsupport
+					local el,label = serverToggle(panel,"sf_enable_ekstra_entsupport")
+						el:SetPos(20,10 + element_size * 14)
+						label:SetPos(30 + el:GetWide(),10 + element_size * 14)
+						label:SetText(label:GetText())
+						label:SizeToContentsX(5)
+						label:SetTall(20)
+						local warning =  mgui.Create("Label",panel)
+						warning:SetText("Warning! Servers don't like this. Might break physic-games.")
+						warning:SetPos(30 + el:GetWide(),10 + element_size * 15)
+						warning:SizeToContentsX(2)
+				-- Space
+					local p = mgui.Create("DPanel",panel)
+					p:SetSize(10,10)
+					p:SetPos(0,10 + element_size * 17)
+					function p:Paint() end
 		-- Weather
 			local panel = menu.board["Weather"]
 				local t = makeTitle(panel,"Weather")
@@ -733,9 +756,7 @@ function StormFox.OpenServerSettings()
 				end)
 				auto_weather:AddEvent("sf_windpush_set",function(self,b)
 					self:SetDisabled(not b)
-				end)
-
-				
+				end)				
 			-- Disable foliagesway
 				local foliagesway,label = serverToggle(panel,"sf_foliagesway")
 				element_id = element_id + 1
@@ -743,7 +764,12 @@ function StormFox.OpenServerSettings()
 				
 				label:SetPos(30 + realtime:GetWide(),10 + element_size * element_id)
 				label:SetTall(realtime:GetTall())
-
+			-- Space
+				element_id = element_id + 2
+				local p = mgui.Create("DPanel",panel)
+				p:SetSize(10,10)
+				p:SetPos(0,10 + element_size * element_id)
+				function p:Paint() end
 		-- Misc
 			local panel = menu.board["Misc"]
 			local t = makeTitle(panel,"Map")
@@ -767,34 +793,40 @@ function StormFox.OpenServerSettings()
 				label:SetPos(30 + realtime:GetWide(),10 + element_size * 3)
 				label:SetTall(realtime:GetTall())
 				label:SizeToContentsX(5)
-			local t = makeTitle(panel,"Clients")
-					t:SetSize(340,20)
-					t:SetPos(0,element_size * 4 + 10)
-			-- Disable 
-				local auto_weather,label = serverToggle(panel,"sf_allowcl_disableeffects")
-				auto_weather:SetPos(20,10 + element_size * 5)
-				label:SetPos(30 + realtime:GetWide(),10 + element_size * 5)
+			--sf_disableambient_sounds
+				local auto_weather,label = serverToggle(panel,"sf_disableambient_sounds")
+				auto_weather:SetPos(20,10 + element_size * 4)
+				label:SetPos(30 + realtime:GetWide(),10 + element_size * 4)
 				label:SetTall(realtime:GetTall())
 				label:SizeToContentsX(5)
+			local t = makeTitle(panel,"Clients")
+					t:SetSize(340,20)
+					t:SetPos(0,element_size * 5 + 10)
 			-- Disable 
-				local auto_weather,label = serverToggle(panel,"sf_enable_mapbrowser")
+				local auto_weather,label = serverToggle(panel,"sf_allowcl_disableeffects")
 				auto_weather:SetPos(20,10 + element_size * 6)
 				label:SetPos(30 + realtime:GetWide(),10 + element_size * 6)
 				label:SetTall(realtime:GetTall())
 				label:SizeToContentsX(5)
+			-- Disable 
+				local auto_weather,label = serverToggle(panel,"sf_enable_mapbrowser")
+				auto_weather:SetPos(20,10 + element_size * 7)
+				label:SetPos(30 + realtime:GetWide(),10 + element_size * 7)
+				label:SetTall(realtime:GetTall())
+				label:SizeToContentsX(5)
 			local t = makeTitle(panel,"Other")
 					t:SetSize(340,20)
-					t:SetPos(0,element_size * 7 + 10)
+					t:SetPos(0,element_size * 8 + 10)
 			-- Disable 
 				local auto_weather,label = serverToggle(panel,"sf_debugcompatibility")
-				auto_weather:SetPos(20,10 + element_size * 8)
-				label:SetPos(30 + realtime:GetWide(),10 + element_size * 8)
+				auto_weather:SetPos(20,10 + element_size * 9)
+				label:SetPos(30 + realtime:GetWide(),10 + element_size * 9)
 				label:SetTall(realtime:GetTall())
 				label:SizeToContentsX(5)
 			-- Disable 
 				local auto_weather,label = serverToggle(panel,"sf_weatherdebuffs")
-				auto_weather:SetPos(20,10 + element_size * 9)
-				label:SetPos(30 + realtime:GetWide(),10 + element_size * 9)
+				auto_weather:SetPos(20,10 + element_size * 10)
+				label:SetPos(30 + realtime:GetWide(),10 + element_size * 10)
 				label:SetTall(realtime:GetTall())
 				label:SizeToContentsX(5)
 				--[[
@@ -874,12 +906,21 @@ function StormFox.OpenServerSettings()
 					problemlist:AddEvent("SF_SVMenu_Select",function(self)
 						self:UpdateList()
 					end)
+		-- Map Browser
+			menu.buttons[5].DoClick = function()
+				LocalPlayer():EmitSound("ui/buttonclickrelease.wav")
+				RunConsoleCommand("sf_open_mapbrowser")
+			end
 		-- Changelog
 			--local panel = menu.board["Changelog"]
-			menu.buttons[5].DoClick = function()
+			menu.buttons[6].DoClick = function()
 				gui.OpenURL("https://steamcommunity.com/sharedfiles/filedetails/changelog/1132466603")
 			end
-	menu.buttons[math.Clamp(cookie.GetNumber("SF-MenuOption",1),1,5)]:DoClick()
+	local openId = open_panel or -1
+	if openId <= 0 then 
+		openId = math.Clamp(cookie.GetNumber("SF-MenuOption",1),1,5)
+	end
+	menu.buttons[openId]:DoClick()
 	-- Trigger settings
 		for setting,t in pairs(settingList) do
 			local c = GetConVar(setting)
@@ -906,10 +947,18 @@ end
 	AddCommenProblem(function()
 		local mapsize = StormFox.MapOBBMaxs() - StormFox.MapOBBMins()
 		local unit = mapsize:Length()
-		return unit > 20000 and convar_check("sf_enable_ekstra_lightsupport",1) 
+		if unit <= 20000 then return false end -- Too small map
+		return StormFox.GetNetworkData("has_light_environment",false) and convar_check("sf_enable_ekstra_lightsupport",1)
 		end,"Ekstra lightsupport on large maps, can lag clients and cause problems.",function()
 		StormFox.SetConvarSetting("sf_enable_ekstra_lightsupport",0)
 	end)
+	-- sf_enable_ekstra_lightsupport on huge maps (No fix)
+	AddCommenProblem(function()
+		local mapsize = StormFox.MapOBBMaxs() - StormFox.MapOBBMins()
+		local unit = mapsize:Length()
+		if unit <= 20000 then return false end -- Too small map
+		return not StormFox.GetNetworkData("has_light_environment",false) and convar_check("sf_enable_ekstra_lightsupport",1)
+		end,"Map requires ekstra lightsupport, this will lag some clients. (No fix)",function() end)
 	-- No light_environment and no ekstra lightsupport
 	AddCommenProblem(function()
 		return not StormFox.GetNetworkData("has_light_environment",false) and convar_check("sf_enable_ekstra_lightsupport",0) 

@@ -19,7 +19,6 @@ local function createFlame(self)
 		p:SetStartAlpha(200)
 		p:SetVelocity(Vector(0,0,1) + self:GetVelocity() / 3 )
 		p:SetRoll(ran(360))
-
 end
 
 local mat = Material("models/effects/vol_light001")
@@ -37,7 +36,16 @@ function ENT:Draw()
 	render.MaterialOverrideByIndex()
 end
 
+local function GetDis(ent)
+	if (ent.time_dis or 0) > CurTime() then return ent.time_dis_v or 0 end
+		ent.time_dis = CurTime() + 1
+	if not LocalPlayer() then return 0 end
+	ent.time_dis_v = LocalPlayer():GetShootPos():DistToSqr(ent:GetPos())
+	return ent.time_dis_v
+end
 function ENT:Think()
+	if GetDis(self) > 4500000 then return end
+
 	if (self.nextFlame or 0) > CurTime() then return end
 	local ml = StormFox.GetData("MapLight",100)
 	--if ml > 18 then return end
@@ -62,7 +70,7 @@ function ENT:Think()
 			dlight.b = c.b
 			dlight.brightness = 5 - (ml / 10)
 			dlight.Decay = 0
-			dlight.Size = 256 * (2 - (ml / 100))
+			dlight.Size = 192 * (2 - (ml / 200))
 			dlight.DieTime = self.t2 + 0.5
 		end
 	end

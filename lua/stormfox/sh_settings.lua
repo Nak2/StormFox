@@ -71,9 +71,11 @@ if SERVER then
 				StormFox.SetMapSetting(key,var)
 			end)
 		elseif msg == "menu" then
+			local n = net.ReadInt(4)
 			StormFox.CanEditMapSetting(ply,function()
 				net.Start("sf_mapsettings")
 					net.WriteString("openmenu")
+					net.WriteInt(n,4)
 				net.Send(ply)
 			end)
 		elseif msg == "setconvar" then
@@ -92,7 +94,8 @@ else
 			local var = net.ReadType()
 			mapSettings[key] = var
 		elseif msg == "openmenu" then
-			StormFox.OpenServerSettings()
+			local n = net.ReadInt(4)
+			StormFox.OpenServerSettings(n)
 		end
 	end)
 	function StormFox.SetConvarSetting(con,var)

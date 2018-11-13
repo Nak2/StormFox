@@ -49,6 +49,8 @@ end
 local ran,rand = math.random,math.Rand
 function ENT:Think()
 	if not StormFox then return end
+	if not self.rendered then return end
+	self.rendered = false
 	if self:GetColor().r ~= 255 then self.ES = 1 return end
 	self.ES = ran(0.2,0.3)
 	if self.t2 <= CurTime() then
@@ -72,7 +74,7 @@ function ENT:Think()
 	end
 	local r = math.Rand(0.2,0.4)
 		self.t = CurTime() + r
-	local wind = StormFox.GetNetworkData("Wind",0)
+	local wind = StormFox.GetNetworkData("Wind",0) * 0.75
 	if wind > 20 then wind = 20 end
 	local windangle = Angle(0,StormFox.GetNetworkData("WindAngle",270),0)
 
@@ -123,6 +125,7 @@ function ENT:Draw()
 		self.Bottom = ClientsideModel("models/props_debris/concrete_floorpile01a.mdl",RENDERGROUP_OPAQUE)
 	end
 	self.Bottom:DrawModel()
+	self.rendered = true
 	render.SetColorModulation(1,1,1)
 	-- Repair rocks
 	for i,ent in ipairs(self.Rocks) do
