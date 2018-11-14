@@ -84,6 +84,7 @@ end
 		CreateClientConVar("sf_useAInode","1",true,false,"Use AI nodes for more reliable sounds and effects.")
 		CreateClientConVar("sf_enable_breath","1",true,false,"Enable cold breath-effect.")
 		CreateClientConVar("sf_enable_windoweffect","1",true,false,"Enable raindrops on breakable windows.")
+		CreateClientConVar("sf_enable_windoweffect_enable_tr","1",true,false,"Check if rain hits the breakable windows.")
 	end
 -- Add resources
 	if SERVER then

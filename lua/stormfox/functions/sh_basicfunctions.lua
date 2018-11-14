@@ -1,18 +1,30 @@
 --[[-------------------------------------------------------------------------
-	This is some easy shared functions to help SF-addons and other varables.
+	This is some easy shared functions to help SF-addons and with other varables.
 ---------------------------------------------------------------------------]]
 local clamp = math.Clamp
-local min,max = math.min,math.max
+local min,max,sqrt = math.min,math.max,math.sqrt
 local mad = math.AngleDifference
 
-local function ColorMixer(c1,c2) -- c2 alpha controls the color applied
-	local c2a = c2.a / 255
-	local c2an = 1 - c2a
-	local r = c1.r * c2an + c2.r * c2a
-	local g = c1.g * c2an + c2.g * c2a
-	local b = c1.b * c2an + c2.b * c2a
-	return Color(r,g,b,c1.a)
-end
+-- Local functions
+	local function ColorMixer(c1,c2) -- c2 alpha controls the color applied
+		local c2a = c2.a / 255
+		local c2an = 1 - c2a
+		local r = c1.r * c2an + c2.r * c2a
+		local g = c1.g * c2an + c2.g * c2a
+		local b = c1.b * c2an + c2.b * c2a
+		return Color(r,g,b,c1.a)
+	end
+
+	local function ET(pos,pos2,mask,filter)
+		local t = util.TraceLine( {
+			start = pos,
+			endpos = pos + pos2,
+			mask = mask,
+			filter = filter
+			} )
+		t.HitPos = t.HitPos or (pos + pos2)
+		return t,t.HitSky
+	end
 
 -- Time functions
 	function StormFox.IsNight()
@@ -65,7 +77,6 @@ end
 			bfs[50] = "Category 3"
 			bfs[58] = "Category 4"
 			bfs[70] = "Category 5"
-
 		local bfkey = table.GetKeys(bfs)
 		table.sort(bfkey,function(a,b) return a < b end)
 	function StormFox.GetBeaufort(ms)
@@ -249,5 +260,90 @@ end
 			return ccc,aaa
 		end
 
--- StormFox.GetData("SunColor", Color(255,255,255))
--- StormFox.GetData("MoonColor",Color(205,205,205))
+-- Wind functions
+	local windNorm = Vector(0,0,1)
+	local windVec = Vector(0,0,0)
+	local wind = 0
+	timer.Create("StormFox - WindUpdater",1,0,function()
+		wind = StormFox.GetNetworkData("Wind",0) * 0.75
+		local windangle = StormFox.GetNetworkData("WindAngle",0)
+		windNorm = Angle( 90 - sqrt(wind) * 10 ,windangle,0):Forward()
+
+		windVec.x = windNorm.x
+		windVec.y = windNorm.y
+		windNorm:Normalize()
+	end)
+	function StormFox.GetWindNorm()
+		return windNorm
+	end
+	function StormFox.GetWindXY()
+		return windVec
+	end
+	local max_dis = 32400
+	function StormFox.IsVectorInWind(vec ,filter )
+		local tr = ET(vec, windNorm * -640000, MASK_SHOT, filter)
+		local hitSky = tr.HitSky
+		local dis = tr.HitPos:DistToSqr( vec )
+		if not hitSky and dis >= max_dis then -- So far away. The wind would had gone around. Check if we're outside.
+			local tr = ET(vec,Vector(0,0,640000),MASK_SHOT,filter)
+			hitSky = tr.HitSky
+		end
+		return hitSky,tr
+	end
+	local e_pos = function(ent)
+		if ent:IsPlayer() then
+			return ent:GetShootPos()
+		else
+			return ent:OBBCenter() + ent:GetPos()
+		end
+	end
+	-- Checks if the entity is in the wind (or rain)
+	function StormFox.IsEntityInWind(ent,dont_cache)
+		if not dont_cache then
+			if ent.sf_wind_var then
+				if ent.sf_wind_var[2] > CurTime() then
+					return ent.sf_wind_var[1],windNorm
+				end
+			else
+				ent.sf_wind_var = {}
+			end
+		end
+		local pos = ent:OBBCenter() + ent:GetPos()
+		local tr = ET(pos, windNorm * -640000, MASK_SHOT, ent)
+		local hitSky = tr.HitSky
+		local dis = tr.HitPos:DistToSqr( pos )
+		if not hitSky and dis >= max_dis then -- So far away. The wind would had gone around. Check if we're outside.
+			local tr = ET(pos,Vector(0,0,640000),MASK_SHOT,ent)
+			hitSky = tr.HitSky
+		end
+		if not dont_cache then
+			ent.sf_wind_var[1] = hitSky
+			ent.sf_wind_var[2] = CurTime() + 1
+		end
+		return hitSky,windNorm
+	end
+	-- Checks if the entity is outside (It can still be shield by a prop above)
+	function StormFox.IsEntityOutside(ent,dont_cache)
+		if not dont_cache then
+			if ent.sf_outside_var then
+				if ent.sf_outside_var[2] > CurTime() then
+					return ent.sf_outside_var[1],windNorm
+				end
+			else
+				ent.sf_outside_var = {}
+			end
+		end
+		local pos = e_pos(ent)
+		local tr = ET(pos, windNorm * -640000, MASK_SHOT, ent)
+		local hitSky = tr.HitSky
+		local dis = pos:DistToSqr( Vector(tr.HitPos.x,tr.HitPos.y,pos.z) )
+		if not hitSky then -- Check trace up
+			local tr = ET(pos,Vector(0,0,640000),MASK_SHOT,ent)
+			hitSky = tr.HitSky
+		end
+		if not dont_cache then
+			ent.sf_outside_var[1] = hitSky
+			ent.sf_outside_var[2] = CurTime() + 1
+		end
+		return hitSky,windNorm
+	end

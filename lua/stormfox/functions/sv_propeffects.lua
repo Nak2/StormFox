@@ -1,67 +1,57 @@
 local scan_id = 1
 local con = GetConVar("sf_windpush")
 local count = table.Count
-local max = math.max
-local windNorm,wind = Vector(0,0,1),0
--- Mini functions
-	local function ET(pos,pos2,mask,filter)
-		local t = util.TraceLine( {
-			start = pos,
-			endpos = pos + pos2,
-			mask = mask,
-			filter = filter
-			} )
-		t.HitPos = t.HitPos or (pos + pos2)
-		return t,t.HitSky
+local max,abs,min = math.max,math.abs,math.min
+
+local function GetEffectedEntities()
+	local tab = {}
+	for _,ent in pairs(ents.GetAll()) do
+		if not IsValid(ent) then continue end
+		local class = ent:GetClass()
+		if string.match(class,"^prop_") or string.match(class,"^gmod_") or string.match(class,"npc_grenade_frag") then
+			table.insert(tab,ent)
+		end
 	end
-	timer.Create("StormFox - WindPushUpdater",1,0,function()
-		wind = StormFox.GetNetworkData("Wind",0)
-		local windangle = StormFox.GetNetworkData("WindAngle",0)
-		windNorm = Angle(0,windangle,0):Forward() * -wind
-		windNorm.z = windNorm.z + max(wind * 0.4,1)
-		windNorm:Normalize()
-	end)
-	local function GetEffected()
-		local t = ents.FindByClass("prop_*")
-		table.Add(t,ents.FindByClass("gmod_*"))
-		table.Add(t,ents.FindByClass("npc_grenade_frag"))
-		return t
-	end
+	return tab
+end
 
 local move_tab = {}
 -- Function
-	function InWind(ent)
-		if wind <= 6 then return end
-		local tr = ET(ent:GetPos(),windNorm * 640000,MASK_SHOT,ent)
-		return tr.HitSky,windNorm
-	end
-	local function CheckProp(ent) -- Check and add into "Move props" table
-		if not ent then return end
-		if wind <= 6 then return end
-		if not IsValid(ent) then return end
-		if move_tab[ent] then return end -- Already in
-		if not IsValid(ent:GetPhysicsObject()) then return end -- No physics
-		if not ent:GetPhysicsObject():IsMoveable() and wind <= 20 then return end -- Ignore
-		if InWind(ent) then
-			move_tab[ent] = 40
+	-- Check if we can move the entity
+		local function CanMoveEnt(ent,wind,breakconstraints)
+			local pys = ent:GetPhysicsObject()
+			if not IsValid(pys) then return false end
+			if not pys:IsMoveable() and not (breakconstraints or wind < 20) then
+				return false
+			end
+			if not StormFox.IsEntityInWind(ent) then return false end
 			return true
 		end
-		return false
-	end
+	-- Check and add into "Move props" table
+		local function CheckProp(ent,wind,breakconstraints) 
+			if not ent then return end
+			if not IsValid(ent) then return end
+			if move_tab[ent] then return end -- Already in
+			if not IsValid(ent:GetPhysicsObject()) then return end -- No physics
+			if not CanMoveEnt(ent,wind,breakconstraints) then return end
+				move_tab[ent] = 20
+		end
 
 -- Scan for props to be effected
 	local scanList,index = {},0
 	timer.Create("StormFox - ScanProps",1,0,function()
 		if count(move_tab) > 400 then return end
+		local wind = StormFox.GetNetworkData("Wind",0)
+		local breakconstraints = StormFox.GetMapSetting("wind_breakconstraints",true)
 		if not scanList[index] then
 			-- Create scanlist
-			scanList = GetEffected()
+			scanList = GetEffectedEntities()
 			index = 1
 		else
 			-- Scan scanlist
 			for i = index,index + 100 do
 				if scanList[index] then
-					CheckProp(scanList[index])
+					CheckProp(scanList[index],wind,breakconstraints)
 					index = index + 1
 				else
 					break
@@ -74,7 +64,9 @@ local move_tab = {}
 hook.Add("PlayerSpawnedProp","StormFox - PropCreate",function(ply,model,ent)
 	if not con:GetBool() then return end
 	if not IsValid(ent) then return end
-	CheckProp(ent)
+	local wind = StormFox.GetNetworkData("Wind",0)
+	local breakconstraints = StormFox.GetMapSetting("wind_breakconstraints",true)
+		CheckProp(ent,wind,breakconstraints)
 end)
 
 -- Effect props
@@ -83,46 +75,59 @@ hook.Add("Think","StormFox - EffectProps",function()
 	if not con:GetBool() then return end
 	--local constraint = StormFox.GetMapSetting("wind_breakconstraints",true)
 	local r = {}
-	for ent,v in pairs(move_tab) do
-		if not ent or not IsValid(ent) then
+	local wind = StormFox.GetNetworkData("Wind",0)
+	local breakconstraints = StormFox.GetMapSetting("wind_breakconstraints",false)
+	local windnorm = StormFox.GetWindNorm()
+	if wind <= 0 then 
+		table.Empty(move_tab)
+		return 
+	end
+	for ent,fall_safe in pairs(move_tab) do
+		if not ent or not IsValid(ent) then 	-- Check if valid
 			-- Remove ent
 			table.insert(r,ent)
-		elseif not InWind(ent) then
-			-- Check
-			if move_tab[ent] < 1 then
-				-- Remove ent
-				table.insert(r,ent)
-			else
-				move_tab[ent] = move_tab[ent] - 1
-			end
-		else -- Move prop
-			move_tab[ent] = 10
-			-- Get prop data
-				local pys = ent:GetPhysicsObject()
-				if not IsValid(pys) then -- SOMETHING IS WRONG!
-					table.insert(r,ent) -- Remove asap
-					break
+		elseif not CanMoveEnt(ent,wind,breakconstraints) then -- Check if in wind.
+			-- Check fall_safe
+				if fall_safe < 1 then
+					table.insert(r,ent)
+				else
+					move_tab[ent] = fall_safe - 1
 				end
+		else -- Move prop
+			local pys = ent:GetPhysicsObject()
+			if not IsValid(pys) then -- SOMETHING IS WRONG!
+				table.insert(r,ent) -- Remove asap
+				continue
+			end
+			-- Get prop data
 				local vol = pys:GetSurfaceArea()
 				if not vol then
 					table.insert(r,ent) -- Remove asap
-					break
+					continue
 				end
-			if constraint then
-				-- Undfreeze if wind > 20
-					if not pys:IsMoveable() and wind > 20 then
-						pys:EnableMotion(true)
-					end
-				-- Unweld if wind > 30
-					if wind > 30 and constraint.FindConstraint( ent, "Weld" ) then
-						ent:EmitSound("physics/wood/wood_box_break" .. math.random(1,2) .. ".wav")
-						constraint.RemoveConstraints( ent, "Weld" )
-					end
+
+			if breakconstraints then
+			-- Unfreese/unweld
+				if not pys:IsMoveable() and wind > 20 then
+					pys:EnableMotion(true)
+				end
+			-- Unweld if wind > 30
+				if wind > 30 and constraint.FindConstraint( ent, "Weld" ) then
+					ent:EmitSound("physics/wood/wood_box_break" .. math.random(1,2) .. ".wav")
+					constraint.RemoveConstraints( ent, "Weld" )
+				end
 			end
 			-- Do movement
-			local pNeeded = vol / 13
+		--	if ent:GetModel() ~= "models/props_lab/blastdoor001c.mdl" then continue end
+			local windPush = windnorm * 5.92 * (vol / 50)
+			local Acc = windPush:Length() / pys:GetMass()
+			local windRequ = pys:GetInertia()
+				windRequ = max(windRequ.x,windRequ.y)-- * pys:GetMass()
+			if max(abs(windPush.x),abs(windPush.y)) < windRequ then
+				continue
+			end
 				pys:Wake()
-				pys:ApplyForceCenter(-windNorm * pNeeded)
+				pys:ApplyForceCenter(windPush)
 			-- Take damage (To stop all the wood props)
 				if not ent:IsVehicle() and t <= CurTime() and wind > 40 then
 					t3 = CurTime() + 0.5

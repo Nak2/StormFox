@@ -71,7 +71,7 @@ end
 				pos3 = arr[2]
 				pos4 = arr[3]
 		-- Create some useful varables
-			local size = pos2 - pos
+			local size = pos3 - pos
 			local center = pos + size / 2
 			local ang = (pos2 - pos):Angle()
 			local w = pos:Distance(pos4)
@@ -98,6 +98,20 @@ end
 			ent.sf_vars.h = h
 			ent.sf_vars.verts = verts
 			ent.sf_vars.verts2 = verts2
+			ent.sf_vars.entity = ent
+	end
+-- Check if the window is in the wind
+	local convar = GetConVar("sf_enable_windoweffect_enable_tr")
+	local function IsWindowInRain( data, ent )
+		if (ent.sf_inwindowcost or 0) > CurTime() then return ent.sf_inwindow or false end
+			ent.sf_inwindowcost = CurTime() + 4
+		if not convar:GetBool() then
+			ent.sf_inwindow = true
+			return true
+		end
+		--verts  then
+		ent.sf_inwindow = StormFox.IsVectorInWind( data.center , ent )
+		return ent.sf_inwindow
 	end
 -- Draw rain on windows
 	local t = {} -- List of windows to render stuff on
@@ -111,8 +125,10 @@ end
 			if not CheckSettings() then return end
 		-- Only trigger this in semi-heavy rain
 			if StormFox.GetData("Gauge",10) <= 5 then return end 
-		local p = LocalPlayer():GetPos()
+		local p = LocalPlayer():GetShootPos()
 		for _,ent in pairs(ents.FindByClass("func_breakable_surf")) do
+			-- Check health
+				if ent:Health() <= 0 then continue end
 			-- Check if there are any useful varables
 				if not ent.sf_vars then
 					HandleVarablesWindow(ent)
@@ -122,12 +138,15 @@ end
 				local dis = p:DistToSqr(ent.sf_vars.center)
 				ent.sf_vars.dis = dis
 				if dis > 90000 then continue end
+			-- Check if its in the wind
+				if not IsWindowInRain(ent.sf_vars,ent) then return end
 			table.insert(t,ent) -- Add the window to the list
 		end
 	end)
 -- Check if all varables is valid. This is to protect the mesh from causing errors.
 	local function CheckValid(data) -- Mesh errors will ruin the whole game. Better get it right.
 		if not data.dis then return false end
+		if not data.entity then return false end
 		if not data.center then return false end
 		if not data.verts then return false end
 		if not data.verts2 then return false end
@@ -179,8 +198,8 @@ end
 					mesh.TexCoord( 0, verts.u, verts.v ) -- Set the texture UV coordinates
 					mesh.AdvanceVertex() -- Write the vertex
 				end
-				b = false
 				mesh.End()
+				b = false
 		end
 	end)
 
