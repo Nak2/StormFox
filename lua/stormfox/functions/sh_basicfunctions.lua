@@ -269,14 +269,13 @@ local mad = math.AngleDifference
 		local windangle = StormFox.GetNetworkData("WindAngle",0)
 		windNorm = Angle( 90 - sqrt(wind) * 10 ,windangle,0):Forward()
 
-		windVec.x = windNorm.x
-		windVec.y = windNorm.y
+		windVec = windNorm * wind
 		windNorm:Normalize()
 	end)
 	function StormFox.GetWindNorm()
 		return windNorm
 	end
-	function StormFox.GetWindXY()
+	function StormFox.GetWindVector()
 		return windVec
 	end
 	local max_dis = 32400
@@ -346,4 +345,9 @@ local mad = math.AngleDifference
 			ent.sf_outside_var[2] = CurTime() + 1
 		end
 		return hitSky,windNorm
+	end
+	-- Checks if the entity is in rain
+	function StormFox.IsEntityInRain( ent, dont_cache )
+		if StormFox.GetData("Gauge",0) <= 0 then return false end
+		return StormFox.IsEntityOutside(ent,dont_cache)
 	end

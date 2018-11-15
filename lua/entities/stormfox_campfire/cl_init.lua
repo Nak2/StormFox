@@ -61,7 +61,7 @@ function ENT:Think()
 			dlight.r = 255
 			dlight.g = ran(155,255)
 			dlight.b = 0
-			dlight.brightness = 5 - (StormFox.GetData("MapLight",0) / 100) * 4
+			dlight.brightness = 2 - (StormFox.GetData("MapLight",0) / 100) * 4
 			dlight.Decay = 0
 			dlight.Size = 256 * 3
 			dlight.DieTime = self.t2

@@ -68,7 +68,7 @@ function ENT:Think()
 			dlight.r = c.r
 			dlight.g = c.g
 			dlight.b = c.b
-			dlight.brightness = 5 - (ml / 10)
+			dlight.brightness = 3 - (ml / 40)
 			dlight.Decay = 0
 			dlight.Size = 192 * (2 - (ml / 200))
 			dlight.DieTime = self.t2 + 0.5

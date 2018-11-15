@@ -8,7 +8,7 @@ local function GetEffectedEntities()
 	for _,ent in pairs(ents.GetAll()) do
 		if not IsValid(ent) then continue end
 		local class = ent:GetClass()
-		if string.match(class,"^prop_") or string.match(class,"^gmod_") or string.match(class,"npc_grenade_frag") then
+		if string.match(class,"^prop_") or string.match(class,"^gmod_") or string.match(class,"npc_grenade_frag") or class == "sent_ball" then
 			table.insert(tab,ent)
 		end
 	end
