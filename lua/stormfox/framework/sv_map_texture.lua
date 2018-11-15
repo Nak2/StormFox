@@ -3,9 +3,13 @@ local mat_version = 0.7
 local mat_table = {}
 util.AddNetworkString("StormFox - mapdata")
 
+-- Alright mr ClockWork guy. This is my file.read and file.write.
+local file_read = file.Read
+local file_write = file.Write
+
 local function CheckMapData() -- Check if the current data is valid
 	if file.Exists("stormfox/maps/" .. game.GetMap() .. ".txt","DATA") then
-		local f_data = file.Read("stormfox/maps/" .. game.GetMap() .. ".txt","DATA")
+		local f_data = file_read("stormfox/maps/" .. game.GetMap() .. ".txt","DATA")
 		mat_table = util.JSONToTable(f_data)
 		if not mat_table then
 			StormFox.Msg("Corrupt mapdata detected. Deleting")
@@ -236,7 +240,7 @@ end
 		print("	Locating map-materials ...")
 		-- Scan for map materials
 			local materials = {}
-			local filedata = file.Read("maps/" .. game.GetMap() .. ".bsp","GAME") -- Takes aaaagggeeeess
+			local filedata = file_read("maps/" .. game.GetMap() .. ".bsp","GAME") -- Takes aaaagggeeeess
 			local matlist = string.match(filedata,"%s([^%s]+TOOLS%/TOOLSNODRAW[^%s]+)") or filedata
 			local p = ""
 			for w in string.gmatch( matlist, "[%a%d%_-/]+/[%a%d%_-/]+" ) do
@@ -284,7 +288,7 @@ end
 					end
 				end
 			end
-		file.Write("stormfox/maps/" .. game.GetMap() .. ".txt",util.TableToJSON(mat_table))
+		file_write("stormfox/maps/" .. game.GetMap() .. ".txt",util.TableToJSON(mat_table))
 		print(" Saved new mapdata.")
 	end
 	local function compress()
@@ -307,7 +311,8 @@ local function LoadMapdata()
 	end
 	updateData()
 end
-timer.Simple(2,LoadMapdata)
+LoadMapdata()
+--timer.Simple(2,LoadMapdata)
 
 function StormFox.GetMapMaterials()
 	return mat_table
