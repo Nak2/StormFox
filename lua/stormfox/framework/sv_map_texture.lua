@@ -16,7 +16,7 @@ local function CheckMapData() -- Check if the current data is valid
 			file.Delete("stormfox/maps/" .. game.GetMap() .. ".txt")
 			mat_table = nil
 			return false
-		elseif (mat_table.version or 0) ~= mat_version then
+		elseif (mat_table.version or 0) < mat_version then
 			StormFox.Msg("Old mapdata detected. Deleting ..")
 			file.Delete("stormfox/maps/" .. game.GetMap() .. ".txt")
 			mat_table = nil
@@ -321,8 +321,16 @@ local function LoadMapdata()
 	end
 	updateData()
 end
-LoadMapdata()
---timer.Simple(2,LoadMapdata)
+-- Load the mapdata on initpost .. or within 2 seconds
+	local b = false
+	hook.Add("InitPostEntity","StormFox - loadMapData",function()
+		b = true
+		LoadMapdata()
+	end)
+	timer.Simple(2,function()
+		if b then return end
+		LoadMapdata()
+	end)
 
 function StormFox.GetMapMaterials()
 	return mat_table
