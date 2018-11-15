@@ -19,6 +19,7 @@ local move_tab = {}
 -- Function
 	-- Check if we can move the entity
 		local function CanMoveEnt(ent,wind,breakconstraints)
+			if not StormFox.IsEntityInWind then return end
 			local pys = ent:GetPhysicsObject()
 			if not IsValid(pys) then return false end
 			if not pys:IsMoveable() and not (breakconstraints or wind < 20) then

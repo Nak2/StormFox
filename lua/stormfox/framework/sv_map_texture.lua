@@ -1,5 +1,5 @@
 
-local mat_version = 0.7
+local mat_version = 0.9
 local mat_table = {}
 util.AddNetworkString("StormFox - mapdata")
 
@@ -196,14 +196,24 @@ end
 			end
 		end
 		local mat = Material(str)
-		local tex1,tex2 = mat:GetTexture("$basetexture"),mat:GetTexture("$basetexture2")
-		if not tex1 then
+		if not mat then return nil,nil,"Unknown" end
+
+		local m_data = mat:GetKeyValues()
+		local tex1,tex2 = m_data["$basetexture"],m_data["$basetexture2"]
+		if not tex1 or type(tex1) == "number" then
 			return nil,nil,"Unknown"
 		end
-		if not tex2 then
-			return mapType(tex1:GetName()),nil,"t1"
+		-- Servers return this a string. Clients as a texture.
+			if type(tex1)~="string" then
+				tex1 = tex1:GetName()
+			end
+		if not tex2 or type(tex2) == "number" then
+			return mapType(tex1),nil,"t1"
 		end
-		return mapType(tex1:GetName()),mapType(tex2:GetName()),"r"
+		if type(tex2)~="string" then
+			tex2 = tex2:GetName()
+		end
+		return mapType(tex1),mapType(tex2),"r"
 	end
 	local function isBranch(fil_name)
 		local branch = false

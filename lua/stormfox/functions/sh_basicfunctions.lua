@@ -51,6 +51,17 @@ local mad = math.AngleDifference
 		return cos(rad(a * 1.5))
 	end
 
+	function StormFox.IsTimeBetween(from,to)
+		if type(from) == "string" then from = StormFox.StringToTime(from) end
+		if type(to) == "string" then to = StormFox.StringToTime(to) end
+		local t = StormFox.GetTime()
+		if from <= to then
+			return t >= from and t <= to
+		else
+			return t >= from or t <= to
+		end
+	end
+
 -- Weather functions
 	local clamp = math.Clamp
 
