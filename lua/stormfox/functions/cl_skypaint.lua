@@ -89,6 +89,7 @@
 			local n = StormFox.GetData("StarFade") or 1.5
 			if n <= 0 then
 				g_SkyPaint:SetDrawStars(false)
+				g_SkyPaint:SetStarFade(0)
 			else
 				g_SkyPaint:SetDrawStars(true)
 				g_SkyPaint:SetStarSpeed((StormFox.GetData("StarSpeed") or 0.001) * StormFox.GetTimeSpeed())

@@ -53,8 +53,8 @@
 		end
 		StormFox_NETWORK_DATA = StormFox_NETWORK_DATA or {} -- Not sure what runs first .. but this table is global
 		local function scan()
-			StormFox_NETWORK_DATA["mapobbmaxs"] =  game.GetWorld():GetSaveTable().m_WorldMaxs or vector(0,0,1000)
-			StormFox_NETWORK_DATA["mapobbmins"] =  game.GetWorld():GetSaveTable().m_WorldMins or vector(0,0,0)
+			StormFox_NETWORK_DATA["mapobbmaxs"] =  game.GetWorld():GetSaveTable().m_WorldMaxs or Vector(0,0,1000)
+			StormFox_NETWORK_DATA["mapobbmins"] =  game.GetWorld():GetSaveTable().m_WorldMins or Vector(0,0,0)
 			StormFox_NETWORK_DATA["mapobbcenter"] = StormFox_NETWORK_DATA["mapobbmins"] + (StormFox_NETWORK_DATA["mapobbmaxs"] - StormFox_NETWORK_DATA["mapobbmins"]) / 2
 
 			local l = ents.FindByClass("sky_camera")
@@ -99,15 +99,15 @@
 -- World
 	-- Thise don't give the world size .. but brushsize. This means that the topspace of the map might or might not count.
 	function StormFox.MapOBBMaxs()
-		return StormFox_NETWORK_DATA["mapobbmaxs"]
+		return StormFox_NETWORK_DATA["mapobbmaxs"] or Vector(0,0,1000)
 	end
 
 	function StormFox.MapOBBMins()
-		return StormFox_NETWORK_DATA["mapobbmins"]
+		return StormFox_NETWORK_DATA["mapobbmins"] or Vector(0,0,0)
 	end
 
 	function StormFox.MapOBBCenter()
-		return StormFox_NETWORK_DATA["mapobbcenter"]
+		return StormFox_NETWORK_DATA["mapobbcenter"] or Vector(0,0,0)
 	end
 
 	function StormFox.IsTF2Map()

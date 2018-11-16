@@ -945,6 +945,7 @@ end
 -- Commen problems:
 	-- sf_enable_ekstra_lightsupport on huge maps
 	AddCommenProblem(function()
+		if not StormFox.MapOBBMaxs() or not StormFox.MapOBBMins() then return end
 		local mapsize = StormFox.MapOBBMaxs() - StormFox.MapOBBMins()
 		local unit = mapsize:Length()
 		if unit <= 20000 then return false end -- Too small map
@@ -954,6 +955,7 @@ end
 	end)
 	-- sf_enable_ekstra_lightsupport on huge maps (No fix)
 	AddCommenProblem(function()
+		if not StormFox.MapOBBMaxs() or not StormFox.MapOBBMins() then return end
 		local mapsize = StormFox.MapOBBMaxs() - StormFox.MapOBBMins()
 		local unit = mapsize:Length()
 		if unit <= 20000 then return false end -- Too small map
