@@ -22,11 +22,11 @@ end
 -- Reload support
 	hook.Add("InitPostEntity","StormFox - CallPostEntitiy",function()
 		_STORMFOX_POSTENTIY = true
-		hook.Call("StormFox - PostEntity")
+		hook.Run("StormFox - PostEntity")
 	end)
 	if _STORMFOX_POSTENTIY then
 		timer.Simple(1,function()
-			hook.Call("StormFox - PostEntity")
+			hook.Run("StormFox - PostEntity")
 		end)
 	end
 

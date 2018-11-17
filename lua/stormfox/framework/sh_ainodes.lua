@@ -47,11 +47,13 @@ local clamp = math.Clamp
 	end
 
 function StormFox.GetONode(pos,range,minimumsize)
+	if type(pos)~="Vector" then return {} end
 	local r = range ^ 2
 	if not minimumsize then minimumsize = 0 end
 	local c = {}
 	for _,data in pairs(outdoors) do
-		if pos:DistToSqr(data[1]) <= r and data[2]>=minimumsize then
+		if type(data[1]) ~= "Vector" then continue end
+		if pos:DistToSqr(data[1]) <= r and (data[2] or 0)>=minimumsize then
 			table.insert(c,{data[1],data[2]})
 		end
 	end

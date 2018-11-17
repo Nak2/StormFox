@@ -112,7 +112,7 @@ else
 			net.WriteType(var)
 		net.SendToServer()
 	end
-	timer.Simple(1,function()
+	timer.Simple(2,function()
 		net.Start("sf_mapsettings")
 			net.WriteString("request")
 		net.SendToServer()
