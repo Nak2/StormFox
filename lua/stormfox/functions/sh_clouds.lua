@@ -12,14 +12,8 @@ if SERVER then
 	return
 end
 
--- render.OverrideBlendFunc is to be replaced by render.OverrideBlend .. we need to be sure both versions work (Chrome, current and furture).
-	local function render_OverrideBlend(enabled, srcBlend, destBlend, blendFunc, srcBlendAlpha, destBlendAlpha, blendFuncAlpha)
-		if not render.OverrideBlendFunc then return end
-		render.OverrideBlendFunc( enabled, srcBlend, destBlend, srcBlendAlpha, destBlendAlpha )
-	end
-	if render.OverrideBlend then
-		render_OverrideBlend = render.OverrideBlend
-	end
+-- render.OverrideBlend
+	local render_OverrideBlend = render.OverrideBlend
 
 -- Localize for optimisasion
 	local render_DrawQuadEasy = render.DrawQuadEasy
@@ -276,12 +270,10 @@ end
 
 -- render.CullMode(1) render render.CullMode(0) will change the render
 -- Cloud layer
-hook.Add("StormFox - MiddleSkyRender","StormFox - CloudsRender",function()
+hook.Add("StormFox - RenderClouds","StormFox - CloudsRender",function(c_pos,map_center)
 	if not StormFox.EFEnabled() then return end
 	if not StormFox.MapOBBCenter or not StormFox.GetEyePos then return end
-	local mC = StormFox.MapOBBCenter() or Vector(0,0,0)
-	local c_pos = StormFox.GetEyePos() or EyePos()
-	local height = mC.z
+	local height = map_center.z
 	-- Start render
 	local c_a = StormFox.GetData("CloudsAlpha",0)
 	local SE_quality = StormFox.GetExspensive()
@@ -297,8 +289,6 @@ hook.Add("StormFox - MiddleSkyRender","StormFox - CloudsRender",function()
 			RenderDome(c_pos * 0 + Vector(0,0,1 * (0.4 + i * 0.01)),sky_mats[1],255)
 		end
 		-- Render light
-		
-
 	cam.End3D()
 end)
 

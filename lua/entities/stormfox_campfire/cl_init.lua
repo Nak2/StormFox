@@ -168,6 +168,8 @@ function ENT:OnRemove( )
 	for I=1,#self.Sticks do
 		self.Sticks[I]:Remove()
 	end
-	self.Bottom:Remove()
-	self.Emitter:Finish()
+	SafeRemoveEntity(self.Bottom)
+	if IsValid(self.Emitter) then
+		self.Emitter:Finish()
+	end
 end

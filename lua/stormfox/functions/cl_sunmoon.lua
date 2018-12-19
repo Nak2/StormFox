@@ -226,10 +226,14 @@ end
 
 -- SkyGuard (Render stuff in the right order)
 	hook.Add("PostDraw2DSkyBox", "StormFox - SkyBoxRender", function()
-		hook.Call("StormFox - StarRender")
-		hook.Call("StormFox - TopSkyRender") -- For moon and sun
-		hook.Call("StormFox - MiddleSkyRender") -- Skies
-		hook.Call("StormFox - LowerSkyRender") -- Over skies .. or lower skies
+		if not StormFox.MapOBBCenter then return end
+		local c_pos = StormFox.GetEyePos() or EyePos()
+		local map_center = StormFox.MapOBBCenter() or Vector(0,0,0)
+		hook.Run("StormFox - StarRender",		c_pos, map_center)
+		hook.Run("StormFox - TopSkyRender",		c_pos, map_center) -- For moon and sun
+		hook.Run("StormFox - RenderAboveSkies",	c_pos, map_center) -- Above skies
+		hook.Run("StormFox - RenderClouds",		c_pos, map_center) -- Skies
+		hook.Run("StormFox - RenderUnderClouds",c_pos, map_center) -- Under skies
 	end)
 
 local atan2 = math.atan2

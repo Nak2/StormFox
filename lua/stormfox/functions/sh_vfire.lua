@@ -10,7 +10,6 @@ hook.Add("vFireOnCalculateWind","vFire - StormFox Handshake",function(vFireEnt)
 		return StormFox.GetWindVector() / 20
 	end
 end)
-
 if CLIENT then return end
 local ran = math.random
 timer.Create("vFire - StormFox Rain",2,0,function()

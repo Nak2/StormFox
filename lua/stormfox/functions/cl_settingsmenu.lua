@@ -1,55 +1,4 @@
 --[[-------------------------------------------------------------------------
-Server settings
-Time
-	sf_timespeed
-	sf_start_time
-	sf_realtime
-
-Sun / Moon
-	sf_sunmoon_yaw
-	sf_moonscale
-	sf_moonphase
-
-Wind
-	sf_windpush
-	sf_foliagesway
-
-Weather
-	sf_autoweather
-	sf_enablefog
-	sf_weatherdebuffs
-	sf_lightningbolts
-
-Map
-	
-
-Misc
-	sf_debugcompatibility
-	sf_enable_mapbrowser
-	sf_allowcl_disableeffects
-
-
-	AddConVar("sf_realtime",0,"Follow the servers localtime. (This is not perfect)")
----------------------------------------------------------------------------]]
-
-
---[[-------------------------------------------------------------------------
-	Client Settings
-		StormFox Settings:
-			- sf_disableeffects
-			- sf_exspensive
-		Light and Shadows
-			- sf_allow_dynamicshadow
-				- sf_dynamiclightamount
-			- sf_redownloadlightmaps
-			- sf_allow_sunbeams
-			- sf_allow_entitylights
-		Sound
-			- sf_allow_rainsound
-			- sf_allow_windsound
-		Map
-			- sf_material_replacment
-			- sf_useAInode
 
 ---------------------------------------------------------------------------]]	
 concommand.Add("sf_opensettings",function()
@@ -77,7 +26,7 @@ local function serverToggle(parent,setting)
 	if not c then
 		l:SetText("Missing convar")
 	else
-		l:SetText(c:GetHelpText())
+		l:SetText(StormFox.LanguageTranslate(c:GetHelpText()))
 	end
 		l:SizeToContentsX( 10 )
 	return p,l
@@ -92,14 +41,14 @@ local function serverText(parent,setting,numberonly,canbeempty)
 	local c = GetConVar(setting)
 	if not c then
 		p:SetValue(60)
-		l:SetText("Missing convar")
+		l:SetText(StormFox.LanguageTranslate("sf_missing_convar"))
 	else
 		if numberonly then
 			p:SetValue(c:GetInt())
 		else
 			p:SetValue(c:GetString())
 		end
-		l:SetText(c:GetHelpText())
+		l:SetText(StormFox.LanguageTranslate(c:GetHelpText()))
 	end
 	function p:OnEdit()
 		if not self.canbeempty then
@@ -118,7 +67,7 @@ local function serverText(parent,setting,numberonly,canbeempty)
 end
 local function makeTitle(parent,text)
 	local p = mgui.Create("Panel",parent)
-	p.text = text
+	p.text = StormFox.LanguageTranslate(text)
 	function p:Paint(w,h)
 		surface.SetFont("mgui_default")
 		local tc = self:GetTextColor()
@@ -167,7 +116,7 @@ function StormFox.OpenServerSettings( open_panel )
 	_STORMFOX_CLMENU:SetPallete(Color(r, g, b),nil,dark)
 	--_STORMFOX_CLMENU:SetPallete(Color(255, 0, 0),nil,dark)
 
-	_STORMFOX_CLMENU:SetTitle("Server Settings - ERROR")
+	_STORMFOX_CLMENU:SetTitle(StormFox.LanguageTranslate("Settings") .. " - ERROR")
 	_STORMFOX_CLMENU:DockPadding(0,24,0,0)
 	_STORMFOX_CLMENU:SetIcon(Material("stormfox/SF.png"))
 	_STORMFOX_CLMENU:SetSize(600,400)
@@ -194,7 +143,7 @@ function StormFox.OpenServerSettings( open_panel )
 		surface.SetDrawColor(Color(c.r,c.g,c.b,255))
 		surface.DrawRect(0,0,w,h)
 	end
-	local l = {"Time","Weather", "Misc", "Troubleshooting","Map Browser","Changelog"}
+	local l = {"Time","Weather", "Misc", "Troubleshooter","Map Browser","Changelog"}
 
 	menu.buttons = {}
 	menu.board = {}
@@ -206,6 +155,7 @@ function StormFox.OpenServerSettings( open_panel )
 		b.roundcornor = 0
 		b:SetTextAlingn(2)
 		b:SetText(d)
+		b._original_text = d
 
 		local p = mgui.Create("DScrollPanel",display)
 		p.menu_button = b
@@ -220,15 +170,15 @@ function StormFox.OpenServerSettings( open_panel )
 		end
 		function b.OnReleased() end
 		function b:DoClick()
-			_STORMFOX_CLMENU:SetTitle("Server Settings - " .. self.text)
+			_STORMFOX_CLMENU:SetTitle(StormFox.LanguageTranslate("Settings") .. " - " .. StormFox.LanguageTranslate(self.text))
 			for k,v in pairs(self.menu.buttons) do
 				v:DisableBackground(v==self)
 				if v==self then
 					cookie.Set("SF-MenuOption",k)
-					menu.board[v.text]:Show()
-					mgui.CallEvent("SF_SVMenu_Select",v.text)
+					menu.board[v._original_text]:Show()
+					mgui.CallEvent("SF_SVMenu_Select",v._original_text)
 				else
-					menu.board[v.text]:Hide()
+					menu.board[v._original_text]:Hide()
 				end
 			end
 		end
@@ -243,7 +193,7 @@ function StormFox.OpenServerSettings( open_panel )
 	end
 	local DPSwitch = mgui.Create("Button",menu)
 		DPSwitch:Dock(BOTTOM)
-		DPSwitch:SetText(dark and "Light Theme" or "Dark Theme")
+		DPSwitch:SetText(StormFox.LanguageTranslate(dark and "sf_interface_lighttheme" or "sf_interface_darktheme"))
 		DPSwitch.s = dark
 		DPSwitch.roundcornor = 0
 		function DPSwitch:DoClick()
@@ -253,7 +203,7 @@ function StormFox.OpenServerSettings( open_panel )
 			local g = cookie.GetNumber("SF-ThemeG",136)
 			local b = cookie.GetNumber("SF-ThemeB",229)
 			_STORMFOX_CLMENU:SetPallete(Color(r, g, b),nil,self.s)
-			self:SetText(self.s and "Light Theme" or "Dark Theme")
+			self:SetText(StormFox.LanguageTranslate(self.s and "sf_interface_lighttheme" or "sf_interface_darktheme"))
 		end
 	-- Menus (480, )
 		-- Dashboard
@@ -353,7 +303,7 @@ function StormFox.OpenServerSettings( open_panel )
 						-- Display empty value
 							function starttime:TextEditor(str)
 								if str == "" then
-									return "Save on exit"
+									return StormFox.LanguageTranslate("sf_interface_save_on_exit")
 								end
 							end
 						-- Choose what can be entered
@@ -396,7 +346,7 @@ function StormFox.OpenServerSettings( open_panel )
 					local yaw,label = serverText(panel,"sf_sunmoon_yaw",true)
 					label:SetTall(20)
 					local set_to_look = mgui.Create("Button",panel)
-						set_to_look:SetText("Set to Eye Angle")
+						set_to_look:SetText(StormFox.LanguageTranslate("sf_setwindangle"))
 						yaw:SetSize(40,20)
 						yaw:SetPos(20,10 + element_size * 5)
 						set_to_look:SetPos(70,10 + element_size * 5)
@@ -449,12 +399,12 @@ function StormFox.OpenServerSettings( open_panel )
 					label:SetPos(70,10 + element_size * 7)
 			-- Light
 				-- minlight,maxlight
-					local t = makeTitle(panel,"Light")
+					local t = makeTitle(panel,"sf_interface_light")
 					t:SetSize(340,20)
 					t:SetPos(0,10 + element_size * 8)
 					--minlight, maxlight		
 					local l = mgui.Create("Label",panel)
-						l:SetText("Light range: ")
+						l:SetText(StormFox.LanguageTranslate("sf_interface_light_range"))
 						l:SetPos(20,10 + element_size * 9)
 						l:SizeToContentsX(2)
 						l:SetTall(20)
@@ -481,22 +431,22 @@ function StormFox.OpenServerSettings( open_panel )
 						dynamiclight:SetPos(20,10 + element_size * 10)
 					local l = mgui.Create("Label",panel)
 						l:SetPos(30 + dynamiclight:GetWide(),10 + element_size * 10)
-						l:SetText("Allow dynamiclight for all clients.")
+						l:SetText(StormFox.LanguageTranslate("sf_description.dynamiclight"))
 						l:SizeToContentsX(5)
 						l:SetTall(20)
 				-- Adv light
-					local t = makeTitle(panel,"Adv light options")
+					local t = makeTitle(panel,"Adv Light")
 					t:SetSize(340,20)
 					t:SetPos(0,10 + element_size * 11)
 				-- Extra lightsupport
 					local el,label = serverToggle(panel,"sf_enable_ekstra_lightsupport")
 						el:SetPos(20,10 + element_size * 12)
 						label:SetPos(30 + el:GetWide(),10 + element_size * 12)
-						label:SetText(label:GetText() .. "(Requires mapchange)")
+						label:SetText(label:GetText() .. "(" .. StormFox.LanguageTranslate("sf_warning_reqmapchange") ..")")
 						label:SizeToContentsX(5)
 						label:SetTall(20)
 						local warning =  mgui.Create("Label",panel)
-						warning:SetText("Warning! Can lag on some clients.")
+						warning:SetText(StormFox.LanguageTranslate("sf_warning_clientlag"))
 						warning:SetPos(30 + el:GetWide(),10 + element_size * 13)
 						warning:SizeToContentsX(2)
 				-- sf_enable_ekstra_entsupport
@@ -507,7 +457,7 @@ function StormFox.OpenServerSettings( open_panel )
 						label:SizeToContentsX(5)
 						label:SetTall(20)
 						local warning =  mgui.Create("Label",panel)
-						warning:SetText("Warning! Servers don't like this. Might break physic-games.")
+						warning:SetText(StormFox.LanguageTranslate("sf_warning_serverlag"))
 						warning:SetPos(30 + el:GetWide(),10 + element_size * 15)
 						warning:SizeToContentsX(2)
 				-- Space
@@ -521,7 +471,7 @@ function StormFox.OpenServerSettings( open_panel )
 					t:SetSize(340,20)
 					t:SetPos(0,10)
 				local l = mgui.Create("DLabel",panel)
-					l:SetText("Current Weather")
+					l:SetText(StormFox.LanguageTranslate("sf_current_weather"))
 					l:SetSize(140,20)
 					l:SetTextAlingn(1)
 					l:SetPos(panel:GetWide() - 140,10)
@@ -538,7 +488,7 @@ function StormFox.OpenServerSettings( open_panel )
 					surface.DrawTexturedRect(w / 2 - s / 2, 0,s,s)
 					surface.SetTextColor(tc)
 					surface.SetFont("mgui_default")
-					local t = StormFox.GetWeather()
+					local t = StormFox.LanguageTranslate(StormFox.GetWeather())
 					local tw,th = surface.GetTextSize(t)
 					surface.SetTextPos(w / 2 - tw / 2, s + th)
 					surface.DrawText(t)
@@ -577,7 +527,7 @@ function StormFox.OpenServerSettings( open_panel )
 						return str .. "°C"
 					end
 				local l = mgui.Create("Label",panel)
-					l:SetText("Temperature range")
+					l:SetText(StormFox.LanguageTranslate("sf_temperature_range"))
 					l:SizeToContentsX(4)
 					l:SetPos(70,10 + element_size * 4)
 					l:SetTall(20)
@@ -662,21 +612,21 @@ function StormFox.OpenServerSettings( open_panel )
 					p:SetPos(36,10)
 			
 					local t = string.upper(string.sub(id,0,1)) .. string.sub(id,2)
-					l:SetText(t)
+					l:SetText(StormFox.LanguageTranslate(t))
 					l:SetTextAlingn(2)
 					l:SetPos(40 - l:GetWide() / 2,40)
 				end
 				element_id = element_id + y * 5 + 1
 			-- Material 
 				--replacment material_replacment
-				local t = makeTitle(panel,"Material replacment")
+				local t = makeTitle(panel,"sf_interface_material_replacment")
 					t:SetSize(340,20)
 					t:SetPos(0,10 + element_size * element_id)
 					local s = serverMapToggle(panel,"material_replacment")
 					element_id = element_id + 1
 					s:SetPos(20,10 + element_size * element_id)
 					local l = mgui.Create("DLabel",panel)
-					l:SetText("Allow weather to replace materials.")
+					l:SetText(StormFox.LanguageTranslate("sf_description.material_replacment"))
 					l:SizeToContentsX(2)
 					l:SetTall(20)
 					l:SetPos(30 + s:GetWide(),10 + element_size * element_id)
@@ -685,7 +635,7 @@ function StormFox.OpenServerSettings( open_panel )
 					element_id = element_id + 1
 					s:SetPos(20,10 + element_size * element_id)
 					local l = mgui.Create("DLabel",panel)
-					l:SetText("Only replace dirt and grass.")
+					l:SetText(StormFox.LanguageTranslate("sf_description.replace_dirtgrassonly"))
 					l:SizeToContentsX(2)
 					l:SetTall(20)
 					l:SetPos(30 + s:GetWide(),10 + element_size * element_id)
@@ -703,7 +653,7 @@ function StormFox.OpenServerSettings( open_panel )
 				-- Windrange
 				local la = mgui.Create("DLabel",panel)
 					element_id = element_id + 1
-					la:SetText("Max wind")
+					la:SetText(StormFox.LanguageTranslate("sf_interface_max_wind"))
 					la:SizeToContentsX(2)
 					la:SetPos(20,10 + element_size * element_id)
 
@@ -721,7 +671,7 @@ function StormFox.OpenServerSettings( open_panel )
 					function l:Think()
 						windspeed = wr.var
 						local b,d = StormFox.GetBeaufort(windspeed)
-						self:SetText( windspeed .. "ms" .. " / " .. math.Round(windspeed * 2.236936) .. "mph" .. " / " .. d)
+						self:SetText( windspeed .. "ms" .. " / " .. math.Round(windspeed * 2.236936) .. "mph" .. " / " .. StormFox.LanguageTranslate(d))
 					end
 				function wr:OnReleased()
 					setmapdata("maxwind",tonumber(self.var))
@@ -745,7 +695,7 @@ function StormFox.OpenServerSettings( open_panel )
 			-- Disable windbreakconstrains
 				local auto_weather = serverMapToggle(panel,"wind_breakconstraints")
 				local label = mgui.Create("DLabel",panel)
-					label:SetText("Break constraints and unfreeze props in strong wind.")
+					label:SetText(StormFox.LanguageTranslate("sf_description.wind_breakconstraints"))
 					label:SizeToContentsX(2)
 				element_id = element_id + 1
 				auto_weather:SetPos(20,10 + element_size * element_id)
@@ -785,7 +735,7 @@ function StormFox.OpenServerSettings( open_panel )
 				auto_weather:SetPos(20,10 + element_size * 2)
 				label:SetPos(30 + realtime:GetWide(),10 + element_size * 2)
 				label:SetTall(realtime:GetTall())
-				label:SetText(label:GetText() .. "(Requires mapchange)")
+				label:SetText(label:GetText() .. "(" .. StormFox.LanguageTranslate("sf_warning_reqmapchange") .. ")")
 				label:SizeToContentsX(5)
 			-- Disable 
 				local auto_weather,label = serverToggle(panel,"sf_mapbloom")
@@ -867,8 +817,8 @@ function StormFox.OpenServerSettings( open_panel )
 					_STORMFOX_CLMENU:SetPallete(Color(30,136,229),nil,dark)
 				end
 		-- Conflicts
-			local panel = menu.board["Troubleshooting"]
-			local t = makeTitle(panel,"Troubleshooting")
+			local panel = menu.board["Troubleshooter"]
+			local t = makeTitle(panel,"Troubleshooter")
 					t:SetSize(340,20)
 					t:SetPos(0,10)
 				local el,label = serverToggle(panel,"sf_autopilot")
@@ -877,7 +827,7 @@ function StormFox.OpenServerSettings( open_panel )
 				
 				local t = mgui.Create("DLabel",panel)
 					t:SetPos(20,10 + element_size * 2)
-					t:SetText("This will display the most common problems with the current settings.")
+					t:SetText(StormFox.LanguageTranslate("sf_troubleshooter.description"))
 					t:SizeToContentsX(4)
 				local problemlist = mgui.Create("DScrollPanel",panel)
 					problemlist:SetPos(20,10 + element_size * 3)

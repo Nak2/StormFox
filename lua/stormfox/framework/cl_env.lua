@@ -49,10 +49,19 @@ Reliable EyePos
 		view.pos = Vector(0,0,0)
 		view.ang = Angle(0,0,0)
 		view.fov = 0
+		view.drawviewer = false
 	hook.Add("RenderScene","StormFox - EyeFix",function(origin,ang,fov) 
 		view.pos = origin
 		view.ang = ang
 		view.fov = fov
+	end)
+	hook.Add("PostPlayerDraw","StormFox - EyeFixPPD",function(ply)
+		if not IsValid(ply) then return end
+		if ply ~= LocalPlayer() then return end
+		view.drawviewer = true
+	end)
+	hook.Add("PreRender","StormFox - EyeFixPPDC",function()
+		view.drawviewer = false
 	end)
 	function StormFox.GetCalcViewResult() -- Why isn't there a calcview result in gmod?
 		return view
@@ -91,7 +100,7 @@ Outdoor varables
 			-- Check if we hit anything 'useless'
 			if not traceData.Hit then return false end
 			-- Check entity
-			if traceData.Entity then
+			if IsValid(traceData.Entity) then
 				local m = string.lower(traceData.Entity:GetModel() or "*empty*")
 				if string.match(m,"window") or string.match(m,"glass") then return true end
 			end

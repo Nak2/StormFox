@@ -97,7 +97,6 @@
 				g_SkyPaint:SetStarScale(StormFox.GetData("StarScale") or 0.5)
 				g_SkyPaint:SetStarTexture(StormFox.GetData("StarTexture","skybox/starfield"))
 			end
-
 	end)
 
 -- Shooting stars

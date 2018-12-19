@@ -205,7 +205,7 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)]]
 		--oldls = getChar
 		if oldls ~= getChar then
 			if con:GetBool() then
-				if light < 4 then
+				if light < 4 and false then
 					engine.LightStyle(0,"b")
 				else
 					engine.LightStyle(0,getChar)

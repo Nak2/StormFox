@@ -457,7 +457,9 @@ Color help
 			--if not self.text then return end
 			surface.SetTextColor(self:GetTextColor(self:GetPallete("700")))
 			surface.SetFont(self:GetFont())
-			local tw,th = surface.GetTextSize(self.text)
+			local text = self.text
+				text = StormFox.LanguageTranslate(text)
+			local tw,th = surface.GetTextSize(text)
 			if self.icon then
 				surface.SetTextPos(32,12 - th / 2)
 				surface.SetDrawColor(255,255,255)
@@ -466,7 +468,7 @@ Color help
 			else
 				surface.SetTextPos(12,12 - th / 2)
 			end
-			surface.DrawText(self.text)
+			surface.DrawText(text)
 		end
 		p:SetSize(ScrW() / 3, ScrH() / 3)
 		return p
@@ -525,6 +527,10 @@ Color help
 				end
 			end
 			if self.text then
+				local text = self.text
+				if StormFox.LanguageTranslate then
+					text = StormFox.LanguageTranslate(text)
+				end
 				if self:GetDisabled() then
 					local parent = self:GetParent()
 					if parent.GetPalleteColor then
@@ -543,7 +549,7 @@ Color help
 					surface.SetTextColor(self:GetTextColor())
 				end
 				surface.SetFont(self:GetFont())
-				local tw,th = surface.GetTextSize(self.text)
+				local tw,th = surface.GetTextSize(text)
 				if self.textalign == 0 then
 					surface.SetTextPos(10,h / 2 - th / 2)
 				elseif self.textalign == 2 then
@@ -551,7 +557,7 @@ Color help
 				else
 					surface.SetTextPos(w / 2 - tw / 2,h / 2 - th / 2)
 				end
-				surface.DrawText(self.text)
+				surface.DrawText(text)
 			end
 			RenderRing(self)
 		end
@@ -825,7 +831,8 @@ Color help
 		end
 		function panel:SizeToContentsX( n )
 			surface.SetFont(self:GetFont())
-			local tw,th = surface.GetTextSize(self.text)
+			local text = StormFox.LanguageTranslate(self.text) or self.text
+			local tw,th = surface.GetTextSize(text)
 			self:SetSize(tw + n,th)
 		end
 		function panel:SetTextAlingn(n)
@@ -837,6 +844,9 @@ Color help
 			surface.SetTextColor(Color(c.r,c.g,c.b,self.disabled and 100 or 255))
 			surface.SetFont(self:GetFont())
 			local t = self.text
+			if StormFox.LanguageTranslate then
+				t = StormFox.LanguageTranslate(t)
+			end
 			local tw,th = surface.GetTextSize(t)
 			if self.textalign == 0 then
 				local s = min((w - tw) / 2,2)
@@ -969,6 +979,9 @@ Color help
 			end
 			surface.SetFont(self:GetFont())
 			local t = self:GetValue() or ""
+			if StormFox.LanguageTranslate then
+				t = StormFox.LanguageTranslate(t)
+			end
 			if self.TextEditor then
 				local r = self:TextEditor(t)
 				if r then t = r end

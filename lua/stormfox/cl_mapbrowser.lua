@@ -228,6 +228,7 @@ local IgnoreMaps = {
 		t["env_tonemap_controller"] = "Enables light-bloom/tonemap effects."
 		t["env_fog_controller"] = "Allows to control and edit fog."
 		t["shadow_control"] = "Allows to control shadows."
+		t[".ain nodes"] = "Allows special map-effects."
 	local bonus_t = {}
 		bonus_t["trigger"] = "This map have extra light-effects and triggers."
 
@@ -242,6 +243,9 @@ local IgnoreMaps = {
 				n = n + 1
 			end
 		end
+		if StormFox.AIAinIsValid() then
+			n = n + 1
+		end
 		data["3D Skybox"] = StormFox.Is3DSkybox()
 		if StormFox.Is3DSkybox() then
 			n = n + 1
@@ -253,6 +257,7 @@ local IgnoreMaps = {
 				n = n + 1
 			end
 		end
+		data[".ain nodes"] = StormFox.AIAinIsValid()
 		data["bonus"] = n
 		return data
 	end
@@ -320,6 +325,8 @@ local IgnoreMaps = {
 	local cross = Material("debug/particleerror")
 	local check = Material("vgui/hud/icon_check")
 	local question = Material("vgui/avatar_default")
+	local medal = Material("icon16/award_star_gold_1.png")
+	local l = 12
 	local function paintDetails(self,w,h)
 		surface.SetDrawColor(colors[2])
 		surface.SetDrawColor(Color(0,0,0,200))
@@ -339,7 +346,26 @@ local IgnoreMaps = {
 		for str,helptext in pairs(t) do
 			i = i + 1
 			local b = self.mapdata[str]
-			surface.SetTextPos(18,i * 10 + 10)
+			surface.SetTextPos(18,i * l + 2)
+			if b then
+				surface.SetTextColor(0,255,0)
+				surface.SetDrawColor(255,255,255)
+				surface.SetMaterial(check)
+			elseif b == false then
+				surface.SetTextColor(255,255,255)
+				surface.SetDrawColor(255,0,0)
+				surface.SetMaterial(cross)
+			else
+				surface.SetTextColor(150,150,255)
+				surface.SetDrawColor(150,150,255)
+				surface.SetMaterial(question)
+			end
+			surface.DrawText(str)
+			surface.DrawTexturedRect(5,i * l + 2,10,10)
+			y = i * l + 2 + l
+		end
+		local b = self.mapdata["3D Skybox"]
+			surface.SetTextPos(18,y)
 			if b then
 				surface.SetTextColor(0,255,0)
 				surface.SetDrawColor(255,255,255)
@@ -354,37 +380,16 @@ local IgnoreMaps = {
 				surface.SetMaterial(question)
 			end
 
-			surface.DrawText(str)
-			surface.DrawTexturedRect(5,i * 10 + 10,10,10)
-			y = i * 10 + 20
-		end
-		local b = self.mapdata["3D Skybox"]
-		surface.SetTextPos(18,y)
-		if b then
-			surface.SetTextColor(0,255,0)
-			surface.SetDrawColor(255,255,255)
-			surface.SetMaterial(check)
-		elseif b == false then
-			surface.SetTextColor(255,255,255)
-			surface.SetDrawColor(255,0,0)
-			surface.SetMaterial(cross)
-		else
-			surface.SetTextColor(150,150,255)
-			surface.SetDrawColor(150,150,255)
-			surface.SetMaterial(question)
-		end
-
 		surface.DrawText("3D Skybox")
 		surface.DrawTexturedRect(5,y,10,10)
 
 		if (self.mapdata["bonus"] or 0) > 0 then
-			draw.DrawText("Extra map support","mgui_default",w / 2,y + 15,Color(255,255,255),1)
-			surface.SetTextPos(18,y + 25)
+			surface.SetTextPos(18,y + 12)
 			surface.SetTextColor(0,255,0)
 			surface.SetDrawColor(255,255,255)
-			surface.SetMaterial(check)
-			surface.DrawText("Map Effects/ Triggers")
-			surface.DrawTexturedRect(5,y + 25,10,10)
+			surface.SetMaterial(medal)
+			surface.DrawText("Map Triggers")
+			surface.DrawTexturedRect(5,y + 12,10,10)
 		end
 	end
 
@@ -442,7 +447,6 @@ local IgnoreMaps = {
 				d_map_list:SetPos(160,24)
 				d_map_list:SetSize(w - 160,h - 24)
 
-			local medal = Material("icon16/award_star_gold_1.png")
 			local function PopulateLayout(panel,category)
 				panel.VBar:SetScroll(0)
 				if panel.map_table then
@@ -473,6 +477,13 @@ local IgnoreMaps = {
 					else
 						btn:SetImage("maps/noicon.png")
 					end
+					btn.outdate = false
+					for str,helptext in pairs(t) do
+						local b = btn.mapdata[str]
+						if b == nil then
+							btn.outdate = true
+						end
+					end 
 					function btn:PaintOver(w,h)
 						local p = self.mapdata.percent_support or 0
 						local b = self.mapdata.bonus or 0
@@ -485,8 +496,11 @@ local IgnoreMaps = {
 						if self.mapdata.percent_support then
 							surface.SetDrawColor(255,50,50,105)
 							surface.DrawRect(w * p,h - 20,w * (1-p),4)
-
-							surface.SetDrawColor(0,255,0,255)
+							if self.outdate then
+								surface.SetDrawColor(155,155,255,255)
+							else
+								surface.SetDrawColor(0,255,0,255)
+							end
 							surface.DrawRect(0,h - 20,w * p,4)
 						end
 						for i = 1,b do

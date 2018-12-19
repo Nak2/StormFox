@@ -77,7 +77,7 @@ function ENT:Think()
 end
 
 function ENT:OnRemove( )
-	if not self.Emitter then return end
+	if not IsValid(self.Emitter) then return end
 	self.Emitter:Finish()
 end
 

@@ -16,7 +16,7 @@
 ]]
 local function makeTitle(parent,text)
 	local p = mgui.Create("Panel",parent)
-	p.text = text
+	p.text = StormFox.LanguageTranslate(text)
 	function p:Paint(w,h)
 		surface.SetFont("mgui_default")
 		local tc = self:GetTextColor()
@@ -45,7 +45,7 @@ local function clientToggle(parent,setting)
 	if not c then
 		l:SetText("Missing convar")
 	else
-		l:SetText(c:GetHelpText())
+		l:SetText(StormFox.LanguageTranslate(c:GetHelpText()))
 	end
 		l:SizeToContentsX( 10 )
 	return p,l
@@ -97,7 +97,7 @@ function StormFox.OpenClientSettings()
 			surface.SetDrawColor(Color(c.r,c.g,c.b,255))
 			surface.DrawRect(0,0,w,h)
 		end
-		local l = {"Settings","Troubleshooting","Changelog"}
+		local l = {"StormFox","Effects","Troubleshooter","Changelog"}
 
 		menu.buttons = {}
 		menu.board = {}
@@ -144,7 +144,7 @@ function StormFox.OpenClientSettings()
 		end
 		local DPSwitch = mgui.Create("Button",menu)
 			DPSwitch:Dock(BOTTOM)
-			DPSwitch:SetText(dark and "Light Theme" or "Dark Theme")
+			DPSwitch:SetText(StormFox.LanguageTranslate(dark and "sf_interface_lighttheme" or "sf_interface_darktheme"))
 			DPSwitch.s = dark
 			DPSwitch.roundcornor = 0
 			function DPSwitch:DoClick()
@@ -154,10 +154,10 @@ function StormFox.OpenClientSettings()
 				local g = cookie.GetNumber("SF-ThemeG",136)
 				local b = cookie.GetNumber("SF-ThemeB",229)
 				_STORMFOX_CLMENU:SetPallete(Color(r, g, b),nil,self.s)
-				self:SetText(self.s and "Light Theme" or "Dark Theme")
+				self:SetText(StormFox.LanguageTranslate(self.s and "sf_interface_lighttheme" or "sf_interface_darktheme"))
 			end
 	-- Settings
-		local panel = menu.board["Settings"]
+		local panel = menu.board["StormFox"]
 		-- Menu color picker
 			local r = cookie.GetNumber("SF-ThemeR",30)
 			local g = cookie.GetNumber("SF-ThemeG",136)
@@ -200,9 +200,9 @@ function StormFox.OpenClientSettings()
 				p:AddEvent("sf_allowcl_disableeffects_set",function(self,bool)
 					self:SetDisabled(not bool)
 					if not bool then
-						label:SetText("Disable all effects (This is disabled on this server)")
+						label:SetText(StormFox.LanguageTranslate("sf_description.disableeffects") .. "(" .. StormFox.LanguageTranslate("sf_description.disabled_on_server") .. ")")
 					else
-						label:SetText("Disable all effects")
+						label:SetText("sf_description.disableeffects")
 					end
 					label:SizeToContentsX(5)
 				end)
@@ -215,7 +215,7 @@ function StormFox.OpenClientSettings()
 				local p = mgui.Create("Switch",panel)
 					p:SetPos(20,10 + element_size * 3)
 				local l = mgui.Create("DLabel",panel)
-					l:SetText("Scale quality-settings with the FPS amount")
+					l:SetText("sf_description.exspensive_fps")
 					l:SizeToContentsX(5)
 					l:SetPos(30 + p:GetWide(),10 + element_size * 3)
 				function p:DoClick()
@@ -228,7 +228,7 @@ function StormFox.OpenClientSettings()
 				p.state = convar:GetInt() == 0
 			-- Manually
 				local l = mgui.Create("DLabel",panel)
-					l:SetText("Manually set the quality-setting")
+					l:SetText("sf_description.exspensive_manually")
 					l:SizeToContentsX(5)
 					l:SetPos(20,10 + element_size * 4)
 				local wr = mgui.Create("Slider",panel)
@@ -258,68 +258,29 @@ function StormFox.OpenClientSettings()
 				p:SetPos(20,10 + element_size * 6)
 				label:SetPos(30 + p:GetWide(),10 + element_size * 6)
 				label:SetTall(p:GetTall())
-		-- SF Effects
-			local t = makeTitle(panel,"Effects")
+		-- SF Light
+			local t = makeTitle(panel,"sf_interface_light")
 			t:SetSize(340,20)
 			t:SetPos(0,10 + element_size * 7)
-			--sf_redownloadlightmaps
-			local p,label = clientToggle(panel,"sf_redownloadlightmaps")
-				p:SetPos(20,10 + element_size * 8)
-				label:SetText(label:GetText() .."(But required on unsupported maps)")
-				label:SizeToContentsX(5)
-				label:SetPos(30 + p:GetWide(),10 + element_size * 8)
-				label:SetTall(p:GetTall())
-			--sf_enable_windoweffect
-			local p,label = clientToggle(panel,"sf_allow_raindrops")
-				p:SetPos(20,10 + element_size * 9)
-				label:SetPos(30 + p:GetWide(),10 + element_size * 9)
-				label:SetTall(p:GetTall())
-			--sf_allow_raindrops
-			local p,label = clientToggle(panel,"sf_enable_windoweffect")
-				p:SetPos(20,10 + element_size * 10)
-				label:SetPos(30 + p:GetWide(),10 + element_size * 10)
-				label:SetTall(p:GetTall())
-			--sf_allow_raindrops
-			local p,label = clientToggle(panel,"sf_enable_windoweffect_enable_tr")
-				p:SetPos(20,10 + element_size * 11)
-				label:SetPos(30 + p:GetWide(),10 + element_size * 11)
-				label:SetTall(p:GetTall())
-				p:AddEvent("sf_enable_windoweffect_set",function(self,bool)
-					self:SetDisabled(not bool)
-				end)
-			--sf_renderscreenspace_effects
-			local p,label = clientToggle(panel,"sf_renderscreenspace_effects")
-				p:SetPos(20,10 + element_size * 12)
-				label:SetPos(30 + p:GetWide(),10 + element_size * 12)
-				label:SetTall(p:GetTall())
-			--sf_enable_breath
-			local p,label = clientToggle(panel,"sf_enable_breath")
-				p:SetPos(20,10 + element_size * 13)
-				label:SetPos(30 + p:GetWide(),10 + element_size * 13)
-				label:SetTall(p:GetTall())
-		-- SF Light
-			local t = makeTitle(panel,"Light")
-			t:SetSize(340,20)
-			t:SetPos(0,10 + element_size * 14)
 			--sf_allow_dynamicshadow
 			settingList["sf_allow_dynamicshadow"] = 1
 			local p,label = clientToggle(panel,"sf_allow_dynamicshadow")
-				p:SetPos(20,10 + element_size * 15)
-				label:SetPos(30 + p:GetWide(),10 + element_size * 15)
+				p:SetPos(20,10 + element_size * 8)
+				label:SetPos(30 + p:GetWide(),10 + element_size * 8)
 				label:SetTall(p:GetTall())
 			if not StormFox.GetMapSetting("dynamiclight") then
 				p:SetDisabled(true)
-				label:SetText(label:GetText() .. " (Disabled on this server)")
+				label:SetText(label:GetText() .. " (" .. StormFox.LanguageTranslate("sf_description.disabled_on_server") .. ")")
 				label:SizeToContentsX(5)
 			end
 			--sf_dynamiclightamount
-			local label = mgui.Create("DLabel",panel)
-				label:SetText("The dynamic-light amount: ")
+				local label = mgui.Create("DLabel",panel)
+				label:SetText("sf_interface_light_range")
 				label:SizeToContentsX(5)
-				label:SetPos(20,10 + element_size * 16)
-			local convar = GetConVar("sf_dynamiclightamount")
-			local wr = mgui.Create("Slider",panel)
-					wr:SetPos(20 + label:GetWide(),10 + element_size * 16)
+				label:SetPos(20,10 + element_size * 9)
+				local convar = GetConVar("sf_dynamiclightamount")
+				local wr = mgui.Create("Slider",panel)
+					wr:SetPos(20 + label:GetWide(),10 + element_size * 9)
 					wr:SetSize(200,20)
 					wr:SetMax(5)
 					wr:SetMin(1)
@@ -337,42 +298,138 @@ function StormFox.OpenClientSettings()
 				end)
 			--sf_allow_sunbeams
 				local p,label = clientToggle(panel,"sf_allow_sunbeams")
-				p:SetPos(20,10 + element_size * 17)
-				label:SetPos(30 + p:GetWide(),10 + element_size * 17)
+				p:SetPos(20,10 + element_size * 10)
+				label:SetPos(30 + p:GetWide(),10 + element_size * 10)
 				label:SetTall(p:GetTall())
 			--sf_allow_dynamiclights
 				local p,label = clientToggle(panel,"sf_allow_dynamiclights")
-				p:SetPos(20,10 + element_size * 18)
-				label:SetPos(30 + p:GetWide(),10 + element_size * 18)
+				p:SetPos(20,10 + element_size * 11)
+				label:SetPos(30 + p:GetWide(),10 + element_size * 11)
 				label:SetTall(p:GetTall())
 		-- SF Misc
 			local t = makeTitle(panel,"Sound")
 			t:SetSize(340,20)
-			t:SetPos(0,10 + element_size * 19)
+			t:SetPos(0,10 + element_size * 12)
 			--sf_allow_rainsound
 			local p,label = clientToggle(panel,"sf_allow_rainsound")
-				p:SetPos(20,10 + element_size * 20)
-				label:SetPos(30 + p:GetWide(),10 + element_size * 20)
+				p:SetPos(20,10 + element_size * 13)
+				label:SetPos(30 + p:GetWide(),10 + element_size * 13)
 				label:SetTall(p:GetTall())
 			--sf_allow_windsound
 			local p,label = clientToggle(panel,"sf_allow_windsound")
-				p:SetPos(20,10 + element_size * 21)
-				label:SetPos(30 + p:GetWide(),10 + element_size * 21)
+				p:SetPos(20,10 + element_size * 14)
+				label:SetPos(30 + p:GetWide(),10 + element_size * 14)
 				label:SetTall(p:GetTall())
 		-- Space
-			local p = mgui.Create("DPanel",panel)
-			p:SetSize(10,10)
-			p:SetPos(0,10 + element_size * 23)
-			function p:Paint() end
+			--local p = mgui.Create("DPanel",panel)
+			--p:SetSize(10,10)
+			--p:SetPos(0,10 + element_size * 15)
+			--function p:Paint() end
+	-- Effects
+		local panel = menu.board["Effects"]
+		local t = makeTitle(panel,"Rain/Snow Effects")
+			t:SetSize(340,20)
+			t:SetPos(0,10)
+			--sf_allow_raindrops (Rain on screen)
+				local p,label = clientToggle(panel,"sf_allow_raindrops")
+				p:SetPos(20,10 + element_size * 1)
+				label:SetPos(30 + p:GetWide(),10 + element_size * 1)
+				label:SetTall(p:GetTall())
+			--sf_rainpuddle_enable (Enable rain puddles)
+				local p,label = clientToggle(panel,"sf_rainpuddle_enable")
+				p:SetPos(20,10 + element_size * 2)
+				label:SetPos(30 + p:GetWide(),10 + element_size * 2)
+				label:SetTall(p:GetTall())
+				if not IsMounted("csgo") or not StormFox.AIAinIsValid() then
+					p:SetDisabled(true)
+				end
+			--sf_footsteps_enable (Enable footprints in snow)
+				local p,label = clientToggle(panel,"sf_footsteps_enable")
+				p:SetPos(20,10 + element_size * 3)
+				label:SetPos(30 + p:GetWide(),10 + element_size * 3)
+				label:SetTall(p:GetTall())
+			--sf_footsteps_max (Max footsteps)
+				local label = mgui.Create("DLabel",panel)
+					label:SetText(StormFox.LanguageTranslate("sf_interface_max_footprints") ..": ")
+					label:SizeToContentsX(5)
+					label:SetPos(20,10 + element_size * 4)
+				local label2 = mgui.Create("DLabel",panel)
+					label2:SetText(StormFox.LanguageTranslate("sf_interface_footprint_render") ..": ")
+					label2:SizeToContentsX(5)
+					label2:SetPos(20,10 + element_size * 5)
+				local convar = GetConVar("sf_footsteps_max")
+				local wr = mgui.Create("Slider",panel)
+					wr:SetPos(20 + label:GetWide(),10 + element_size * 4)
+					wr:SetSize(200 + (label2:GetWide() - label:GetWide()),20)
+					wr:SetMax(500)
+					wr:SetMin(30)
+					wr.decimals = 0
+					wr:SetValue(convar:GetInt())
+				function wr:OnReleased()
+					RunConsoleCommand("sf_footsteps_max",self.var)
+					mgui.AccpetSnd()
+				end
+				wr:AddEvent("sf_footsteps_enable_set",function(self,bool)
+					self:SetDisabled(not bool)
+				end)
+			--sf_footsteps_distance (Footstep renderdistance)
+				local convar = GetConVar("sf_footsteps_distance")
+				local wr = mgui.Create("Slider",panel)
+					wr:SetPos(20 + label2:GetWide(),10 + element_size * 5)
+					wr:SetSize(200,20)
+					wr:SetMax(3000)
+					wr:SetMin(400)
+					wr.decimals = 0
+					wr:SetValue(convar:GetInt())
+				function wr:OnReleased()
+					RunConsoleCommand("sf_footsteps_distance",self.var)
+					mgui.AccpetSnd()
+				end
+				wr:AddEvent("sf_footsteps_enable_set",function(self,bool)
+					self:SetDisabled(not bool)
+				end)
+			--sf_enable_windoweffect (Rain on window)
+				local p,label = clientToggle(panel,"sf_enable_windoweffect")
+				p:SetPos(20,10 + element_size * 6)
+				label:SetPos(30 + p:GetWide(),10 + element_size * 6)
+				label:SetTall(p:GetTall())
+			--sf_enable_windoweffect_enable_tr (TR rain on window) 
+				local p,label = clientToggle(panel,"sf_enable_windoweffect_enable_tr")
+				p:SetPos(20,10 + element_size * 7)
+				label:SetPos(30 + p:GetWide(),10 + element_size * 7)
+				label:SetTall(p:GetTall())
+				p:AddEvent("sf_enable_windoweffect_set",function(self,bool)
+					self:SetDisabled(not bool)
+				end)
+		local t = makeTitle(panel,"Misc Effects")
+			t:SetSize(340,20)
+			t:SetPos(0,10 + element_size * 8)
+			--sf_redownloadlightmaps
+				local p,label = clientToggle(panel,"sf_redownloadlightmaps")
+				p:SetPos(20,10 + element_size * 9)
+				label:SetText(label:GetText() .."(" .. StormFox.LanguageTranslate("sf_warning_unsupportmap") ..")")
+				label:SizeToContentsX(5)
+				label:SetPos(30 + p:GetWide(),10 + element_size * 9)
+				label:SetTall(p:GetTall())
+			--sf_renderscreenspace_effects
+				local p,label = clientToggle(panel,"sf_renderscreenspace_effects")
+				p:SetPos(20,10 + element_size * 10)
+				label:SetPos(30 + p:GetWide(),10 + element_size * 10)
+				label:SetTall(p:GetTall())
+			--sf_enable_breath
+				local p,label = clientToggle(panel,"sf_enable_breath")
+				p:SetPos(20,10 + element_size * 11)
+				label:SetPos(30 + p:GetWide(),10 + element_size * 11)
+				label:SetTall(p:GetTall())
 
 	-- Toubleshooter
-		local panel = menu.board["Troubleshooting"]
+		local panel = menu.board["Troubleshooter"]
 		local l = mgui.Create("DLabel",panel)
-			l:SetText("This is not finished yet. Please use the troubleshooter in the server-settings")
+			l:SetText("sf_warning_unfinished_a")
 			l:SizeToContentsX(5)
 			l:SetPos(10,10)
 			local button = mgui.Create("DButton",panel)
-				button:SetText("Open serverside troubleshooter (Requires permission)")
+				button:SetText("sf_warning_unfinished_b")
 				button:SetPos(240 - 170,30)
 				button:SetSize(340,24)
 				function button:DoClick()
@@ -383,7 +440,7 @@ function StormFox.OpenClientSettings()
 				end
 
 	-- Changelog
-		menu.buttons[3].DoClick = function()
+		menu.buttons[4].DoClick = function()
 			gui.OpenURL("https://steamcommunity.com/sharedfiles/filedetails/changelog/1132466603")
 		end
 

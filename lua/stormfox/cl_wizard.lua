@@ -102,7 +102,7 @@ Problem finder
 			local tick
 			if dontshow_option then
 				tick = vgui.Create("DCheckBoxLabel",panel)
-				tick:SetText("Never show this again.")
+				tick:SetText(StormFox.LanguageTranslate("sf_warning_missingmaterial.nevershow"))
 				tick:SetValue(0)
 				tick:SizeToContents()
 				tick:SetPos(w - tick:GetSize() - 2,h - 16)
@@ -144,6 +144,10 @@ Problem finder
 Material scanner
 ---------------------------------------------------------------------------]]
 	local material_list = {
+		"stormfox/effects/foot_hq.png",
+		"stormfox/effects/foot_hql.png",
+		"stormfox/effects/foot_m.png",
+		"stormfox/effects/foot_s.png",
 		"stormfox/effects/lightning.png",
 		"stormfox/effects/lightning2.png",
 		"stormfox/effects/lightning3.png",
@@ -161,9 +165,14 @@ Material scanner
 		"stormfox/models/combine_light_off",
 		"stormfox/models/firewood_burn",
 		"stormfox/models/moon_edit",
+		"stormfox/models/oil_lamp",
+		"stormfox/models/oil_lamp_glass",
 		"stormfox/models/parklight_off",
 		"stormfox/models/sf_effect_ent",
 		"stormfox/models/sun_edit",
+		"stormfox/models/torch_bark",
+		"stormfox/models/torch_base",
+		"stormfox/models/torch_cap",
 		"stormfox/moon_phases/0.png",
 		"stormfox/moon_phases/25.png",
 		"stormfox/moon_phases/50.png",
@@ -176,22 +185,28 @@ Material scanner
 		"stormfox/symbols/Icy.png",
 		"stormfox/symbols/Night - Cloudy.png",
 		"stormfox/symbols/Night.png",
+		"stormfox/symbols/Radioactive.png",
 		"stormfox/symbols/Raining - Thunder.png",
 		"stormfox/symbols/Raining - Windy.png",
 		"stormfox/symbols/Raining.png",
 		"stormfox/symbols/RainingSnowing.png",
+		"stormfox/symbols/Sandstorm.png",
 		"stormfox/symbols/Snowing.png",
 		"stormfox/symbols/Sunny.png",
 		"stormfox/symbols/Thunder.png",
 		"stormfox/symbols/Windy.png",
-		"stormfox/symbols/Radioactive.png",
 		"stormfox/symbols/time_default.png",
 		"stormfox/symbols/time_pause.png",
 		"stormfox/symbols/time_slow.png",
 		"stormfox/symbols/time_speedup.png",
 		"stormfox/symbols/time_speedup2.png",
 		"stormfox/symbols/time_speedup3.png",
+		"stormfox/tool/SF.png",
+		"stormfox/tool/sf_screen",
+		"stormfox/tool/sf_screen_bg",
+		"stormfox/tool/toolgun3.png",
 		"stormfox/SF.png",
+		"stormfox/SF_cl_settings.png",
 		"stormfox/StormFox.png",
 		"stormfox/clouds_big.png",
 		"stormfox/imdoinguselessthings.png",
@@ -202,6 +217,7 @@ Material scanner
 		"stormfox/small_shadow_sprite",
 		"stormfox/snow-multi.png",
 	}
+
 
 	--[[ -- Function to update the materiallist.
 	function PrintDebugList()
@@ -228,7 +244,7 @@ Material scanner
 		print("	}")
 	end
 	--]]
-	timer.Simple(30,function()
+	timer.Simple(10,function()
 		local a = {}
 		for _,matstr in ipairs(material_list) do
 			if Material(matstr):IsError() then
@@ -236,11 +252,9 @@ Material scanner
 			end
 		end
 		if #a > 0 then
-			ShowMessageBox("You're missing materials","You're missing " .. #a .. " material" .. (#a ~= 1 and "s" or "") .. ". ",true)
-			print("[StormFox]: Missing materials:")
+			ShowMessageBox(StormFox.LanguageTranslate("sf_warning_missingmaterial.title"),StormFox.LanguageFormat("sf_warning_missingmaterial",#a),true)
+			print("[StormFox]: " .. StormFox.LanguageTranslate("sf_warning_missingmaterial.title"))
 			PrintTable(a)
-		else
-			print("[StormFox]: No missing materials.")
 		end
 	end)
 --[[-------------------------------------------------------------------------

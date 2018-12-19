@@ -417,7 +417,10 @@ local function checkSnd(mat,lvl)
 	cacheSnd[mat] = result
 	return cacheSnd[mat]
 end
+
+local lastStep = {}
 hook.Add("PlayerFootstep","StormFox - Material Footstep",function( ply, pos, foot, sound, volume, rf )
+	lastStep[ply] = foot
 	local snd = StormFox.GetNetworkData("Ground_Material_Snd","nil")
 		if not snd then return end
 	local lvl = StormFox.GetNetworkData("Ground_MaterialLvl",0)
@@ -450,3 +453,23 @@ hook.Add("PlayerFootstep","StormFox - Material Footstep",function( ply, pos, foo
 			return true
 		end
 end)
+
+-- Singleplayer fix
+	if not game.SinglePlayer() then return end
+	util.AddNetworkString("StormFox.FeetFix")
+
+	hook.Add("EntityEmitSound","StormFox - FootstepFix",function(data)
+		-- Check if its a footstep sound and what foot
+			-- Gather sound data
+				local ent = data.Entity
+				local snd = data.SoundName
+				local originalS = data.OriginalSoundName
+			if not string.match(snd,"footstep") then return end -- No footloose
+			if not IsValid(ent) then return end
+			if ent:IsWorld() then return end
+			if not ent:IsPlayer() then return end
+		net.Start("StormFox.FeetFix")
+			net.WriteString( snd )
+			net.WriteBool(lastStep[ ent ])
+		net.Send( ent )
+	end)

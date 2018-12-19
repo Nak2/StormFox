@@ -7,14 +7,13 @@ local mat_table = {}
 		local json = util.Decompress(data)
 		mat_table = util.JSONToTable(json)
 		if not mat_table then
-			StormFox.Msg("Server send damaged mapdata!")
+			StormFox.Msg("sf_mapdata_invalid")
 		else
-			StormFox.Msg("Loaded mapdata.")
+			StormFox.Msg("sf_mapdata_load")
 		end
 		hook.Call("StormFox.mapdata.receive")
 	end)
 	timer.Simple(1,function()
-		StormFox.Msg("Requesting mapdata.")
 		net.Start("StormFox - mapdata")
 			net.WriteBool(true)
 		net.SendToServer()
@@ -221,13 +220,17 @@ local mat_table = {}
 	end
 	local function ETHull(ent,pos,pos2,min,max,mask)
 		max.z = 0
+		local filter = ent
+		if ent.GetViewEntity then
+			filter = ent:GetViewEntity()
+		end
 		local t = util.TraceHull( {
 		start = pos,
 		endpos = pos + pos2,
 		maxs = max,
 		mins = min,
-		mask = mask or ent,
-		filter = ent:GetViewEntity() or ent
+		mask = mask,
+		filter = filter
 		} )
 		t.HitPos = t.HitPos or (pos + pos2)
 		return t
@@ -250,40 +253,85 @@ local mat_table = {}
 		allowed_type[2] = {["grass"] = true,["roof"] = true,["pavement"] = true}
 		allowed_type[3] = {["grass"] = true,["roof"] = true,["pavement"] = true,["road"] = true}
 
-	hook.Add("PlayerFootstep","StormFox - Material Footstep",function( ply, pos, foot, sound, volume, rf )
-		-- Get sound and check if valid
-			local snd = StormFox.GetNetworkData("Ground_Material_Snd","nil")
-			if not snd then return end
-			if type(snd)~="table" then
-				if snd == "nil" then
-					return
-				end
-			end
-		-- Get mat-lvl and check if under 0
-			local lvl = StormFox.GetNetworkData("Ground_MaterialLvl",0)
-			if lvl <= 0 then return end -- No materials changed
-		-- Get material type and play if matrixground.
+	local function ShouldOverrideSound(ply,sound)
+		local lvl = StormFox.GetNetworkData("Ground_MaterialLvl",0)
+		if lvl <= 0 then return false end -- No materials changed
+		-- Player hullTrace
 			local mz = ply:OBBMins().z
-			local t = ETHull(ply,ply:GetPos(),Vector(0,0,-(mz + 25)),ply:OBBMins(),ply:OBBMaxs())
-			if not t.Hit then return end -- flying
+			local t = ETHull(ply,ply:GetPos() + Vector(0,0,20),Vector(0,0,-(mz + 45)),ply:OBBMins(),ply:OBBMaxs())
+			if not t.Hit then return false end -- Flying
+		-- Get material type
 			local mat = Material(t.HitTexture)
 			local mat_name = mat:GetName()
 			-- In case of nil
 				if mat_name == "___error" then -- Often the "ground" material. Check for dirt and grass sounds
 					if string.find(sound,"dirt") or string.find(sound,"grass") then
-						--ply:EmitSound( snd )
 						return true
 					end
-					return
+					return false
 				end
 		-- Check if its a replaced material
-			if not mat_table then return end
-			if not mat_table.material then return end
-			if checkSnd(mat_name,lvl) then
-				--ply:EmitSound( snd )
-				return true
-			end
-	end)
+			if not mat_table then return false end -- Invalid material table
+			if not mat_table.material then return false end -- Invalid material
+			return checkSnd(mat_name,lvl)
+	end
+
+	-- PlayerFootstep is only for players. But we still need some data
+		local lastFoot = {}
+		hook.Add("PlayerFootstep","StormFox - Material Footstep",function( ply, pos, foot, sound, volume, rf )
+			lastFoot[ply] = foot
+		end)
+	-- Hook into emitsound
+		local unknown = {}
+		hook.Add("EntityEmitSound","StormFox - Footstep",function(data)
+			-- Check if its a footstep sound and what foot
+				-- Gather sound data
+					local ent = data.Entity
+					local snd = data.SoundName
+					local originalS = data.OriginalSoundName
+					local foot = lastFoot[ent] or -1
+				if not string.match(snd,"footstep") then return end -- No footloose
+				if not IsValid(ent) then return end
+				if ent:IsWorld() then return end
+				-- NPC info
+					if originalS and (string.match(originalS,"stepleft") or string.match(originalS,"stepright")) then
+						foot = string.match(originalS,"left") and 0 or 1
+					end
+				-- Unknown feet
+					if foot == -1 then
+						if unknown[ent] then
+							foot = 1
+							unknown[ent] = nil
+						else
+							unknown[ent] = true
+							foot = 0
+						end
+					end
+			-- Check if materialsounds got replaced
+				local overridesnd = StormFox.GetNetworkData("Ground_Material_Snd","nil")
+				if not overridesnd then 
+					hook.Run("StormFox - Footstep",ent,snd,foot) 
+					return
+				end
+			-- Check if we should override
+				local succ = ShouldOverrideSound(ent,snd)
+				if not succ then
+					hook.Run("StormFox - Footstep",ent,snd,foot) 
+					return
+				end
+			-- Override sound
+				data.SoundName = table.Random(overridesnd)
+				hook.Run("StormFox - Footstep",ent,data.SoundName,foot)
+			return true
+		end)
+	-- So .. singleplayer don't call EntityEmitSound
+		if game.SinglePlayer() then
+			net.Receive("StormFox.FeetFix",function()
+				local snd = net.ReadString()
+				local bool = net.ReadBool()
+				hook.Run("StormFox - Footstep",LocalPlayer(),snd,bool and 1 or 0)
+			end)
+		end
 
 -- Controller
 	local lw,lwa = -1,-1
@@ -311,7 +359,7 @@ local mat_table = {}
 	end)
 	hook.Add("StormFox.mapdata.receive","StormFox.mapdata.setup",function()
 		if table.Count(STORMFOX_ORIGINAL_MAT) > 0 then
-			StormFox.Msg("Cleaning map-changes ...")
+			StormFox.Msg("sf_mapdata_cleanup")
 			SetGroundMaterial("")
 		end
 		if table.Count(STORMFOX_ORIGINAL_TREE) > 0 and mat_table.tree then
@@ -319,7 +367,6 @@ local mat_table = {}
 			for tex,_ in pairs(STORMFOX_ORIGINAL_TREE) do
 				if not mat_table.tree[tex] then
 					if not t then
-						StormFox.Msg("Cleaning map-trees ...")
 						t = true
 					end
 					CleanTree(tex)
@@ -327,7 +374,6 @@ local mat_table = {}
 				end
 			end
 		end
-		StormFox.Msg("Setting map-data ...")
 		ApplyTrees(mat_table.tree)
 	end)
 	local function MaterialReplacementThink()

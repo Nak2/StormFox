@@ -40,7 +40,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 		local t = util_TraceLine( {
 		start = pos,
 		endpos = pos2,
-		mask = mask or LocalPlayer(),
+		mask = mask,
 		filter = LocalPlayer():GetViewEntity() or LocalPlayer()
 		} )
 		if not t then -- tracer failed, this should not happen. Create a fake result.
@@ -56,7 +56,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 		local t = util_TraceLine( {
 		start = pos,
 		endpos = pos + pos2,
-		mask = mask or LocalPlayer(),
+		mask = mask,
 		filter = LocalPlayer():GetViewEntity() or LocalPlayer()
 		} )
 		if not t then -- tracer failed, this should not happen. Create a fake result.

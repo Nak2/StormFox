@@ -34,7 +34,7 @@
 			local con = GetConVar(con_name)
 			if not con then return end
 			local tickbox = vgui.Create("DCheckBoxLabel",panel)
-			tickbox:SetText(con:GetHelpText() or "Unknown setting.")
+			tickbox:SetText(StormFox.LanguageTranslate(con:GetHelpText() or "Unknown setting."))
 			tickbox:SetValue(con:GetBool())
 			tickbox.con_name = con_name
 			tickbox.func_disable = func_disable
@@ -69,7 +69,7 @@
 					sf_icon:SetImage("stormfox/StormFox.png")
 					sf_icon:SetKeepAspect(false)
 				panel:AddPanel(sf_frame)
-				panel:AddControl( "Header", { Description = "StormFox Client-Settings" } )
+				panel:AddControl( "Header", { Description = "StormFox " .. StormFox.LanguageTranslate("Client Settings") } )
 			
 			-- Disable effects
 				local tick = clientTrickBox(panel,"sf_disableeffects",function(self)
@@ -86,15 +86,15 @@
 					end
 				end)
 			-- Quality Control
-				local qt = panel:AddControl( "Slider", { Label = "Weather Quality", Type = "Integer", Command = "sf_exspensive", Min = "0", Max = "20" } )
+				local qt = panel:AddControl( "Slider", { Label = StormFox.LanguageTranslate("Weather") .. " " .. StormFox.LanguageTranslate("Quality"), Type = "Integer", Command = "sf_exspensive", Min = "0", Max = "20" } )
 					qt.auto = false
 				function qt:OnValueChanged(n)
 					if n <= 0 then
 						self.auto = true
-						self:SetText("Weather Quality [AUTO]")
+						self:SetText(StormFox.LanguageTranslate("Weather") .. " " .. StormFox.LanguageTranslate("Quality") .. " [AUTO]")
 					else
 						self.auto = false
-						self:SetText("Weather Quality")
+						self:SetText(StormFox.LanguageTranslate("Weather") .. " " .. StormFox.LanguageTranslate("Quality"))
 					end
 				end
 				for _,panel in ipairs(qt:GetChildren()) do
@@ -117,7 +117,7 @@
 			-- Open settings
 				local se_button = mgui.Create("DButton",panel)
 					se_button:SetSize(120,30)
-					se_button:SetText("Open Settings")
+					se_button:SetText("Settings")
 					se_button:SetDark(true)
 					se_button.DoClick = function()
 						RunConsoleCommand("sf_openclsettings")
@@ -136,7 +136,7 @@
 			-- Dynamic shadows
 				local ds_button = mgui.Create("DButton",panel)
 					ds_button:SetSize(120,30)
-					ds_button:SetText("Set HQ shadow convars")
+					ds_button:SetText("sf_description.hq_shadowmaterial")
 					ds_button:SetDark(true)
 					ds_button.DoClick = function()
 						local con = GetConVar("mat_depthbias_shadowmap")
@@ -163,7 +163,7 @@
 					sf_icon:SetKeepAspect(false)
 					sf_icon:SetImageColor(Color(255,255,0))
 				panel:AddPanel(sf_frame)
-				panel:AddControl( "Header", { Description = "StormFox Server-Settings" } )
+				panel:AddControl( "Header", { Description = "StormFox " .. StormFox.LanguageTranslate("Server Settings") } )
 			-- Weather Menu
 				local ds_button = mgui.Create("DButton",panel)
 					ds_button:SetSize(120,30)
@@ -204,7 +204,7 @@
 			-- Map browser
 				local ds_button = mgui.Create("DButton",panel)
 					ds_button:SetSize(120,30)
-					ds_button:SetText("Map browser")
+					ds_button:SetText("Map Browser")
 					ds_button:SetDark(true)
 					ds_button.DoClick = function()
 						RunConsoleCommand("sf_open_mapbrowser")
@@ -469,12 +469,18 @@
 					t["env_fog_controller"] = "Allows to control and edit fog."
 					t["env_skypaint"] = "Allows to paint and edit the sky."
 					t["shadow_control"] = "This map have source shadows."
+					t[".ain nodes"] = "Allows special map-effects."
 
 				local y = 0
 				local i = 0
 				for str,helptext in pairs(t) do
 					i = i + 1
-					local b = StormFox.GetNetworkData("has_" .. str,false)
+					local b = false
+					if str == ".ain nodes" then
+						b = StormFox.AIAinIsValid()
+					else
+						b = StormFox.GetNetworkData("has_" .. str,false)
+					end
 					drawStatus(str,5,i * 16,b,helptext,self)
 					y = i * 16 + 16
 				end
@@ -549,7 +555,7 @@
 						LocalPlayer():EmitSound("ui/buttonclickrelease.wav")
 					end
 			-- Select Weather
-				local SetWeather = CreateButton(panel,"Set Weather")
+				local SetWeather = CreateButton(panel,StormFox.LanguageTranslate("sf_setweather"))
 				SetWeather:SetPos(pw / 2 - 60,28)
 				local mat = StormFox.GetWeatherType(weathers[tselected]):GetStaticIcon( )
 				local selectedweather = vgui.Create("DImage",panel)
@@ -655,7 +661,7 @@
 					label.text = "Temperature: " .. n .. "°C - " .. round(StormFox.CelsiusToFahrenheit(n),1) .. "°F"
 					function label:Paint(w,h)
 						local n = round(StormFox.GetNetworkData("Temperature",20),1)
-						label.text = "Temperature: " .. n .. "°C - " .. round(StormFox.CelsiusToFahrenheit(n),1) .. "°F"
+						label.text = StormFox.LanguageTranslate("Temperature") .. ": " .. n .. "°C - " .. round(StormFox.CelsiusToFahrenheit(n),1) .. "°F"
 						surface.SetTextColor(colors[1])
 						surface.SetFont("SkyFox-Console_Small")
 						local tw,th = surface.GetTextSize(label.text)
@@ -684,11 +690,11 @@
 					label:SetSize(160,20)
 					label:SetPos(pw / 2 - 80,134)
 					local n = round(StormFox.GetNetworkData("Wind",0),1)
-					label.text = "Wind: " .. n
+					label.text = StormFox.LanguageTranslate("Wind") .. ": " .. n
 					function label:Paint(w,h)
 						local n = round(StormFox.GetNetworkData("Wind",0),1)
 						local b,str = StormFox.GetBeaufort(n)
-						label.text = "Wind: " .. n .. " " .. str
+						label.text = StormFox.LanguageTranslate("Wind") .. ": " .. n .. " " .. StormFox.LanguageTranslate(str)
 						surface.SetTextColor(colors[1])
 						surface.SetFont("SkyFox-Console_Small")
 						local tw,th = surface.GetTextSize(label.text)
@@ -753,7 +759,7 @@
 						surface.SetDrawColor(colors[2])
 					end
 					surface.DrawTexturedRect(n,n,w - n * 2,h - n * 2)
-					local text = "Set WindAngle"
+					local text = StormFox.LanguageTranslate("sf_setwindangle")
 					surface.SetFont("SkyFox-Console_Small")
 					local tw,th = surface.GetTextSize(text)
 					surface.SetTextColor(colors[1])
@@ -826,12 +832,12 @@
 							self.editing = false
 						elseif self.editing then
 							for i = 0,9 do
-								if input.IsKeyDown(i + 1) and i ~= self.lastkey then
+								if (input.IsKeyDown(i + 1) or input.IsKeyDown(i + 37)) and i ~= self.lastkey then
 									self.text = self.text .. i
 									self.lastkey = i
 								end
 							end
-							if self.lastkey and not input.IsKeyDown(self.lastkey + 1) then
+							if self.lastkey and not (input.IsKeyDown(self.lastkey + 1) or input.IsKeyDown(self.lastkey + 37)) then
 								self.lastkey = nil
 							end
 						end
@@ -863,7 +869,7 @@
 					cookie.Set("StormFox - ampm",ampm .. "")
 					SetTimeOption()
 				end
-				local settimebutton = CreateButton(panel,"SetTime")
+				local settimebutton = CreateButton(panel,StormFox.LanguageTranslate("sf_settime"))
 				settimebutton:SetSize(pw - 40,24)
 				settimebutton:SetPos(20,308)
 				function settimebutton:DoClick()
@@ -983,11 +989,11 @@
 				end
 
 			local blabel = vgui.Create("DLabel",panel)
-				blabel.text = "Hold C"
+				blabel.text = "sf_holdc"
 				blabel:SetText("")
 				blabel:SetSize(160,20)
 			function blabel:Paint(w,h)
-				local t = openChat and "Close chat to interact" or gui.IsConsoleVisible() and "Close console" or self.text
+				local t = StormFox.LanguageTranslate(openChat and "sf_interface_closechat" or gui.IsConsoleVisible() and "sf_interface_closeconsole" or self.text)
 				surface.SetTextColor(colors[1])
 				surface.SetFont("SkyFox-Console")
 				local tw,th = surface.GetTextSize(t)
@@ -1023,7 +1029,7 @@
 			return true
 		end)
 		list.Set( "DesktopWindows", "StormFox", {
-			title		= "Controller",
+			title		= StormFox.LanguageTranslate("Controller"),
 			icon		= "stormfox/SF.png",
 			width		= 960,
 			height		= 700,
@@ -1035,7 +1041,7 @@
 			end
 			})
 		list.Set( "DesktopWindows", "StormFox-CL", {
-			title		= "Client Settings",
+			title		= StormFox.LanguageTranslate("Client Settings"),
 			icon		= "stormfox/SF_cl_settings.png",
 			width		= 960,
 			height		= 700,
