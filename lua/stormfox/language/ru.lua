@@ -62,7 +62,7 @@
 	sf_running_old=Вы используете устаревшую версию StormFox.
 	sf_running_new=Вы используете версию StormFox новее, чем на Workshop. Будьте готовы к непредсказуемым багам.
 	sf_running_old.console=Устаревшая версия. Версия на Workshop: %s
-	sf_running_version=You're running: %i
+	sf_running_version=Ваша версия: %i
 
 #MapData
 	sf_mapdata_load=Загружены данные для карты
