@@ -275,7 +275,7 @@ function StormFox.OpenClientSettings()
 			end
 			--sf_dynamiclightamount
 				local label = mgui.Create("DLabel",panel)
-				label:SetText("sf_interface_light_range")
+				label:SetText("sf_description.dynamiclightamount")
 				label:SizeToContentsX(5)
 				label:SetPos(20,10 + element_size * 9)
 				local convar = GetConVar("sf_dynamiclightamount")
