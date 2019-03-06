@@ -16,7 +16,7 @@ end
 
 function ENT:SpawnFunction( ply, tr, ClassName )
 
-	if ( !tr.Hit ) then return end
+	if ( not tr.Hit ) then return end
 
 	local SpawnPos = tr.HitPos + tr.HitNormal * 10
 	local SpawnAng = ply:EyeAngles()
@@ -32,18 +32,16 @@ function ENT:SpawnFunction( ply, tr, ClassName )
 	return ent
 end
 
-function ENT:Think()
-	
-end
+function ENT:Think() end
 
 function ENT:Use(ply)
 	if not ply then return end
 	if not IsValid(ply) then return end
 	if self:IsPlayerHolding() then return end
-	StormFox.CanEditWeather(ply,function()
+	StormFox.Permission.WetherEdit(ply,function()
 		local t,yaw = self:GetAngleTime()
-		StormFox.SetTime(t) 
-		if yaw > 20 or yaw <-20 then
+		StormFox.SetTime(t)
+		if yaw > 20 or yaw < -20 then
 			RunConsoleCommand("sf_sunmoon_yaw",math.Round(self:GetAngles().y))
 		end
 	end)

@@ -1,6 +1,7 @@
 
 local RainStorm = StormFox.WeatherType( "rain" )
 local max,min,round = math.max,math.min,math.Round
+RainStorm.Name = "sf_weather.rain"
 RainStorm.CanGenerate = true
 RainStorm.StormMagnitudeMin = 0.13
 RainStorm.MaxLength = 1440 / 3
@@ -41,10 +42,10 @@ RainStorm.DataCalculationFunctions.Fogend = function(flPercent)
 	local tv = StormFox.GetTimeEnumeratedValue()
 	if tv == "TIME_SUNRISE" or tv == "TIME_NOON" then
 		--day
-		return 75600 - 74600*flPercent -- 1000
+		return 75600 - 74600 * flPercent -- 1000
 	else
 		--night
-		return 16000 - 15200*flPercent -- 800
+		return 16000 - 15200 * flPercent -- 800
 	end
 end
 RainStorm.DataCalculationFunctions.Fogstart = function(flPercent)
@@ -120,7 +121,7 @@ function RainStorm.DataCalculationFunctions.MapMaterial(amount,temp)
 		return
 	end
 	local lvl = round(amount * 3) * min(max(temp * -0.166,0),1)
-	return "nature/snowfloor001a",lvl,snd -- ,"nature/snowfloor002a","nature/snowfloor003a" doesn't look seemless together
+	return "nature/snowfloor001a","snow",lvl,snd -- ,"nature/snowfloor002a","nature/snowfloor003a" doesn't look seemless together
 end
 
 function RainStorm:GetName( nTemperature, nWindSpeed, bThunder )
@@ -128,11 +129,11 @@ function RainStorm:GetName( nTemperature, nWindSpeed, bThunder )
 	bThunder = bThunder or StormFox.GetNetworkData("Thunder",false)
 	nTemperature = nTemperature or StormFox.GetNetworkData("Temperature",20)
 	if nWindSpeed >= 10 then
-		return "Storm"
+		return StormFox.Language.Translate("sf_weather.storm")
 	end
-	if bThunder then return "Thunder" end
-	return ( nTemperature < 4 and nTemperature >=0 ) and "Sleet"
-		or ( nTemperature < 0 and "Snowing" or "Raining" )
+	if bThunder then return StormFox.Language.Translate("sf_weather.thunder") end
+	return ( nTemperature < 4 and nTemperature >= 0 ) and StormFox.Language.Translate("sf_weather.sleet")
+		or ( nTemperature < 0 and StormFox.Language.Translate("sf_weather.snowing") or StormFox.Language.Translate("sf_weather.raining") )
 end
 
 local m = Material("stormfox/symbols/Raining.png")

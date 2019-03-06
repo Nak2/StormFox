@@ -1,5 +1,4 @@
 
-
 -- Setup Metatable
 	StormFox.WeatherType = {}
 	StormFox.WeatherType.__index = StormFox.WeatherType
@@ -21,14 +20,14 @@
 	setmetatable( StormFox.WeatherType, { __call = StormFox.WeatherType.__call } )
 
 -- Clear data data
-	StormFox.WeatherType.CanGenerate = false -- Its hardcoded to be pickable .. this will disable any "unknown" weahtertypes
+	StormFox.WeatherType.CanGenerate = false -- Its hardcoded to be pickable.
 	-- Time enumerations
 	StormFox.WeatherType.TIME_SUNRISE = 360
 	StormFox.WeatherType.TIME_SUNSET = 1080
 
 	-- Data having to do with skybox color, lighting etc that is more dependent on the time of day then the storm conditions
 	StormFox.WeatherType.TimeDependentData = {
-		SkyTopColor = { -- The top color painted in the skybox
+		--[[SkyTopColor = { -- The top color painted in the skybox
 			TIME_SUNRISE = Color(91, 127.5, 255),
 			TIME_NOON = Color(51, 127.5, 255),
 			TIME_SUNSET = Color(130, 130, 180),
@@ -39,35 +38,45 @@
 			TIME_NOON = Color(204, 255, 255),
 			TIME_SUNSET = Color(0, 1.5, 5.25),
 			TIME_NIGHT = Color(0, 1.5, 5.25)
+		},]]
+		SkyTopColor = { -- The top color painted in the skybox
+			TIME_SUNRISE = Color(91, 127.5, 255),
+			--TIME_NOON = Color(0.04 * 255,0.18*255,0.38*255),
+			TIME_NOON = Color(28,110,191),
+			TIME_SUNSET = Color(130, 130, 180),
+			TIME_NIGHT = Color(0, 0, 0)
+		},
+		SkyBottomColor = { -- The bottom color painted in the skybox
+			TIME_SUNRISE = Color(91, 127.5, 255),
+			TIME_NOON = Color(0.31 * 255, 0.77 * 255, 255),
+			TIME_SUNSET = Color(0, 1.5, 5.25),
+			TIME_NIGHT = Color(0, 1.5, 5.25)
 		},
 		FadeBias = { -- 
 			TIME_SUNRISE = 0.2,
 			TIME_SUNSET = 0.16,
-			TIME_NIGHT = 0.06
+			TIME_NIGHT = 1
 		},
 		DuskColor = { -- The color of the skybox at dusk
 			 TIME_SUNRISE = Color(255, 204, 0),
 			 TIME_SUNSET = Color(255, 204, 0),
 			 TIME_NIGHT = Color(0, 0, 0),
-			 TIME_NOON = Color(255, 255, 255)
+			 TIME_NOON = Color(255, 0.2 * 255, 255)
 		},
 		DuskIntensity = { -- How intense the sunset/sunrise is
-			 TIME_SUNRISE = 0.7,
+			 TIME_SUNRISE = 1.94,
 			 TIME_SUNSET = 0.7,
 			 TIME_NIGHT = 0
 		},
+		DuskScale = {
+			TIME_SUNRISE = 0.29,
+			 TIME_SUNSET = 0.2,
+			 TIME_NIGHT = 0
+		},
 		HDRScale = { -- 
-			 TIME_SUNRISE = 0.66,
-			 TIME_NOON = 0.5,
-			 TIME_SUNSET = 0.1
-		},
-		Fogdensity = { -- 
-			 TIME_SUNRISE = 0.8,
-			 TIME_SUNSET = 0.9
-		},
-		Fogend = { -- 
-			 TIME_SUNRISE = 108000 * 2,
-			 TIME_SUNSET = 30000 * 1.5
+			 TIME_SUNRISE = 0.7,
+			 TIME_NOON = 0.7,
+			 TIME_SUNSET = 0.7
 		},
 		StarFade = {
 				TIME_SUNRISE = 0.2,
@@ -84,8 +93,7 @@
 				TIME_SUNRISE = 1,
 				TIME_SUNSET = 1
 			},
-		Fogstart = 0, -- 
-		Fogcolor = nil -- 
+		Fogcolor = nil -- Skycolor
 	}
 	-- Data that is either static or computed. If you set the value to be a function then when the storms power changes these values will update
 	StormFox.WeatherType.CalculatedData = {
@@ -100,22 +108,48 @@
 	}
 	-- Here you can add functions that update any of the values in CalculatedData when the storm magnitude changes.
 	StormFox.WeatherType.DataCalculationFunctions = {
+		Fogstart = function() return StormFox.GetNetworkData("fog_start",0) end,
+		Fogend = function(_,time_id)
+			local def = StormFox.GetNetworkData("fog_end",450000)
+			if time_id == "TIME_SUNSET" or time_id == "TIME_NIGHT" then
+				def = def * 0.6 -- 40%
+			end
+			return def
+		end,
+		Fogdensity = function(_,time_id) -- Its darker at night
+			local dens = StormFox.GetNetworkData("fogmaxdensity",0.2)
+			if time_id == "TIME_SUNSET" or time_id == "TIME_NIGHT" then
+				dens = 0.8
+			end
+			return dens
+		end,
+
+
 		-- Example:
 		-- MoonLight = function( stormMag ) return 100 * ( 1-stormMag ) end,
 	}
 	-- Data that is set once and remains the same value. No lerping or time interpolation or anything. The values don't change
 	StormFox.WeatherType.StaticData = {
 		StarSpeed = 0.001,
-		StarScale = 0.7,
+		StarScale = 2.2,
 		StarTexture = "skybox/starfield",
 		MoonTexture = "stormfox/effects/moon.png",
 		GaugeColor = Color(255,255,255),
 		EnableThunder = false
 	}
+	StormFox.WeatherType.Name = "sf_weather.clear"
 	function StormFox.WeatherType:GetName( _, nWindSpeed, bThunder  )
 		nWindSpeed = nWindSpeed or StormFox.GetNetworkData("Wind",0)
 		bThunder = bThunder or StormFox.GetNetworkData("Thunder",false)
-		return bThunder and "Thunder" or ( nWindSpeed > 14 and "Windy" or "Clear")
+
+		if bThunder then
+			return StormFox.Language.Translate("sf_weather.thunder")
+		end
+		local bfs,des = StormFox.GetBeaufort(nWindSpeed)
+		if bfs >= 1 then
+			return des
+		end
+		return StormFox.Language.Translate("sf_weather.clear")
 	end
 
 	local m = Material("stormfox/symbols/Sunny.png")

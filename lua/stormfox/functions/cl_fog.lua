@@ -25,18 +25,18 @@ local SkyFog = function(scale)
 		--col = Color(0,255,0)
 	local outside = StormFox.Env.IsOutside() or StormFox.Env.NearOutside()
 
-	local fogend,fogstart = StormFox.GetData("Fogend",10000)--, StormFox.GetData("Fogstart",10000)
+	local fogend,fogstart = StormFox.GetData("Fogend",10000), StormFox.GetData("Fogstart",10000)
 	--local dis = max(abs(smooths - fogstart) / 8,1) ^ 3
 	if not outside then
-	--	smooths = fogapp(smooths, max(200,fogstart),3)
+		smooths = fogapp(smooths, max(200,fogstart),3)
 		smoothe = fogapp(smoothe, max(500,fogend),3)
 	else
-	--	smooths = fogapp(smooths, fogstart,2)
+		smooths = fogapp(smooths, fogstart,2)
 		smoothe = fogapp(smoothe, fogend)
 	end
 
 	render.FogMode( 1 )
-	render.FogStart( smoothe / 4 * scale )
+	render.FogStart( smooths * scale )
 	render.FogEnd( smoothe * scale )
 	render.FogMaxDensity( StormFox.GetData("Fogdensity",0))
 

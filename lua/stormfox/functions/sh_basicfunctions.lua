@@ -71,28 +71,28 @@ local mad = math.AngleDifference
 
 	-- Beaufort scale and Saffir–Simpson hurricane scale
 		local bfs = {}
-			bfs[0] = "Calm"
-			bfs[0.3] = "Light Air"
-			bfs[1.6] = "Light Breeze"
-			bfs[3.4] = "Gentle Breeze"
-			bfs[5.5] = "Moderate Breeze"
-			bfs[8] = "Fresh Breeze"
-			bfs[10.8] = "Strong Breeze"
-			bfs[13.9] = "Near Gale"
-			bfs[17.2] = "Gale"
-			bfs[20.8] = "Strong Gale"
-			bfs[24.5] = "Storm"
-			bfs[28.5] = "Violent Storm"
-			bfs[32.7] = "Hurricane"
-			bfs[43] = "Category 2"
-			bfs[50] = "Category 3"
-			bfs[58] = "Category 4"
-			bfs[70] = "Category 5"
+			bfs[0] = "sf_winddescription.calm"
+			bfs[0.3] = "sf_winddescription.light_air"
+			bfs[1.6] = "sf_winddescription.light_breeze"
+			bfs[3.4] = "sf_winddescription.gentle_breeze"
+			bfs[5.5] = "sf_winddescription.moderate_breeze"
+			bfs[8] = "sf_winddescription.fresh_breeze"
+			bfs[10.8] = "sf_winddescription.strong_breeze"
+			bfs[13.9] = "sf_winddescription.near_gale"
+			bfs[17.2] = "sf_winddescription.gale"
+			bfs[20.8] = "sf_winddescription.strong_gale"
+			bfs[24.5] = "sf_winddescription.storm"
+			bfs[28.5] = "sf_winddescription.violent_storm"
+			bfs[32.7] = "sf_winddescription.hurricane" -- Also known as cat 1
+			bfs[43] = "sf_winddescription.cat2"
+			bfs[50] = "sf_winddescription.cat3"
+			bfs[58] = "sf_winddescription.cat4"
+			bfs[70] = "sf_winddescription.cat5"
 		local bfkey = table.GetKeys(bfs)
 		table.sort(bfkey,function(a,b) return a < b end)
 	function StormFox.GetBeaufort(ms)
 		local n = ms or StormFox.GetData( "Wind" , 0 )
-		local Beaufort, Description = 0, "Calm"
+		local Beaufort, Description = 0, "sf_winddescription.calm"
 		for k,kms in ipairs( bfkey ) do
 			if kms < n then
 				Beaufort, Description = k - 1, bfs[ kms ]
@@ -100,7 +100,7 @@ local mad = math.AngleDifference
 				break
 			end
 		end
-		return Beaufort, Description
+		return Beaufort, StormFox.Language.Translate( Description )
 	end
 
 	function StormFox.IsRaining()
@@ -120,7 +120,7 @@ local mad = math.AngleDifference
 	end
 
 	function StormFox.GetWeatherID()
-		return StormFox.GetNetworkData("Weather","clear")  
+		return StormFox.GetNetworkData("Weather","clear")
 	end
 
 	function StormFox.GetTemperature(fahrenheit)
@@ -180,10 +180,10 @@ local mad = math.AngleDifference
 
 	if SERVER then
 		StormFox.SetNetworkData("MoonPhase",StormFox.GetMoonPhaseNumber())
-		hook.Add("StormFox - NewDay", "StormFox - CalcMoonphase", function()
+		hook.Add("StormFox.Time.NewDay", "StormFox - CalcMoonphase", function()
 			StormFox.SetNetworkData("MoonPhase",StormFox.GetMoonPhaseNumber())
 		end )
-		hook.Add("StormFox - Timeset","StormFox - CalcMoonphaseTS",function()
+		hook.Add("StormFox.Time.Set","StormFox - CalcMoonphaseTS",function()
 			timer.Simple(0,function()
 				StormFox.SetNetworkData("MoonPhase",StormFox.GetMoonPhaseNumber())
 			end)
