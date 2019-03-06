@@ -3,7 +3,6 @@
 --if true then return end
 
 local Sandstorm = StormFox.WeatherType( "sandstorm" )
-Sandstorm.Name = "sf_weather.sandstorm"
 Sandstorm.StormMagnitudeMin = 0.5
 Sandstorm.CanGenerate = false
 Sandstorm.GenerateCondition = function()
@@ -67,7 +66,7 @@ local snd = {
 function Sandstorm.DataCalculationFunctions.MapMaterial(amount,temp,id)
 	if (id or "") ~= "sandstorm" then return end
 	if amount < 0.5 then return end
-	return "nature/blendsandsand008b","sand",min(round(amount * 2),1),snd
+	return "nature/sandfloor009a",min(round(amount * 2),1),snd
 end
 
 local m = Material("stormfox/symbols/Sandstorm.png")
@@ -77,9 +76,8 @@ end
 function Sandstorm:GetStaticIcon()
 	return m
 end
-function Sandstorm:GetName( _, _, _  )
-	if StormFox.GetNetworkData( "WeatherMagnitude") < 0.3 then return "sf_weather.clear" end
-	return StormFox.Language.Translate("sf_weather.sandstorm")
+function Sandstorm:GetName( nTemperature, nWindSpeed, bThunder  )
+	return "Sandstorm"
 end
 
 local toxamount = 0

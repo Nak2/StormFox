@@ -119,8 +119,8 @@ end
 			else
 				BASE_TIME = CurTime() - ( flNewTime / TIME_SPEED )
 			end
-			hook.Call( "StormFox.Time.Change", nil, flNewTime )
-			hook.Call( "StormFox.Time.Set")
+			hook.Call( "StormFox - Timechange", nil, flNewTime )
+			hook.Call( "StormFox - Timeset")
 			updateClientsTimeVars()
 
 			return flNewTime
@@ -138,22 +138,23 @@ end
 			if StormFox.GetTimeSpeed() <= 0 then return end
 			local time = StormFox.GetTime()
 			if not SUNRISE_CALLED and time >= SUN_RISE and time < SUN_SET then
-				hook.Call( "StormFox.Time.Sunrise" )
+				hook.Call( "StormFox - Sunrise" )
 				SUNRISE_CALLED = true
 				SUNSET_CALLED = false
 			elseif not SUNSET_CALLED and ( time < SUN_RISE or time >= SUN_SET ) then
-				hook.Call( "StormFox.Time.Sunset" )
+				hook.Call( "StormFox - Sunset" )
 				SUNRISE_CALLED = false
 				SUNSET_CALLED = true
 				NEWDAY_CALLED = false
 			elseif time < StormFox.GetTimeSpeed() and not NEWDAY_CALLED then
-				hook.Call( "StormFox.Time.NewDay" )
+				hook.Call( "StormFox - NewDay" )
 				NEWDAY_CALLED = true
 			end
-			hook.Call( "StormFox.Time.Tick", nil, StormFox.GetTime() )
+
+			hook.Call( "StormFox - Tick", nil, StormFox.GetTime() )
 		end
 		timer.Create( "StormFox - tick", 1, 0, timerfunction )
-		hook.Add("StormFox.Time.Set","StormFox.Newdayfix",function()
+		hook.Add("StormFox - Timeset","StormFox - Newdayfix",function()
 			NEWDAY_CALLED = false
 		end)
 	else -- CLIENT
@@ -165,7 +166,7 @@ end
 			else
 				BASE_TIME = flCurrentTime
 			end
-			hook.Call( "StormFox.Time.Set")
+			hook.Call( "StormFox - Timeset")
 		end )
 	end
 
@@ -239,7 +240,7 @@ end
 	
 -- Setup server varables
 	if SERVER then
-		hook.Add("StormFox.PostInit","StormFox.StartTime",function()
+		hook.Add("StormFox - PostInit","StormFox - StartTime",function()
 			local con = GetConVar("sf_start_time")
 			local con2 = GetConVar("sf_realtime")
 			
@@ -273,7 +274,7 @@ end
 			end
 			cookie.Delete("StormFox - ShutDown") -- Always delete
 		end)
-		hook.Add("ShutDown","StormFox.OnShutdown",function()
+		hook.Add("ShutDown","StormFox - OnShutdown",function()
 			cookie.Set("StormFox - ShutDown",StormFox.GetTime() .. "|" .. os.time( ))
 			print("[StormFox] Saved time.")
 		end)

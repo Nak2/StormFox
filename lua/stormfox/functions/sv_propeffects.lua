@@ -42,8 +42,6 @@ local move_tab = {}
 	local scanList,index = {},0
 	timer.Create("StormFox - ScanProps",1,0,function()
 		if count(move_tab) > 400 then return end
-		if not StormFox then return end
-		if not StormFox.GetNetworkData then return end
 		local wind = StormFox.GetNetworkData("Wind",0)
 		local breakconstraints = StormFox.GetMapSetting("wind_breakconstraints",true)
 		if not scanList[index] then

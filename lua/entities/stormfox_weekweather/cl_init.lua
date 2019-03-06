@@ -75,11 +75,10 @@ function ENT:DrawTranslucent()
 			local temp = data.temp
 			local name = StormFox.GetWeatherType(data.name):GetName( temp, data.wind, data.thunder  )
 			local wmat = StormFox.GetWeatherType(data.name):GetIcon(  temp, data.wind, data.thunder )
-			name = StormFox.Language.Translate(name)
 			surface.SetMaterial(wmat)
 
 			surface.SetTextColor(255,255,255)
-			draw.SimpleText(name,"StormFox-Console",x + wd / 2,80,Color(255,255,255),1,0)
+			draw.SimpleText(name,"SkyFox-Console",x + wd / 2,80,Color(255,255,255),1,0)
 			
 			surface.DrawTexturedRect(x,100,wd,50)
 			surface.SetDrawColor(0,0,0)

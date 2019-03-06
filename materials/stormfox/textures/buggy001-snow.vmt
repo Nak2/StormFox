@@ -1,9 +1,0 @@
-"VertexLitGeneric"
-{
-	"$basetexture" "stormfox/textures/buggy001-snow"
-	"$surfaceprop" "metal"
-	"$envmap" "env_cubemap"
- 	"$basealphaenvmapmask" 1
-	"$envmaptint" "[ .5 .5 .5]"
-	"360?$color2" "[ 0.8 0.8 0.8 ]"
-}

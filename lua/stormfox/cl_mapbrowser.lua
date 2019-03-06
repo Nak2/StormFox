@@ -196,6 +196,7 @@ local IgnoreMaps = {
 
 -- Setup SQL functions
 	if not sql.TableExists( "sf_mapinfo" ) then
+		print("[StormFox] Create SQL database.")
 		sql.Query( "CREATE TABLE IF NOT EXISTS sf_mapinfo( map TEXT NOT NULL PRIMARY KEY, mapdata TEXT );" )
 	end
 
@@ -263,6 +264,7 @@ local IgnoreMaps = {
 	hook.Add("StormFox - NetDataChange","StormFox - SaveMapdata",function()
 		-- We got new data
 		timer.Simple(6,function()
+			print("[StormFox] Updating mapdata.")
 			local t = GetMapData()
 			if t.percent_support > 0 then
 				SaveUpdateMapData(t)

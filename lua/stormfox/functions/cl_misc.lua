@@ -11,7 +11,7 @@
 		if not t then -- tracer failed, this should not happen. Create a fake result.
 			local t = {}
 				t.HitPos = pos + pos2
-			return t
+			return t 
 		end
 		t.HitPos = t.HitPos or (pos + pos2)
 		return t
@@ -98,8 +98,8 @@ HUD messages
 --[[-------------------------------------------------------------------------
 Rain puddles
 ---------------------------------------------------------------------------]]
-	local puddle_texture = {(Material("decals/decalkleinerpuddle001a"))}
-	local ice_texture = {(Material("models/props/snow/icefield_01")),(Material("models/props/snow/icefield_02")),(Material("models/props/snow/icefield_03"))}
+	local puddle_mdl = {"models/effects/urban_puddle_model01a.mdl","models/effects/urban_puddle_model02a.mdl","models/effects/urban_puddle_model03a.mdl"}
+	STORMFOX_CL_PUDDLES = STORMFOX_CL_PUDDLES or {}
 	local distance = 3000^2
 	local min_distance = 600^2
 	-- Get puddle positions and cache them if valid
@@ -112,8 +112,8 @@ Rain puddles
 			local ang = vec:Angle()
 			local pdiff = abs(angdiff(ang.p,-90))
 			local rdiff = abs(angdiff(ang.r,0))
-			if pdiff > smooth then return false end
-			if rdiff > smooth then return false end
+			if pdiff> smooth then return false end
+			if rdiff> smooth then return false end
 			return true
 		end
 		local nodez = {}
@@ -133,7 +133,7 @@ Rain puddles
 					cache_t = CurTime() + 2
 				else
 					cache_t = -1
-					StormFox.Msg(StormFox.Language.Translate("sf_generating.puddles"))
+					StormFox.Msg("Generated puddle positions")
 				end
 			for _,node_id in pairs(outdoor_nodes) do
 				if node_id % de_select == 0 then continue end -- Remove a few
@@ -170,14 +170,32 @@ Rain puddles
 				-- Looks like a valid position
 				table.insert(nodez,{puddle_pos,tr.HitNormal:Angle():Up():Angle()})
 			end
-			if #nodez <= 0 then
+			if #nodez<= 0 then
 				invalid_protection = true
 				StormFox.Msg("No valid rainpuddle location on the map.")
 			end
 			return nodez
 		end
+	-- Create puddles
+		local function GetOrCreatePuddle(i,vec,ang)
+			if IsValid(STORMFOX_CL_PUDDLES[i]) then return STORMFOX_CL_PUDDLES[i] end
+			local a = Angle(ang.p,ang.y,ang.r)
+			-- Randomize the angle a bit
+				local n = i%4
+				if n > 0 then
+					a:RotateAroundAxis(a:Up(),90 * i)
+				end
+			-- Choose model
+				local nn = (i%3) + 1
+				local mdl_n = puddle_mdl[nn]
+			-- Create entity
+				STORMFOX_CL_PUDDLES[i] = ClientsideModel(mdl_n)
+				STORMFOX_CL_PUDDLES[i]:SetPos(vec)
+				STORMFOX_CL_PUDDLES[i]:SetAngles(a)
+				STORMFOX_CL_PUDDLES[i]:SetNoDraw(true)
+		end
 	-- Node scanner (Get all nodes nearby .. costly, but cached)
-		near_nodes = {}
+		local near_nodes = {}
 		local function UpdateNearNodes(procent_wet)
 			table.Empty(near_nodes)
 			local lp = StormFox.GetCalcViewResult().pos
@@ -186,69 +204,96 @@ Rain puddles
 				if (id % 10) + 1 < n then continue end
 				local pos,ang = data[1],data[2]
 				if lp:DistToSqr(pos) > distance then continue end
-				pos = pos + ang:Up()
-				table.insert(near_nodes,{pos,ang,id})
+				table.insert(near_nodes,id)
 			end
 			return near_nodes
 		end
 		local puddleamount = 0
 		local puddlesize = 0
-		local ice = false
 		local function HandlePuddles()
+			if not IsMounted("csgo") then return false end -- NEED CSGO
 			local setting = GetConVar("sf_rainpuddle_enable")
 			local temp = StormFox.GetNetworkData("Temperature",0)
-				ice = temp <= -3
-			if not setting or ice then
+			STORMFOX_CL_PUDDLESpuddleamount = puddleamount
+			STORMFOX_CL_PUDDLESpuddlesize = puddlesize
+			if not setting then
 				puddleamount = 0
 			elseif setting:GetBool() then
 				local gauge = clamp(StormFox.GetData("Gauge",0) / 10,0,1)
-				puddleamount = approach(puddleamount,gauge,0.2 * 10) -- Slowly .. over 10 seconds
+				if temp < -3 then
+					gauge = 0
+				end
+				puddleamount = approach(puddleamount,gauge,0.2) -- Slowly .. over 10 seconds
 			else
 				puddleamount = 0
 			end
 			if puddleamount < 0.1 then
 				-- No puddles
+				if puddlesize <= 0 then -- Delete them when dried up
+					if table.Count(STORMFOX_CL_PUDDLES) > 0 then
+						for id,ent in pairs(STORMFOX_CL_PUDDLES) do
+							SafeRemoveEntity(ent)
+							STORMFOX_CL_PUDDLES[id] = nil
+						end
+					end
+				end
 				return false
 			end
+			local lp = StormFox.GetCalcViewResult().pos
 			-- Update near_nodes
 				UpdateNearNodes(puddleamount)
+			-- Delete invalid puddles and set far to norender
+				for id,ent in pairs(STORMFOX_CL_PUDDLES) do
+					if not IsValid(ent) then
+						SafeRemoveEntity(ent)
+						STORMFOX_CL_PUDDLES[id] = nil
+					elseif ent:GetPos():DistToSqr(lp) > distance then
+						ent._SF_NODRAW = true
+					else
+						ent._SF_NODRAW = false
+					end
+				end
+			-- Create missing puddles
+				for _,node_id in pairs(near_nodes) do
+					local data = GetNodes()[node_id]
+					GetOrCreatePuddle(node_id,data[1],data[2])
+				end
 			return true
 		end
 		timer.Create("Stormfox - PuddleCreator",2,0,HandlePuddles)
 		hook.Add("PreDrawOpaqueRenderables","StormFox - PuddleRender",function()
-			if puddleamount <= 0 and puddlesize > 0 then
+			if puddleamount <= 0 and puddlesize > 0 then 
 				puddlesize = max(0,puddlesize - FrameTime() / 100)
 			elseif puddleamount > 0 and puddlesize < 1 then
-				local n = FrameTime() / 40 * (1.1-puddlesize)
+				local n = FrameTime() / 100 * (1.1-puddlesize)
 				puddlesize = min(1,puddlesize + n)
 			end
 			if puddlesize <= 0 then return end
-			for _,data in pairs(near_nodes) do
-				local tex,node_id = nil,data[3]
-				if ice and false then
-					local tex_id = (node_id % #ice_texture) + 1
-					tex = ice_texture[tex_id]
-				else
-					local tex_id = (node_id % #puddle_texture) + 1
-					tex = puddle_texture[tex_id]
+			local mat = Matrix()
+				mat:Scale( Vector(puddlesize,puddlesize,1) )
+			for k,ent in pairs(STORMFOX_CL_PUDDLES) do
+				if IsValid(ent) then
+					if ent._SF_NODRAW then continue end
+					ent:EnableMatrix( "RenderMultiply", mat )
+					ent:DrawModel()
 				end
-				render.SetMaterial(tex)
-				local s = puddlesize * (1 + (node_id % 2)) * 100
-				render.DrawQuadEasy(data[1],data[2]:Up(),s,s,Color(255,255,255),node_id * 19 % 360)
 			end
 		end)
 --[[-------------------------------------------------------------------------
 Snow footsteps
 ---------------------------------------------------------------------------]]
 	local footsteps = false
+	local max_footsteps = 200
 	local footstep_maxlife = 30
 	local footstep_dis = 2000^2
-	timer.Create("StormFox.Footstep toggle",2,0,function()
+	timer.Create("StormFox - Footstep toggle",2,0,function()
 		footsteps = false
-		if GetConVar("sf_footsteps_enable"):GetBool() ~= true then
+		if GetConVar("sf_footsteps_enable"):GetBool() ~= true then 
 			table.Empty(STORMFOX_SNOW_FEETS)
-			return
+			return 
 		end
+		local mat = StormFox.GetNetworkData("Ground_Material","nil")
+		if not string.match(mat,"[sS][nN][oO][wW]") then return end
 		footsteps = true
 	end)
 	STORMFOX_SNOW_FEETS = STORMFOX_SNOW_FEETS or {}
@@ -297,7 +342,7 @@ Snow footsteps
 		-- 	pos 	ang 	foot 	scale 	life 	multi
 		table.insert(STORMFOX_SNOW_FEETS,{footpos,ang,foot,ply:GetModelScale() or 1,CurTime() + life,clamp(velspeed / 200,1,3)})
 	end
-	hook.Add("StormFox.Footstep","StormFox.Footstepprint",function(ply,snd,foot)
+	hook.Add("StormFox - Footstep","StormFox - Footstepprint",function(ply,snd,foot)
 		if not footsteps then return end
 		if not string.match(snd,"[sS][nN][oO][wW]") then return end
 		AddFootstep(ply,ply:GetPos(),foot)
@@ -351,14 +396,6 @@ Snow footsteps
 		if speed < 192 then return end
 		doublestep[ent] = CurTime() + 1
 	end)
---[[-------------------------------------------------------------------------
-Default texture removal
----------------------------------------------------------------------------]]
-	local removeList = {"effects/fog_d1_trainstation_02"}
-	for k,v in pairs(removeList) do
-		Material(v):SetInt("$alpha",0)
-	end
-
 --[[-------------------------------------------------------------------------
 Aurora borealis (Not done yet)
 ---------------------------------------------------------------------------]]

@@ -1,12 +1,6 @@
 assert(StormFox,"Missing everything")
 assert(StormFox.SetWeather,"Missing weather controller")
 
--- Local Functions
-	local function IsColdWorld()
-		local mapEnt = StormFox.MAP.Entities()[1]
-		if not mapEnt.coldworld then return false end
-		return mapEnt.coldworld > 0
-	end
 
 --[[
 Data
@@ -90,10 +84,6 @@ function StormFox.GenerateNewDay(dont_update)
 	local lastWeather = week[#week] or {}
 	-- Calc temperature change
 		local tempmin,tempmax = StormFox.GetMapSetting("mintemp",-10),StormFox.GetMapSetting("maxtemp",20)
-		if IsColdWorld() then
-			tempmin = math.min(tempmin,-3)
-			tempmax = math.min(tempmax,-3)
-		end
 		local last_tempacc = lastWeather.tempacc or math.random(-7,7)
 		local last_temp = lastWeather.temp or StormFox.GetNetworkData("Temperature",math.random(tempmin,tempmax))
 
@@ -135,7 +125,7 @@ function StormFox.GenerateNewDay(dont_update)
 	if dont_update then return end
 	StormFox.SetNetworkData("WeekWeather",week)
 end
-hook.Add("StormFox.PostInit","StormFox - GenerateFirstWeather",function()
+hook.Add("StormFox - PostInit","StormFox - GenerateFirstWeather",function()
 	for i = 1,6 do
 		StormFox.GenerateNewDay( true )
 	end
@@ -144,7 +134,7 @@ end)
 
 local selected,clearWD = false
 local autocon = GetConVar("sf_autoweather")
-hook.Add("StormFox.Time.NewDay", "StormFox - SendNextDay", function()
+hook.Add("StormFox - NewDay", "StormFox - SendNextDay", function()
 	if autocon and not autocon:GetBool() then return end
 	StormFox.GenerateNewDay( )
 	if clearWD and clearWD >= 1440 then
@@ -154,7 +144,7 @@ hook.Add("StormFox.Time.NewDay", "StormFox - SendNextDay", function()
 end )
 
 local max = math.max
-hook.Add("StormFox.Time.Tick", "StormFox - WeatherAIThink",function(n)
+hook.Add("StormFox - Tick", "StormFox - WeatherAIThink",function(n)
 	if #week < 1 then return end
 	if autocon and not autocon:GetBool() then return end
 	if clearWD and clearWD <= n then

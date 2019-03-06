@@ -354,7 +354,7 @@ local clamp,min,max,abs,lerp,cos,sin,rad,round = math.Clamp,math.min,math.max,ma
 			function p:AddEvent(name,func)
 				if not events[name] then events[name] = {} end
 				events[name][self] = func
-			end
+			end 
 			function p:GetFrame(self)
 				return self._DFrame
 			end
@@ -370,7 +370,7 @@ local clamp,min,max,abs,lerp,cos,sin,rad,round = math.Clamp,math.min,math.max,ma
 				return self:GetPallete(self:GetParentPallete())
 			end
 			function p:GetPallete(str)
-				if type(str) == "number" then str = str .. "" end
+				if type(str) == "number" then str = str.."" end
 				if not self._DFrame then return defaultPallete[str] end
 				if not self._DFrame.pallete then return defaultPallete[str] end
 				return self._DFrame.pallete[str]
@@ -387,7 +387,7 @@ local clamp,min,max,abs,lerp,cos,sin,rad,round = math.Clamp,math.min,math.max,ma
 				if not self._DFrame then return false end
 				if not self._DFrame.pallete then return false end
 				return self._DFrame.pallete.DarkTheme or false
-			end
+			end		
 			function p:GetTextColor(col)
 				local lum = nil
 				if col then
@@ -458,7 +458,7 @@ Color help
 			surface.SetTextColor(self:GetTextColor(self:GetPallete("700")))
 			surface.SetFont(self:GetFont())
 			local text = self.text
-				text = StormFox.Language.Translate(text)
+				text = StormFox.LanguageTranslate(text)
 			local tw,th = surface.GetTextSize(text)
 			if self.icon then
 				surface.SetTextPos(32,12 - th / 2)
@@ -528,8 +528,8 @@ Color help
 			end
 			if self.text then
 				local text = self.text
-				if StormFox.Language.Translate then
-					text = StormFox.Language.Translate(text)
+				if StormFox.LanguageTranslate then
+					text = StormFox.LanguageTranslate(text)
 				end
 				if self:GetDisabled() then
 					local parent = self:GetParent()
@@ -831,7 +831,7 @@ Color help
 		end
 		function panel:SizeToContentsX( n )
 			surface.SetFont(self:GetFont())
-			local text = StormFox.Language.Translate(self.text) or self.text
+			local text = StormFox.LanguageTranslate(self.text) or self.text
 			local tw,th = surface.GetTextSize(text)
 			self:SetSize(tw + n,th)
 		end
@@ -844,8 +844,8 @@ Color help
 			surface.SetTextColor(Color(c.r,c.g,c.b,self.disabled and 100 or 255))
 			surface.SetFont(self:GetFont())
 			local t = self.text
-			if StormFox.Language.Translate then
-				t = StormFox.Language.Translate(t)
+			if StormFox.LanguageTranslate then
+				t = StormFox.LanguageTranslate(t)
 			end
 			local tw,th = surface.GetTextSize(t)
 			if self.textalign == 0 then
@@ -979,8 +979,8 @@ Color help
 			end
 			surface.SetFont(self:GetFont())
 			local t = self:GetValue() or ""
-			if StormFox.Language.Translate then
-				t = StormFox.Language.Translate(t)
+			if StormFox.LanguageTranslate then
+				t = StormFox.LanguageTranslate(t)
 			end
 			if self.TextEditor then
 				local r = self:TextEditor(t)

@@ -212,7 +212,7 @@
 		elseif IsColor(var) and netcashe[str] then
 			local c = netcashe[str]
 			if var.r == c.r and var.g == c.g and var.b == c.b and var.a == c.a then
-				return -- Also a dupe
+				return
 			end
 		end
 		netcashe[str] = var
@@ -245,7 +245,7 @@
 					net.Broadcast()
 				end
 				-- Notify scripts that something changed
-				hook.Run("StormFox - NetDataChange",str,var,over_seconds)
+				hook.Call("StormFox - NetDataChange",nil,str,var,over_seconds)
 				return
 			end
 			network_aimdata[str] = {var,t,over_seconds}
@@ -259,7 +259,7 @@
 				net.Broadcast()
 			end
 		-- Notify scripts that something changed
-			hook.Run("StormFox - NetDataChange",str,var,over_seconds)
+			hook.Call("StormFox - NetDataChange",nil,str,var,over_seconds)
 	end
 	local cdata = {}
 	function StormFox.GetNetworkData(str,base)

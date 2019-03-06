@@ -181,7 +181,7 @@
 
 -- DayLogic
 	if SERVER then
-		hook.Add("StormFox.Time.NewDay", "StormFox - SetNextDay", function()
+		hook.Add("StormFox - NewDay", "StormFox - SetNextDay", function()
 			local nd = StormFox.GetNetworkData("Day",0) + 1
 			if nd > 356 then nd = 1 end
 			StormFox.SetNetworkData("Day",nd)

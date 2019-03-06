@@ -140,7 +140,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 				materials.Snow 				= StormFox.GetData("SnowTexture") or materials.RainSmoke or materials.Rain or Material("particle/snow")
 				materials.SnowSmoke			= StormFox.GetData("SnowSmoke") or Material("particle/smokesprites_0001")
 				materials.SnowMultiTexture	= StormFox.GetData("SnowMultiTexture") or materials.RainMultiTexture or Material("stormfox/snow-multi.png","noclamp smooth")
-			snowEnabled,GaugeColor = StormFox.GetData("EnableSnow"),StormFox.GetData("GaugeColor") or Color(255,255,255)
+			snowEnabled,GaugeColor = StormFox.GetData("EnableSnow",true),StormFox.GetData("GaugeColor") or Color(255,255,255)
 
 		Gauge = StormFox.GetData("Gauge",0)
 		temp = StormFox.GetNetworkData("Temperature",20)

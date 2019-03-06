@@ -65,7 +65,7 @@
 			StormFox_NETWORK_DATA["skybox_scale"] = sky_scale
 			StormFox_NETWORK_DATA["skybox_pos"] = sky_cam:GetSaveTable()["m_skyboxData.origin"] or sky_cam:GetPos()
 		end
-		hook.Add("StormFox.PostEntity","StormFox.FindSkyBox",scan)
+		hook.Add("StormFox - PostEntity","StormFox - FindSkyBox",scan)
 
 		function StormFox.Is3DSkybox()
 			return IsValid(sky_cam)

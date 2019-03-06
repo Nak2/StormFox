@@ -2,34 +2,6 @@
 local clamp,floor = math.Clamp,math.floor
 local min = math.min
 
--- Local variables
-	local function IsColdWorld()
-		local mapEnt = StormFox.MAP.Entities()[1]
-		if not mapEnt.coldworld then return false end
-		return mapEnt.coldworld > 0
-	end
-	local function lerpAnyValue( amount, currentValue, targetValue )
-		if not currentValue then return targetValue end -- NOTE: If you find that the values are going instantly to the target check here first
-		if not targetValue then return currentValue end
-		amount = math.Clamp( amount, 0, 1 )
-		if type( currentValue ) != type( targetValue ) then
-			ErrorNoHalt("ERROR: lerpAnyValue called with values of two different types. Returning original value")
-			debug.Trace()
-			return currentValue
-		end
-		if type( currentValue ) == "number" then -- Standard number Lerp
-			return Lerp( amount, currentValue, targetValue )
-		elseif type( currentValue ) == "table" and currentValue.a and currentValue.r and currentValue.g and currentValue.b then -- Color lerp
-			local r = Lerp( amount, currentValue.r, targetValue.r )
-			local g = Lerp( amount, currentValue.g, targetValue.g )
-			local b = Lerp( amount, currentValue.b, targetValue.b )
-			local a = Lerp( amount, currentValue.a, targetValue.a )
-			return Color( r, g, b, a )
-		end
-		ErrorNoHalt("ERROR: Unsupported lerp value type. Returning original value")
-		return currentValue
-	end
-
 -- functions
 function StormFox.CalculateMapLight( flTime , nMin, nMax )
 	if not nMin then nMin = 0 end
@@ -39,22 +11,41 @@ function StormFox.CalculateMapLight( flTime , nMin, nMax )
 	local flMapLight = -0.00058 * math.pow( flTime - 750, 2 ) + nMax
 	return clamp( flMapLight, nMin, nMax )
 end
+local function lerpAnyValue( amount, currentValue, targetValue )
+	if not currentValue then return targetValue end -- NOTE: If you find that the values are going instantly to the target check here first
+	if not targetValue then return currentValue end
+
+	amount = math.Clamp( amount, 0, 1 )
+	if type( currentValue ) != type( targetValue ) then
+		ErrorNoHalt("ERROR: lerpAnyValue called with values of two different types. Returning original value")
+		debug.Trace()
+		return currentValue
+	end
+
+	if type( currentValue ) == "number" then -- Standard number Lerp
+		return Lerp( amount, currentValue, targetValue )
+	elseif type( currentValue ) == "table" and currentValue.a and currentValue.r and currentValue.g and currentValue.b then -- Color lerp
+		local r = Lerp( amount, currentValue.r, targetValue.r )
+		local g = Lerp( amount, currentValue.g, targetValue.g )
+		local b = Lerp( amount, currentValue.b, targetValue.b )
+		local a = Lerp( amount, currentValue.a, targetValue.a )
+		return Color( r, g, b, a )
+	end
+	ErrorNoHalt("ERROR: Unsupported lerp value type. Returning original value")
+	return currentValue
+end
 
 local currentMapMaterialFunc,currentMapMaterial,currentLvl,currentMapMaterialid = nil,nil,0,""
 if SERVER then
-	local startTemp = math.random(StormFox.GetMapSetting("mintemp",-10),StormFox.GetMapSetting("maxtemp",20))
-	if IsColdWorld() then
-		startTemp = math.min(startTemp,-3)
-	end
-	StormFox.SetNetworkData( "Temperature", startTemp )
+	StormFox.SetNetworkData( "Temperature", math.random(StormFox.GetMapSetting("mintemp",-10),StormFox.GetMapSetting("maxtemp",20)) )
 	StormFox.SetNetworkData( "Thunder",false)
 	StormFox.SetNetworkData( "Wind", 0 )
 	StormFox.SetNetworkData( "WindAngle", math.random(360) ) --cl
 	if StormFox.GetNetworkData( "Temperature",0) < -4 then
 		if StormFox.WeatherTypes[ "rain" ] then
-			local str,mType,lvl,snd = StormFox.WeatherTypes[ "rain" ].DataCalculationFunctions.MapMaterial(1,StormFox.GetNetworkData( "Temperature",0))
+			local str,lvl,snd = StormFox.WeatherTypes[ "rain" ].DataCalculationFunctions.MapMaterial(1,StormFox.GetNetworkData( "Temperature",0))
 			currentMapMaterialFunc = StormFox.WeatherTypes[ "rain" ].DataCalculationFunctions.MapMaterial
-			StormFox.TexHandler.ApplyMaterial(str,mType,lvl,snd)
+			StormFox.SetGroundMaterial(str,lvl,snd)
 		end
 	end
 	
@@ -100,7 +91,7 @@ end)
 
 -- update varables
 local instantSet = false
-	hook.Add("StormFox.Time.Set","StormFox - instasetfix",function()
+	hook.Add("StormFox - Timeset","StormFox - instasetfix",function()
 		instantSet = true
 		skyUpdate = 0
 	end)
@@ -113,7 +104,7 @@ local cacheAmount,cacheflMagnitude = {},-1
 		timer.Create("StormFox - MapMaterialController",4,0,function()
 			if not StormFox.GetMapSetting("material_replacment") then
 				if currentMapMaterialFunc then -- Remove old material
-					StormFox.TexHandler.ApplyMaterial()
+					StormFox.SetGroundMaterial()
 					currentMapMaterial = nil
 				end
 				return
@@ -121,13 +112,13 @@ local cacheAmount,cacheflMagnitude = {},-1
 			if not currentMapMaterialFunc then return end -- No ground function
 			-- Load/generate data
 				local sWeatherID = StormFox.GetNetworkData( "Weather", "clear" )
-				local mat,mType,lvl,snd = currentMapMaterialFunc(StormFox.GetNetworkData( "WeatherMagnitude" , 0),StormFox.GetNetworkData("Temperature",20),sWeatherID)
+				local mat,lvl,snd = currentMapMaterialFunc(StormFox.GetNetworkData( "WeatherMagnitude" , 0),StormFox.GetNetworkData("Temperature",20),sWeatherID)
 					lvl = clamp(floor(lvl or 0),0,3)
 			-- Remove old weather-functions if nil material
 				if not mat then -- Remove material and function
 					currentLvl = 0
 					if currentMapMaterial then -- Remove old material
-						StormFox.TexHandler.ApplyMaterial()
+						StormFox.SetGroundMaterial()
 						currentMapMaterial = nil
 					end
 					if sWeatherID ~= currentMapMaterialid then  -- Remove function if its set by old weather
@@ -147,7 +138,7 @@ local cacheAmount,cacheflMagnitude = {},-1
 				currentLvl = lvl
 				currentMapMaterial = checkMat
 			-- Update
-				StormFox.TexHandler.ApplyMaterial(mat,mType,lvl,snd)
+				StormFox.SetGroundMaterial(mat,lvl,snd)
 		end)
 	end
 
@@ -234,7 +225,7 @@ local function weatherThink()
 						currentMapMaterialFunc = func
 						currentMapMaterialid = sWeatherID
 					else
-						StormFox.SetData(key,func(flMagnitude,currentTimeType), dataUpdate)
+						StormFox.SetData(key,func(flMagnitude), dataUpdate)
 					end
 				end
 			end

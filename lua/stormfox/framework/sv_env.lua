@@ -70,7 +70,7 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)]]
 		local con = GetConVar("sf_enable_mapsupport")
 		if con and con:GetBool() then
 			local tSunlist = ents.FindByClass( "env_sun" )
-			for i = 1, #tSunlist do -- Remove any env_suns, there should be only one but who knows
+			for i = 1, #tSunlist do -- Remove any env_suns there should be only one but who knows
 				tSunlist[ i ]:Fire( "TurnOff" )
 				SafeRemoveEntity( tSunlist[ i ] )
 			end
@@ -93,9 +93,9 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)]]
 		printEntFoundStatus( StormFox.env_tonemap_controller, "env_tonemap_controller" )
 		printEntFoundStatus( StormFox.shadow_control, "shadow_control" )
 
-		hook.Call( "StormFox.PostEntityScan" )
+		hook.Call( "StormFox - PostEntityScan" )
 	end
-	hook.Add( "StormFox.PostEntity", "StormFox.ScanForEntities", FindEntities )
+	hook.Add( "StormFox - PostEntity", "StormFox - ScanForEntities", FindEntities )
 
 -- ConVar value
 	local con = GetConVar("sf_sunmoon_yaw")
@@ -184,7 +184,7 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)]]
 	local oldls = "-"
 	local con = GetConVar("sf_enable_ekstra_lightsupport")
 	local blockSpam = SysTime() + 30
-	hook.Add("StormFox.PostEntityScan","StormFox - FixMapBlackness",function()
+	hook.Add("StormFox - PostEntityScan","StormFox - FixMapBlackness",function()
 		blockSpam = SysTime() + 10
 	end)
 	local conc = GetConVar("sf_enable_ekstra_entsupport")
@@ -202,11 +202,10 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)]]
 		if not light then return end
 		if blockSpam > SysTime() then return end
 		local getChar = string.char(97 + round(clamp(light,0,100) / 4)) -- a - z
-		local getChar_rev = string.char(97 + round(clamp(100 - light,0,100) / 4)) -- a - z
 		--oldls = getChar
 		if oldls ~= getChar then
 			if con:GetBool() then
-				if light < 4 then
+				if light < 4 and false then
 					engine.LightStyle(0,"b")
 				else
 					engine.LightStyle(0,getChar)
@@ -215,11 +214,6 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)]]
 			end
 			for _,light in ipairs(StormFox.light_environments or {}) do
 				light:Fire("FadeToPattern", getChar ,0)
-				if getChar == "a" then
-					light:Fire("TurnOff","",0)
-				else
-					light:Fire("TurnOn","",0)
-				end
 				light:Activate()
 			end
 			StormFox.SetNetworkData("MapLightChar",getChar)
@@ -240,7 +234,7 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)]]
 	end
 
 -- Support for envcitys sky-entity
-	hook.Add("StormFox.PostEntity","StormFox.StopWhiteBoxes",function()
+	hook.Add("StormFox - PostEntity","StormFox - StopWhiteBoxes",function()
 		local skyCam = ents.FindByClass("sky_camera")[1] or nil
 		if not IsValid(skyCam) then return end
 		local tr = util.QuickTrace(skyCam:GetPos(),Vector(0,0,-1000))

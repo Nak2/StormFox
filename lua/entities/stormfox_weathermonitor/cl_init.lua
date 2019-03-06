@@ -4,7 +4,7 @@ function ENT:Initialize()
 
 end
 
-surface.CreateFont( "StormFox-DigitalClock", {
+surface.CreateFont( "SkyFox-DigitalClock", {
 	font = "Arial", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
 	extended = false,
 	size = 50,
@@ -48,7 +48,7 @@ function ENT:Draw()
 		local w,h = 208,158
 
 		surface.SetTextColor(255,255,255)
-		surface.SetFont("StormFox-Console_B")
+		surface.SetFont("SkyFox-Console_B")
 		local text = StormFox.Weather.GetName()
 		local text_length,text_height = surface.GetTextSize(text)
 		surface.SetTextPos(w / 2 - text_length / 2,h / 4 - text_height)
@@ -63,7 +63,7 @@ function ENT:Draw()
 		surface.DrawTexturedRect(w / 2 + text_length / 2 - text_height / 2,h / 4,text_height,text_height)
 
 		--Gauge
-		surface.SetFont("StormFox-Console")
+		surface.SetFont("SkyFox-Console")
 		surface.SetTextPos(w / 4 , h / 1.8)
 		surface.DrawText(math.ceil(Gauge) .. "mm")
 

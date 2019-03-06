@@ -2,7 +2,6 @@
 
 local Radioactive = StormFox.WeatherType( "radioactive" )
 local max,min,ran,round = math.max,math.min,math.random,math.Round
-Radioactive.Name = "sf_weather.radioactive"
 Radioactive.CanGenerate = false
 Radioactive.GenerateCondition = function()
 	return math.random(4) >= 3
@@ -89,7 +88,7 @@ local snd = {
 function Radioactive.DataCalculationFunctions.MapMaterial(amount,temp,id)
 	if (id or "") ~= "radioactive" then return end
 	if amount < 0.6 then return end -- Need more toxic
-	return "stormfox/textures/dry_ground","radioactive",1,snd
+	return "nature/dirtfloor013a",min(round(amount * 2),1),snd
 end
 
 local m = Material("stormfox/symbols/Radioactive.png")
@@ -99,9 +98,9 @@ end
 function Radioactive:GetStaticIcon()
 	return m
 end
-function Radioactive:GetName( _, _, _  )
+function Radioactive:GetName( nTemperature, nWindSpeed, bThunder  )
 	--local m = StormFox.GetNetworkData( "WeatherMagnitude")
-	return StormFox.Language.Translate("sf_weather.radioactive_rain")
+	return "Radioactive Rain"
 end
 
 local toxamount = 0
