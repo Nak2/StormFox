@@ -4,7 +4,7 @@ local defaultSettings = {}
 	defaultSettings["maxtemp"] = 20					--
 	defaultSettings["maxwind"] = 30					--
 	defaultSettings["minlight"] = 4				--
-	defaultSettings["maxlight"] = 64				--
+	defaultSettings["maxlight"] = 40				--
 	defaultSettings["dynamiclight"] = true 			--
 	defaultSettings["material_replacment"] = true 		--
 	defaultSettings["replace_dirtgrassonly"] = false 	--
@@ -34,8 +34,15 @@ end
 if SERVER then
 	util.AddNetworkString("sf_mapsettings")
 	if file.Exists("stormfox/mapsetting.txt","DATA") then
-		mapSettings = util.JSONToTable(file.Read("stormfox/mapsetting.txt","DATA"))
-		mapSettings["weather_clear"] = true
+		local data = file.Read("stormfox/mapsetting.txt","DATA")
+		local jsondata = util.JSONToTable(data)
+		if not jsondata then
+			ErrorNoHalt("INVALID MAP SETTINGS!")
+			StormFox.Msg("Can't read the file: data/stormfox/mapsetting.txt")
+		else
+			mapSettings = jsondata
+		end
+		mapSettings["weather_clear"] = true -- Override it .. just in case someone disables it.
 	end
 	local function saveMapdata()
 		local json = util.TableToJSON(mapSettings)
@@ -66,13 +73,13 @@ if SERVER then
 		elseif msg == "set" then
 			local key = net.ReadString()
 			local var = net.ReadType()
-			StormFox.CanEditMapSetting(ply,function()
+			StormFox.Permission.SettingsEdit(ply,function()
 				print(ply,"setting mapdata",key,var)
 				StormFox.SetMapSetting(key,var)
 			end)
 		elseif msg == "menu" then
 			local n = net.ReadInt(4)
-			StormFox.CanEditMapSetting(ply,function()
+			StormFox.Permission.SettingsEdit(ply,function()
 				net.Start("sf_mapsettings")
 					net.WriteString("openmenu")
 					net.WriteInt(n,4)
@@ -81,7 +88,7 @@ if SERVER then
 		elseif msg == "setconvar" then
 			local con = net.ReadString()
 			local var = net.ReadString()
-			StormFox.CanEditSetting(ply,con,var)
+			StormFox.Permission.EasyConVar(ply,con,var)
 		end
 	end)
 else
@@ -166,6 +173,6 @@ local function RunPilot()
 	-- TreeSway isn't really that important
 
 end
-hook.Add("StormFox - PostEntityScan","StormFox - RunAutopilot",function()
+hook.Add("StormFox.PostEntityScan","StormFox - RunAutopilot",function()
 	timer.Simple(1,RunPilot)
 end)

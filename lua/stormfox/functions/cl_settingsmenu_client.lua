@@ -16,7 +16,7 @@
 ]]
 local function makeTitle(parent,text)
 	local p = mgui.Create("Panel",parent)
-	p.text = StormFox.LanguageTranslate(text)
+	p.text = StormFox.Language.Translate(text)
 	function p:Paint(w,h)
 		surface.SetFont("mgui_default")
 		local tc = self:GetTextColor()
@@ -45,7 +45,7 @@ local function clientToggle(parent,setting)
 	if not c then
 		l:SetText("Missing convar")
 	else
-		l:SetText(StormFox.LanguageTranslate(c:GetHelpText()))
+		l:SetText(StormFox.Language.Translate(c:GetHelpText()))
 	end
 		l:SizeToContentsX( 10 )
 	return p,l
@@ -144,7 +144,7 @@ function StormFox.OpenClientSettings()
 		end
 		local DPSwitch = mgui.Create("Button",menu)
 			DPSwitch:Dock(BOTTOM)
-			DPSwitch:SetText(StormFox.LanguageTranslate(dark and "sf_interface_lighttheme" or "sf_interface_darktheme"))
+			DPSwitch:SetText(StormFox.Language.Translate(dark and "sf_interface_lighttheme" or "sf_interface_darktheme"))
 			DPSwitch.s = dark
 			DPSwitch.roundcornor = 0
 			function DPSwitch:DoClick()
@@ -154,7 +154,7 @@ function StormFox.OpenClientSettings()
 				local g = cookie.GetNumber("SF-ThemeG",136)
 				local b = cookie.GetNumber("SF-ThemeB",229)
 				_STORMFOX_CLMENU:SetPallete(Color(r, g, b),nil,self.s)
-				self:SetText(StormFox.LanguageTranslate(self.s and "sf_interface_lighttheme" or "sf_interface_darktheme"))
+				self:SetText(StormFox.Language.Translate(self.s and "sf_interface_lighttheme" or "sf_interface_darktheme"))
 			end
 	-- Settings
 		local panel = menu.board["StormFox"]
@@ -200,7 +200,7 @@ function StormFox.OpenClientSettings()
 				p:AddEvent("sf_allowcl_disableeffects_set",function(self,bool)
 					self:SetDisabled(not bool)
 					if not bool then
-						label:SetText(StormFox.LanguageTranslate("sf_description.disableeffects") .. "(" .. StormFox.LanguageTranslate("sf_description.disabled_on_server") .. ")")
+						label:SetText(StormFox.Language.Translate("sf_description.disableeffects") .. "(" .. StormFox.Language.Translate("sf_description.disabled_on_server") .. ")")
 					else
 						label:SetText("sf_description.disableeffects")
 					end
@@ -270,7 +270,7 @@ function StormFox.OpenClientSettings()
 				label:SetTall(p:GetTall())
 			if not StormFox.GetMapSetting("dynamiclight") then
 				p:SetDisabled(true)
-				label:SetText(label:GetText() .. " (" .. StormFox.LanguageTranslate("sf_description.disabled_on_server") .. ")")
+				label:SetText(label:GetText() .. " (" .. StormFox.Language.Translate("sf_description.disabled_on_server") .. ")")
 				label:SizeToContentsX(5)
 			end
 			--sf_dynamiclightamount
@@ -340,7 +340,7 @@ function StormFox.OpenClientSettings()
 				p:SetPos(20,10 + element_size * 2)
 				label:SetPos(30 + p:GetWide(),10 + element_size * 2)
 				label:SetTall(p:GetTall())
-				if not IsMounted("csgo") or not StormFox.AIAinIsValid() then
+				if not StormFox.AIAinIsValid() then
 					p:SetDisabled(true)
 				end
 			--sf_footsteps_enable (Enable footprints in snow)
@@ -350,11 +350,11 @@ function StormFox.OpenClientSettings()
 				label:SetTall(p:GetTall())
 			--sf_footsteps_max (Max footsteps)
 				local label = mgui.Create("DLabel",panel)
-					label:SetText(StormFox.LanguageTranslate("sf_interface_max_footprints") ..": ")
+					label:SetText(StormFox.Language.Translate("sf_interface_max_footprints") ..": ")
 					label:SizeToContentsX(5)
 					label:SetPos(20,10 + element_size * 4)
 				local label2 = mgui.Create("DLabel",panel)
-					label2:SetText(StormFox.LanguageTranslate("sf_interface_footprint_render") ..": ")
+					label2:SetText(StormFox.Language.Translate("sf_interface_footprint_render") ..": ")
 					label2:SizeToContentsX(5)
 					label2:SetPos(20,10 + element_size * 5)
 				local convar = GetConVar("sf_footsteps_max")
@@ -407,7 +407,7 @@ function StormFox.OpenClientSettings()
 			--sf_redownloadlightmaps
 				local p,label = clientToggle(panel,"sf_redownloadlightmaps")
 				p:SetPos(20,10 + element_size * 9)
-				label:SetText(label:GetText() .."(" .. StormFox.LanguageTranslate("sf_warning_unsupportmap") ..")")
+				label:SetText(label:GetText() .."(" .. StormFox.Language.Translate("sf_warning_unsupportmap") ..")")
 				label:SizeToContentsX(5)
 				label:SetPos(30 + p:GetWide(),10 + element_size * 9)
 				label:SetTall(p:GetTall())

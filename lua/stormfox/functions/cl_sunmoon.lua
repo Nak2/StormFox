@@ -59,7 +59,7 @@ end)
 				sunAng = Angle(ang.p + 180,ang.y,ang.r)
 			-- Calc moon_bgcolor
 				local tc,bc = (StormFox.GetData("SkyTopColor") or Color(51,127.5,255)),(StormFox.GetData("SkyBottomColor") or Color(204,255,255))
-				local hdr = StormFox.GetData("HDRScale") or 0.66
+				local hdr = 0
 				BG_Color = Vector(tc.r / 255 + hdr ,tc.g / 255+ hdr ,tc.b / 255 + hdr )
 			-- Calc visible
 			if not LocalPlayer() then return end
@@ -305,7 +305,7 @@ local atan2 = math.atan2
 			--	local lum = 0.2126 * BG_Color.r + 0.7152 * BG_Color.g + 0.0722 * BG_Color.b
 			--	print(lum) -- 120 = 5
 							--
-				render.DrawQuadEasy( N * 200, NN, moonScale * 5, moonScale * 5, Color(0,0,0, moonAlpha ), sa )
+				render.DrawQuadEasy( N * 200, NN, moonScale * 5, moonScale * 5, Color(0,0,0, 0 ), sa )
 				render.SetMaterial( CurrentMoonTexture )
 				local aa = max(0,(3.125 * a) - 57.5)
 				render.DrawQuadEasy( N * 200, NN, moonScale * 5, moonScale * 5, Color(c.r,c.g,c.b, aa  ), sa )

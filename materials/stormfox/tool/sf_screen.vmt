@@ -1,6 +1,6 @@
-"UnlitGeneric"
+"VertexLitGeneric"
 {
-	"$basetexture" 	"stormfox/tool/sf_screen"
-	"$ignorez"	"0"
-	"$model"		"1"
+	"$basetexture" "stormfox/tool/sf_screen_bg"
+	"$selfillum" 1 
+	"$model" 1
 }

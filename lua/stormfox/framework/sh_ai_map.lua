@@ -125,7 +125,7 @@ local NODE_WATER 		= 5
 		local node_from = f:ReadShort() + 1
 		local node_to = f:ReadShort() + 1
 		local AcceptedMoveTypes = {}
-		for i=1,NUM_HULLS do
+		for i = 1,NUM_HULLS do
 			AcceptedMoveTypes[i] = f:ReadByte()
 		end
 		return node_from,node_to,AcceptedMoveTypes
@@ -136,7 +136,7 @@ local NODE_WATER 		= 5
 	local Nodes = {}
 	local Links = {}
 	function StormFox.AIAinIsValid()
-		return valid 
+		return valid
 	end
 	function ain.Load() -- https://github.com/NicolasDe/AlienSwarm/blob/c5a2d3fa853c726d040032ff2c7b90c8ed8d5d84/src/game/server/ai_networkmanager.cpp
 		valid = false
@@ -150,15 +150,15 @@ local NODE_WATER 		= 5
 			Network
 			---------------------------------------------------------------------------]]
 				local Network = ReadBits(f,4)
-				if Network > MAX_NODES or Network <= 0 then 
+				if Network > MAX_NODES or Network <= 0 then
 					if Network > 0 then
-						StormFox.Msg("Invalid .ain file.") 
+						StormFox.Msg("Invalid .ain file.")
 					else
-						StormFox.Msg("No nodes in .ain file.") 
+						StormFox.Msg("No nodes in .ain file.")
 					end
 					return false
 				end -- Too many nodes or too few
-				for i=1,Network do
+				for i = 1,Network do
 					Nodes[i] = ReadNode(f)
 				end
 			--[[-------------------------------------------------------------------------
@@ -166,7 +166,7 @@ local NODE_WATER 		= 5
 			---------------------------------------------------------------------------]]
 				local totalNumLinks = ReadBits(f,4)
 				if totalNumLinks > MAX_NODES * MAX_NODE_LINKS then StormFox.Msg("Invalid link amount.")  return false end -- Too many links
-				for i=1,totalNumLinks do
+				for i = 1,totalNumLinks do
 					local node_from,node_to,AcceptedMoveTypes = ReadLink( f )
 					if not Links[node_from] then Links[node_from] = {} end
 					if not Links[node_to] then Links[node_to] = {} end
@@ -198,7 +198,7 @@ local NODE_WATER 		= 5
 					continue
 				end
 			end
-			if bOutside_Only~=nil then
+			if bOutside_Only ~= nil then
 				if node.invalid and (node.tick or 0) < 10 then -- Not scanned .. and less than 10 nodes
 					local tr = ET(node.pos + Vector(0,0,20),node.pos + Vector(0,0,40000000000000),MASK_SOLID_BRUSHONLY)
 					local invalid = not tr.Hit
@@ -230,7 +230,7 @@ local NODE_WATER 		= 5
 						continue
 					end
 				end
-				if bOutside_Only~= nil then
+				if bOutside_Only ~= nil then
 					if node.invalid and (node.tick or 0) < 10 then -- Not scanned .. and less than 10 nodes
 						local tr = ET(node.pos + Vector(0,0,20),node.pos + Vector(0,0,40000000000000),MASK_SOLID_BRUSHONLY)
 						local invalid = not tr.Hit
@@ -265,7 +265,7 @@ local NODE_WATER 		= 5
 						continue
 					end
 				end
-				if bOutside_Only~= nil then
+				if bOutside_Only ~= nil then
 					if node.invalid and (node.tick or 0) < 10 then -- Not scanned .. and less than 10 nodes
 						local tr = ET(node.pos + Vector(0,0,20),node.pos + Vector(0,0,40000000000000),MASK_SOLID_BRUSHONLY)
 						local invalid = not tr.Hit

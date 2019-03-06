@@ -8,7 +8,7 @@ end
 local cos,sin,rad,min,max = math.cos,math.sin,math.rad,math.min,math.max
 local mat = Material("models/props_combine/combine_intmonitor001_disp_off")
 
-	surface.CreateFont( "SkyFox-Console_B", {
+	surface.CreateFont( "StormFox-Console_B", {
 			font = "Arial", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
 			extended = false,
 			size = 30,
@@ -25,10 +25,10 @@ local mat = Material("models/props_combine/combine_intmonitor001_disp_off")
 			additive = false,
 			outline = false,
 	} )
-	surface.CreateFont( "SkyFox-Console", {
+	surface.CreateFont( "StormFox-Console", {
 			font = "Arial", -- Use the font-name which is shown to you by your operating system Font Viewer, not the file name
 			extended = false,
-			size = 20,
+			size = 15,
 			weight = 500,
 			blursize = 0,
 			scanlines = 0,
@@ -128,7 +128,8 @@ function ENT:Draw()
 		draw.RoundedBox(3,x - 110,40,114,138,col)
 		draw.RoundedBox(3,x - 150,40,152,138,Color(0,0,0,255))
 
-			draw.DrawText( "Map entities:", "default", x,40,col, 2 )
+			local t = StormFox.Language.Translate("sf_description.map_entities") .. ":"
+			draw.DrawText( t, "default", x,40,col, 2 )
 			drawdebug(x,54,"tonemap_controller",env_tonemap_controller,not light_environment)
 			drawdebug(x,54 + 18,"light_environment",light_environment)
 			drawdebug(x,54 + 36,"env_fog_controller",env_fog_controller)
@@ -150,23 +151,32 @@ function ENT:Draw()
 			selected = 0
 		end
 
+		local c = col
 		if selected == 0 then
-			surface.SetTextColor(255,255,255)
-		else
-			surface.SetTextColor(col)
+			c = Color(255,255,255)
 		end
-		surface.SetTextPos(50,0)
-		surface.SetFont("SkyFox-Console_B")
-		surface.DrawText("Set Weather")
+		surface.SetFont("StormFox-Console_B")
+		local setw_text = StormFox.Language.Translate("sf_setweather")
+		local tw,th = surface.GetTextSize(setw_text)
+		surface.SetTextColor(c)
+		surface.SetTextPos(120 - tw / 2,0)
+		surface.DrawText(setw_text)
+		surface.SetDrawColor(c)
+		surface.DrawOutlinedRect(120 - tw / 2,0,tw,th)
 
 		local t = weathers[self.sw or 1]
+		local title = t
+		if StormFox.WeatherTypes[t] then
+			title = StormFox.WeatherTypes[t].Name or weather
+		end
+
 		surface.SetMaterial(StormFox.GetWeatherType(t):GetStaticIcon( ))
 		surface.SetDrawColor(col)
 		surface.DrawTexturedRect(100,40,40,40)
 		surface.SetMaterial(StormFox.Weather:GetIcon())
 		surface.DrawTexturedRect(-10,40,50,50)
 
-		draw.DrawText( t, "SkyFox-Console", 120, 80, col, 1 )
+		draw.DrawText( StormFox.Language.Translate(title), "StormFox-Console", 120, 80, col, 1 )
 
 		if RenderButton(68,68,24,24,ax,ay,m_arrow,90) then
 			selected = 1
@@ -208,7 +218,7 @@ function ENT:Draw()
 		surface.DrawRect(60,205,120,2)
 		local temp = StormFox.GetNetworkData("Temperature",20)
 		surface.DrawRect(100 + temp * 2,201,2,10)
-		draw.DrawText( round(temp,1) .. "°C - " .. round(StormFox.CelsiusToFahrenheit(temp),1) .. "°F", "SkyFox-Console", 120, 180, col, 1 )
+		draw.DrawText( round(temp,1) .. "°C - " .. round(StormFox.CelsiusToFahrenheit(temp),1) .. "°F", "StormFox-Console", 120, 180, col, 1 )
 
 		-- Wind
 		if RenderButton(50,250,140,12,ax,ay,nil,0.2,10) then
@@ -220,8 +230,8 @@ function ENT:Draw()
 		surface.DrawRect(60,255,120,2)
 		local wind = StormFox.GetNetworkData("Wind",0)
 		surface.DrawRect(60 + wind * 2.4,251,2,10)
-		local b,str = StormFox.GetBeaufort(wind)
-		draw.DrawText( "Wind speed:" .. str, "SkyFox-Console", 120, 230, col, 1 )
+		local _,str = StormFox.GetBeaufort(wind)
+		draw.DrawText( StormFox.Language.Translate("Wind") .. ": " .. str, "StormFox-Console", 120, 230, col, 1 )
 
 		-- Windangle
 		if RenderButton(50,295,140,12,ax,ay,nil,0.2,10) then
@@ -233,7 +243,7 @@ function ENT:Draw()
 		surface.DrawRect(60,300,120,2)
 		local windang = StormFox.GetNetworkData("WindAngle",0)
 		surface.DrawRect(60 + windang * 0.33,296,2,10)
-		draw.DrawText( "Wind angle:" .. round(windang,1) .. "°", "SkyFox-Console", 120, 275, col, 1 )
+		draw.DrawText( StormFox.Language.Translate("sf_setwindangle") .. ":" .. round(windang,1) .. "°", "StormFox-Console", 120, 275, col, 1 )
 
 		if input.IsKeyDown(KEY_E) and not E then
 			E = true

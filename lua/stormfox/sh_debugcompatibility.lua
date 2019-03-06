@@ -15,8 +15,8 @@ local DontReturn = {}
 	DontReturn["SetupSkyboxFog"] = true -- Fog
 	DontReturn["SetupWorldFog"] = true -- Fog
 	DontReturn["PostPlayerDraw"] = true -- Player effects
-	DontReturn["StormFox - PostEntity"] = true -- Init protection
-	DontReturn["StormFox - PostEntityScan"] = true -- Init protection
+	DontReturn["StormFox.PostEntity"] = true -- Init protection
+	DontReturn["StormFox.PostEntityScan"] = true -- Init protection
 
 function StormFox.DebugHooks()
 	return DontReturn

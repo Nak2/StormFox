@@ -1,0 +1,9 @@
+"UnlitGeneric"
+{
+	"$basetexture" 	"stormfox/tool/sf_screen_bg"
+	"$vertexcolor" 		1
+	"$vertexalpha" 		1
+	"$nolod" 			1
+	"$ignorez"			1
+}
+

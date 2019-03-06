@@ -51,6 +51,7 @@ function ENT:Think()
 	--if ml > 18 then return end
 	if self:WaterLevel() > 0 then return end
 	if self:GetNWBool("broken",false) then return end
+	if not self:IsOn() then return end
 	-- Wind
 	self.nextFlame = CurTime() + (ran(5,10) / 200)
 	createFlame(self)

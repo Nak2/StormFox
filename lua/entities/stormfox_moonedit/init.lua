@@ -39,7 +39,4 @@ function ENT:Use(ply)
 	if not ply then return end
 	if not IsValid(ply) then return end
 	if self:IsPlayerHolding() then return end
-	StormFox.CanEditWeather(ply,function()
-		
-	end)
 end

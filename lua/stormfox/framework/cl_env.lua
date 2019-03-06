@@ -1,4 +1,3 @@
-
 local max,min,clamp,rad,cos,sin,abs = math.max,math.min,math.Clamp,math.rad,math.cos,math.sin,math.abs
 --[[-------------------------------------------------------------------------
 ConVar
@@ -351,7 +350,7 @@ hook.Add("Think","StormFox - LightThink",function()
 	updateTimeout = CurTime() + 20
 	render.RedownloadAllLightmaps(true)
 end)
-hook.Add("StormFox - PostEntity","StormFox - FixMapBlackness",function()
+hook.Add("StormFox.PostEntity","StormFox.FixMapBlackness",function()
 	timer.Simple(10,function()
 		canRedownload = true -- Allow lightmap to update
 	end)

@@ -1,6 +1,7 @@
 
 local Cloudy = StormFox.WeatherType( "cloudy" )
 local max = math.max
+Cloudy.Name = "sf_weather.cloudy"
 Cloudy.CanGenerate = true
 Cloudy.StormMagnitudeMin = 0.13
 Cloudy.StormMagnitudeMax = 0.8
@@ -62,10 +63,10 @@ Cloudy.DataCalculationFunctions.MoonVisibility = function( flPercent ) return 10
 
 Cloudy.StaticData.EnableThunder = true
 
-function Cloudy:GetName( nTemperature, nWindSpeed, bThunder  )
-	if bThunder then return "Thunder" end
-
-	return "Cloudy"
+function Cloudy:GetName( _, _, bThunder  )
+	bThunder = bThunder or StormFox.GetNetworkData("Thunder",false)
+	if bThunder then return StormFox.Language.Translate("sf_weather.thunder") end
+	return StormFox.Language.Translate("sf_weather.cloudy")
 end
 
 local m = Material("stormfox/symbols/Cloudy.png")
