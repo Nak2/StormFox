@@ -700,28 +700,30 @@ Since we change the material, we need to change the sound as well
 --[[-------------------------------------------------------------------------
 Wind Texture
 ---------------------------------------------------------------------------]]
-	local lw,lwa = -1,-1
-	local conset = true
-	timer.Create("StormFox.WindController",1,0,function()
-		local con = GetConVar("sf_foliagesway")
-		if con:GetInt() ~= 1 then
-			if conset then
-				RunConsoleCommand("cl_tree_sway_dir",0,0)
-				conset = false
-				lw,lwa = -1,-1
+	if CLIENT then -- Only clients can do this
+		local lw,lwa = -1,-1
+		local conset = true
+		timer.Create("StormFox.WindController",1,0,function()
+			local con = GetConVar("sf_foliagesway")
+			if con:GetInt() ~= 1 then
+				if conset then
+					RunConsoleCommand("cl_tree_sway_dir",0,0)
+					conset = false
+					lw,lwa = -1,-1
+				end
+				return
 			end
-			return
-		end
-		conset = true
-		local nw = StormFox.GetNetworkData( "Wind", 0 ) * 4
-		local nwa = StormFox.GetNetworkData( "WindAngle", 0 )
-		if lw == nw and nwa == lwa then return end -- same as last time
-		local ra = math.rad(nwa)
-		local wx,wy = math.cos(ra) * nw,math.sin(ra) * nw
-		RunConsoleCommand("cl_tree_sway_dir",wx,wy)
-		lw = nw
-		lwa = nwa
-	end)
+			conset = true
+			local nw = StormFox.GetNetworkData( "Wind", 0 ) * 4
+			local nwa = StormFox.GetNetworkData( "WindAngle", 0 )
+			if lw == nw and nwa == lwa then return end -- same as last time
+			local ra = math.rad(nwa)
+			local wx,wy = math.cos(ra) * nw,math.sin(ra) * nw
+			RunConsoleCommand("cl_tree_sway_dir",wx,wy)
+			lw = nw
+			lwa = nwa
+		end)
+	end
 --[[-------------------------------------------------------------------------
 Tree Texture
 ---------------------------------------------------------------------------]]
