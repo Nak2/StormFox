@@ -132,11 +132,11 @@ StormFox.Language = {}
 
 -- Convar update.
 	cvars.RemoveChangeCallback("gmod_language","StormFox_languagechange")
-	cvars.RemoveChangeCallback("sf_override_language","StormFox_languagechange2")
+	cvars.RemoveChangeCallback("sf_language_override","StormFox_languagechange2")
 	cvars.AddChangeCallback( "gmod_language", function( convar_name, value_old, value_new )
 		StormFox.Language.Load()
 	end,"StormFox_languagechange")
-	cvars.AddChangeCallback( "sf_override_language", function( convar_name, value_old, value_new )
+	cvars.AddChangeCallback( "sf_language_override", function( convar_name, value_old, value_new )
 		StormFox.Language.Load()
 	end,"StormFox_languagechange2")
 -- Add the language files to download

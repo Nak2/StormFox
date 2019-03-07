@@ -48,14 +48,15 @@
 			wind_sounds.volscale[snd_low] = true
 		end
 	end
-	local function AddReplaceDayNight(snd_day,snd_night) -- nil is also an option to block it
+	local function AddReplaceDayNight(snd_day,snd_night,vol_multi) -- nil is also an option to block it
+		vol_multi = vol_multi or 1
 		if not snd_day and snd_night then
-			replace_atday[snd_night] = "nil"
+			replace_atday[snd_night] = {"nil",vol_multi}
 			return
 		end
-		replace_atnight[snd_day] = snd_night or "nil"
+		replace_atnight[snd_day] = {snd_night or "nil",vol_multi}
 		if not snd_night then return end
-		replace_atday[snd_night] = snd_day
+		replace_atday[snd_night] = {snd_day,vol_multi}
 	end
 	local function AddReplaceBadWeather(snd_original,snd_replace) -- nil is also an option to block it
 		replace_atbadweather[snd_original] = snd_replace or "nil"
@@ -88,12 +89,17 @@
 	end
 	local function HandleSound(snd,bIsNight,bBadWeather,nWind,nTemp)
 		local dn,bw,osnd = false,false,snd
+		local vol_multi = 1
 		-- DayNight
 			if replace_atnight[snd] and bIsNight then
-				snd = replace_atnight[snd]
+				local t = replace_atnight[snd]
+				snd = t[1]
+				vol_multi = t[2] or 1
 				dn = true
 			elseif replace_atday[snd] and not bIsNight then
-				snd = replace_atday[snd]
+				local t = replace_atday[snd]
+				snd = t[1]
+				vol_multi = t[2] or 1
 				dn = true
 			end
 		-- Bad Weather
@@ -124,7 +130,7 @@
 					end
 				end
 			end
-		return snd ~= osnd and snd
+		return snd ~= osnd and snd,vol_multi
 	end
 	local function IsWind(snd,nWind)
 		if wind_sounds.volscale[snd] then return nil,clamp(nWind / 20,0,1) end
@@ -140,8 +146,8 @@
 	end
 -- Sound replace list (In this order)
 	-- DayNight
-		AddReplaceDayNight("ambient/forest_day.wav","ambient/forest_night.wav")
-		AddReplaceDayNight("ambient/forest_life.wav","ambient/forest_night.wav")
+		AddReplaceDayNight("ambient/forest_day.wav","ambient/forest_night.wav",0.4)
+		AddReplaceDayNight("ambient/forest_life.wav","ambient/forest_night.wav",0.4)
 	-- Bad Weather
 		AddReplaceBadWeather("ambient/outdoors_quiet_birds.wav","ambient/outdoors.wav")
 		AddReplaceBadWeather("ambient/forest_day.wav","nil")
@@ -163,11 +169,13 @@
 		local snd = {}
 		-- Check playloop
 			for k,v in ipairs(soundscape.playlooping or {}) do
-				local override = HandleSound(v.wave,is_night,bad_weather,nwind,last_temp)
+				local override,vol_multi = HandleSound(v.wave,is_night,bad_weather,nwind,last_temp)
 				table.insert(snd,v.wave)
 				if override then
 					--devPrint("Overriding",v.wave,"to",override)
 					soundscape.playlooping[k].wave = override
+					soundscape.playlooping[k].volume[1] = soundscape.playlooping[k].volume[1] * vol_multi
+					soundscape.playlooping[k].volume[2] = soundscape.playlooping[k].volume[2] * vol_multi
 				else
 					local override,vol = IsWind(v.wave,nwind)
 					if override then
@@ -187,10 +195,12 @@
 			for k,v in ipairs(soundscape.playrandom or {}) do
 				for i,wave in ipairs(v.wave) do
 					table.insert(snd,wave)
-					local override = HandleSound(wave,is_night,bad_weather,nwind,last_temp)
+					local override,vol_multi = HandleSound(wave,is_night,bad_weather,nwind,last_temp)
 					if override then
 						--devPrint("Overriding",wave,"to",override)
 						soundscape.playrandom[k].wave[i] = override
+						soundscape.playrandom[k].volume[1] = soundscape.playrandom[k].volume[1] * vol_multi
+						soundscape.playrandom[k].volume[2] = soundscape.playrandom[k].volume[2] * vol_multi
 					else
 						local override,vol = IsWind(wave,nwind)
 						if override then

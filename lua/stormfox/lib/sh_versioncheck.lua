@@ -20,7 +20,13 @@
 	end
 -- Check the version
 	local nextCheck = cookie.GetNumber("StormFox.VersionCheck",0) + 86400
+	local lastVersionCheck = cookie.GetNumber("StormFox.LastVersionCheck",0)
 	local toDay = os.time()
+	-- In case we got a new StormFox version
+		if lastVersionCheck < StormFox.Version then
+			cookie.Set("StormFox.LastVersionCheck",StormFox.Version)
+			nextCheck = 0 -- We check today
+		end
 	hook.Add("StormFox.PostEntity","StormFox.ReportVersion",function()
 		if nextCheck > toDay then -- No need to check the webpage. Use the last number.
 			ReportVersion(cookie.GetNumber("StormFox.VersionLast", StormFox.Version))
