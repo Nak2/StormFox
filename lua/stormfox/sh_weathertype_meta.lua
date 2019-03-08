@@ -42,13 +42,15 @@
 		SkyTopColor = { -- The top color painted in the skybox
 			TIME_SUNRISE = Color(91, 127.5, 255),
 			--TIME_NOON = Color(0.04 * 255,0.18*255,0.38*255),
-			TIME_NOON = Color(28,110,191),
+			TIME_NOON = Color(51, 127.5, 255),
+			--TIME_NOON = Color(28,110,191),
 			TIME_SUNSET = Color(130, 130, 180),
 			TIME_NIGHT = Color(0, 0, 0)
 		},
 		SkyBottomColor = { -- The bottom color painted in the skybox
 			TIME_SUNRISE = Color(91, 127.5, 255),
-			TIME_NOON = Color(0.31 * 255, 0.77 * 255, 255),
+			--TIME_NOON = Color(0.31 * 255, 0.77 * 255, 255),
+			TIME_NOON = Color(204, 255, 255),
 			TIME_SUNSET = Color(0, 1.5, 5.25),
 			TIME_NIGHT = Color(0, 1.5, 5.25)
 		},
@@ -61,7 +63,7 @@
 			 TIME_SUNRISE = Color(255, 204, 0),
 			 TIME_SUNSET = Color(255, 204, 0),
 			 TIME_NIGHT = Color(0, 0, 0),
-			 TIME_NOON = Color(255, 0.2 * 255, 255)
+			 TIME_NOON = Color(255, 255, 255)
 		},
 		DuskIntensity = { -- How intense the sunset/sunrise is
 			 TIME_SUNRISE = 1.94,
@@ -93,7 +95,15 @@
 				TIME_SUNRISE = 1,
 				TIME_SUNSET = 1
 			},
-		Fogcolor = nil -- Skycolor
+		Fogcolor = nil, -- Skycolor
+		Fogend = {
+			TIME_SUNRISE = 108000 * 2,
+			TIME_SUNSET = 30000 * 1.5
+		},
+		Fogdensity = {
+			TIME_SUNRISE = 0.8,
+			TIME_SUNSET = 0.9
+		}
 	}
 	-- Data that is either static or computed. If you set the value to be a function then when the storms power changes these values will update
 	StormFox.WeatherType.CalculatedData = {
@@ -108,7 +118,7 @@
 	}
 	-- Here you can add functions that update any of the values in CalculatedData when the storm magnitude changes.
 	StormFox.WeatherType.DataCalculationFunctions = {
-		Fogstart = function() return StormFox.GetNetworkData("fog_start",0) end,
+		--[[Fogstart = function() return StormFox.GetNetworkData("fog_start",0) end,
 		Fogend = function(_,time_id)
 			local def = StormFox.GetNetworkData("fog_end",450000)
 			if time_id == "TIME_SUNSET" or time_id == "TIME_NIGHT" then
@@ -122,7 +132,7 @@
 				dens = 0.8
 			end
 			return dens
-		end,
+		end,]]
 
 
 		-- Example:
