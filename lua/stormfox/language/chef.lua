@@ -176,6 +176,7 @@ return [[Stormfox Chef
 	sf_interface_max_wind 			= Mex vind
 	sf_interface_max_footprints 	= Mex fuotprints
 	sf_interface_footprint_render 	= Fuotprint render deestuonce
+	sf_interface_language 			= Luonguoege-a ouferride
 
 #Errors and warning
 	sf_missing_convar 				= MEEssing Cunfer

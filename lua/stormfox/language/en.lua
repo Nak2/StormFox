@@ -176,6 +176,7 @@ return [[Stormfox English
 	sf_interface_max_wind 			= Max wind
 	sf_interface_max_footprints 	= Max footprints
 	sf_interface_footprint_render 	= Footprint render distance
+	sf_interface_language 			= Language override
 
 #Errors and warning
 	sf_missing_convar 				= Missing Convar

@@ -16,14 +16,15 @@
 ]]
 local function makeTitle(parent,text)
 	local p = mgui.Create("Panel",parent)
-	p.text = StormFox.Language.Translate(text)
+	p.text = text
 	function p:Paint(w,h)
 		surface.SetFont("mgui_default")
+		local t = StormFox.Language.Translate(self.text)
 		local tc = self:GetTextColor()
 		surface.SetTextColor(tc)
-		local tw,th = surface.GetTextSize(self.text)
+		local tw,th = surface.GetTextSize(t)
 		surface.SetTextPos(20,0)
-		surface.DrawText(self.text)
+		surface.DrawText(t)
 		surface.SetDrawColor(tc)
 		surface.DrawLine(20,th + 1, w, th + 1)
 	end
@@ -125,7 +126,7 @@ function StormFox.OpenClientSettings()
 			function b:DoClick()
 				for k,v in pairs(self.menu.buttons) do
 					v:DisableBackground(v==self)
-					if v==self then
+					if v == self then
 						cookie.Set("SF-MenuOption_CL",k)
 						menu.board[v.text]:Show()
 					else
@@ -156,6 +157,7 @@ function StormFox.OpenClientSettings()
 				_STORMFOX_CLMENU:SetPallete(Color(r, g, b),nil,self.s)
 				self:SetText(StormFox.Language.Translate(self.s and "sf_interface_lighttheme" or "sf_interface_darktheme"))
 			end
+		local element_num = 0
 	-- Settings
 		local panel = menu.board["StormFox"]
 		-- Menu color picker
@@ -192,9 +194,10 @@ function StormFox.OpenClientSettings()
 			t:SetSize(340,20)
 			t:SetPos(0,10)
 		-- Disable SF
+			element_num = element_num + 1
 			local p,label = clientToggle(panel,"sf_disableeffects")
-				p:SetPos(20,10 + element_size)
-				label:SetPos(30 + p:GetWide(),10 + element_size)
+				p:SetPos(20,10 + element_size * element_num)
+				label:SetPos(30 + p:GetWide(),10 + element_size * element_num)
 				label:SetTall(p:GetTall())
 				settingList["sf_allowcl_disableeffects"] = 1
 				p:AddEvent("sf_allowcl_disableeffects_set",function(self,bool)
@@ -206,18 +209,60 @@ function StormFox.OpenClientSettings()
 					end
 					label:SizeToContentsX(5)
 				end)
+		-- Language
+			element_num = element_num + 1
+			local l = mgui.Create("DLabel",panel)
+				l:SetText(StormFox.Language.Translate("sf_interface_language") .. ":")
+				l:SetPos(20,10 + element_size * element_num)
+				l:SizeToContentsX(5)
+			local language_box = mgui.Create("DComboBox",panel)
+				language_box:SetPos(20 + l:GetSize(),10 + element_size * element_num)
+				language_box:SetSize(140,18)
+				local con_override = GetConVar("sf_language_override")
+				local lang_key = {
+					ru = "Русский",
+					en = "English",
+					["en-pt"] = "English Pirate"
+				}
+				if con_override and #con_override:GetString() > 0 then
+					language_box:SetValue(lang_key[con_override:GetString()] or con_override:GetString())
+				else
+					language_box:SetValue("GMod")
+				end
+				language_box:SetSortItems(false)
+				language_box:AddChoice( "GMod" )
+				for k, v in ipairs( StormFox.Language.GetAll() ) do
+					language_box:AddChoice( lang_key[v] or v )
+				end
+				language_box.OnSelect = function( _, _, value )
+					for key,var in pairs(lang_key) do
+						if value == var then
+							value = key
+							break
+						end
+					end
+					if value == "GMod" then
+						RunConsoleCommand("sf_language_override","")
+					else
+						RunConsoleCommand("sf_language_override",value)
+					end
+					timer.Simple(0,StormFox.OpenClientSettings)
+				end
+
 		-- SF Quality
+			element_num = element_num + 1
 			local t = makeTitle(panel,"Quality")
 			t:SetSize(340,20)
-			t:SetPos(0,10 + element_size * 2)
+			t:SetPos(0,10 + element_size * element_num)
 			settingList["sf_exspensive"] = true -- call this
 			-- Auto
+				element_num = element_num + 1
 				local p = mgui.Create("Switch",panel)
-					p:SetPos(20,10 + element_size * 3)
+					p:SetPos(20,10 + element_size * element_num)
 				local l = mgui.Create("DLabel",panel)
 					l:SetText("sf_description.exspensive_fps")
 					l:SizeToContentsX(5)
-					l:SetPos(30 + p:GetWide(),10 + element_size * 3)
+					l:SetPos(30 + p:GetWide(),10 + element_size * element_num)
 				function p:DoClick()
 					local b = self.state
 					local n = math.Round(StormFox.GetExspensive(),1) .. ""
@@ -227,12 +272,13 @@ function StormFox.OpenClientSettings()
 				local convar = GetConVar("sf_exspensive")
 				p.state = convar:GetInt() == 0
 			-- Manually
+				element_num = element_num + 1
 				local l = mgui.Create("DLabel",panel)
 					l:SetText("sf_description.exspensive_manually")
 					l:SizeToContentsX(5)
-					l:SetPos(20,10 + element_size * 4)
+					l:SetPos(20,10 + element_size * element_num)
 				local wr = mgui.Create("Slider",panel)
-					wr:SetPos(20 + l:GetWide(),10 + element_size * 4)
+					wr:SetPos(20 + l:GetWide(),10 + element_size * element_num)
 					wr:SetSize(200,20)
 					wr:SetMax(20)
 					wr:SetMin(1)
@@ -250,37 +296,42 @@ function StormFox.OpenClientSettings()
 					self:SetDisabled(str == "0")
 				end)
 		-- SF Materials
+			element_num = element_num + 1
 			local t = makeTitle(panel,"Materials")
 			t:SetSize(340,20)
-			t:SetPos(0,10 + element_size * 5)
+			t:SetPos(0,10 + element_size * element_num)
 			-- sf_material_replacment
+			element_num = element_num + 1
 			local p,label = clientToggle(panel,"sf_material_replacment")
-				p:SetPos(20,10 + element_size * 6)
-				label:SetPos(30 + p:GetWide(),10 + element_size * 6)
+				p:SetPos(20,10 + element_size * element_num)
+				label:SetPos(30 + p:GetWide(),10 + element_size * element_num)
 				label:SetTall(p:GetTall())
 		-- SF Light
+			element_num = element_num + 1
 			local t = makeTitle(panel,"sf_interface_light")
 			t:SetSize(340,20)
-			t:SetPos(0,10 + element_size * 7)
+			t:SetPos(0,10 + element_size * element_num)
 			--sf_allow_dynamicshadow
+			element_num = element_num + 1
 			settingList["sf_allow_dynamicshadow"] = 1
 			local p,label = clientToggle(panel,"sf_allow_dynamicshadow")
-				p:SetPos(20,10 + element_size * 8)
-				label:SetPos(30 + p:GetWide(),10 + element_size * 8)
+				p:SetPos(20,10 + element_size * element_num)
+				label:SetPos(30 + p:GetWide(),10 + element_size * element_num)
 				label:SetTall(p:GetTall())
 			if not StormFox.GetMapSetting("dynamiclight") then
 				p:SetDisabled(true)
-				label:SetText(label:GetText() .. " (" .. StormFox.Language.Translate("sf_description.disabled_on_server") .. ")")
+				label:SetText(label:GetText())
 				label:SizeToContentsX(5)
 			end
 			--sf_dynamiclightamount
+			element_num = element_num + 1
 				local label = mgui.Create("DLabel",panel)
 				label:SetText("sf_description.dynamiclightamount")
 				label:SizeToContentsX(5)
-				label:SetPos(20,10 + element_size * 9)
+				label:SetPos(20,10 + element_size * element_num)
 				local convar = GetConVar("sf_dynamiclightamount")
 				local wr = mgui.Create("Slider",panel)
-					wr:SetPos(20 + label:GetWide(),10 + element_size * 9)
+					wr:SetPos(20 + label:GetWide(),10 + element_size * element_num)
 					wr:SetSize(200,20)
 					wr:SetMax(5)
 					wr:SetMin(1)
@@ -297,34 +348,39 @@ function StormFox.OpenClientSettings()
 					self:SetDisabled(not bool)
 				end)
 			--sf_allow_sunbeams
+				element_num = element_num + 1
 				local p,label = clientToggle(panel,"sf_allow_sunbeams")
-				p:SetPos(20,10 + element_size * 10)
-				label:SetPos(30 + p:GetWide(),10 + element_size * 10)
+				p:SetPos(20,10 + element_size * element_num)
+				label:SetPos(30 + p:GetWide(),10 + element_size * element_num)
 				label:SetTall(p:GetTall())
 			--sf_allow_dynamiclights
+				element_num = element_num + 1
 				local p,label = clientToggle(panel,"sf_allow_dynamiclights")
-				p:SetPos(20,10 + element_size * 11)
-				label:SetPos(30 + p:GetWide(),10 + element_size * 11)
+				p:SetPos(20,10 + element_size * element_num)
+				label:SetPos(30 + p:GetWide(),10 + element_size * element_num)
 				label:SetTall(p:GetTall())
 		-- SF Misc
+			element_num = element_num + 1
 			local t = makeTitle(panel,"Sound")
 			t:SetSize(340,20)
-			t:SetPos(0,10 + element_size * 12)
+			t:SetPos(0,10 + element_size * element_num)
 			--sf_allow_rainsound
+			element_num = element_num + 1
 			local p,label = clientToggle(panel,"sf_allow_rainsound")
-				p:SetPos(20,10 + element_size * 13)
-				label:SetPos(30 + p:GetWide(),10 + element_size * 13)
+				p:SetPos(20,10 + element_size * element_num)
+				label:SetPos(30 + p:GetWide(),10 + element_size * element_num)
 				label:SetTall(p:GetTall())
 			--sf_allow_windsound
+			element_num = element_num + 1
 			local p,label = clientToggle(panel,"sf_allow_windsound")
-				p:SetPos(20,10 + element_size * 14)
-				label:SetPos(30 + p:GetWide(),10 + element_size * 14)
+				p:SetPos(20,10 + element_size * element_num)
+				label:SetPos(30 + p:GetWide(),10 + element_size * element_num)
 				label:SetTall(p:GetTall())
 		-- Space
-			--local p = mgui.Create("DPanel",panel)
-			--p:SetSize(10,10)
-			--p:SetPos(0,10 + element_size * 15)
-			--function p:Paint() end
+			local p = mgui.Create("DPanel",panel)
+			p:SetSize(10,10)
+			p:SetPos(0,30 + element_size * element_num)
+			function p:Paint() end
 	-- Effects
 		local panel = menu.board["Effects"]
 		local t = makeTitle(panel,"Rain/Snow Effects")
@@ -350,11 +406,11 @@ function StormFox.OpenClientSettings()
 				label:SetTall(p:GetTall())
 			--sf_footsteps_max (Max footsteps)
 				local label = mgui.Create("DLabel",panel)
-					label:SetText(StormFox.Language.Translate("sf_interface_max_footprints") ..": ")
+					label:SetText(("sf_interface_max_footprints") ..": ")
 					label:SizeToContentsX(5)
 					label:SetPos(20,10 + element_size * 4)
 				local label2 = mgui.Create("DLabel",panel)
-					label2:SetText(StormFox.Language.Translate("sf_interface_footprint_render") ..": ")
+					label2:SetText(("sf_interface_footprint_render") ..": ")
 					label2:SizeToContentsX(5)
 					label2:SetPos(20,10 + element_size * 5)
 				local convar = GetConVar("sf_footsteps_max")
@@ -407,7 +463,7 @@ function StormFox.OpenClientSettings()
 			--sf_redownloadlightmaps
 				local p,label = clientToggle(panel,"sf_redownloadlightmaps")
 				p:SetPos(20,10 + element_size * 9)
-				label:SetText(label:GetText() .."(" .. StormFox.Language.Translate("sf_warning_unsupportmap") ..")")
+				label:SetText(label:GetText() .."(" .. ("sf_warning_unsupportmap") ..")")
 				label:SizeToContentsX(5)
 				label:SetPos(30 + p:GetWide(),10 + element_size * 9)
 				label:SetTall(p:GetTall())

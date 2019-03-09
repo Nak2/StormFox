@@ -568,6 +568,84 @@ Color help
 	end
 	classes["Button"] = classes["DButton"]
 
+	classes["DComboBox"] = function(parent,name)
+		local panel = vgui.Create("DComboBox",parent,name)
+		panel:SetText("")
+		panel:SetSize(60,24)
+		panel.text = ""
+		panel.icon = nil
+		panel.textalign = 1
+		panel.bgenabled = true
+		panel.roundcornor = 1
+		function panel:DisableBackground(b)
+			self.bgenabled = not b
+		end
+		panel._palletecolor = "A500"
+		panel:SetFont("mgui_default")
+		pressAble(panel)
+		function panel:SetTextAlingn(n)
+			self.textalign = n or 1
+		end
+		function panel:SetValue(text) self.text = text end
+		function panel:SetText(text) self.text = text end
+		function panel:Paint(w,h)
+			if self.bgenabled then
+				self._palletecolor = DarkDesignHelper(self,"A500")
+				local c
+				if self:GetDisabled() then
+					local _h,s,l = ColorToHSL(self:GetPalleteColor())
+						c = HSLToColor(_h,0,l)
+						c.a = 96.9
+					surface.SetDrawColor(c) --96.9
+					RoundedBox(0,0,w,h,self.roundcornor)
+				else
+					surface.SetDrawColor(self:GetPalleteColor())
+					RoundedBox(0,0,w,h,self.roundcornor)
+				end
+			end
+			if self.text then
+				local text = self.text
+				if StormFox.Language.Translate then
+					text = StormFox.Language.Translate(text)
+				end
+				if self:GetDisabled() then
+					local parent = self:GetParent()
+					if parent.GetPalleteColor then
+						local cc = parent:GetPalleteColor()
+						local c = self:GetTextColor(cc)
+						surface.SetTextColor(Color(c.r,c.g,c.b,100))
+					else
+						surface.SetTextColor(Color(155,155,155,100))
+					end
+
+				elseif not self.bgenabled then
+					local cc = self:GetParentColor()
+					local c = self:GetTextColor(cc)
+					surface.SetTextColor(Color(c.r,c.g,c.b,255))
+				else
+					surface.SetTextColor(self:GetTextColor())
+				end
+				surface.SetFont(self:GetFont())
+				local tw,th = surface.GetTextSize(text)
+				if self.textalign == 0 then
+					surface.SetTextPos(10,h / 2 - th / 2)
+				elseif self.textalign == 2 then
+					surface.SetTextPos(w - 10 - tw,h / 2 - th / 2)
+				else
+					surface.SetTextPos(w / 2 - tw / 2,h / 2 - th / 2)
+				end
+				surface.DrawText(text)
+			end
+			RenderRing(self)
+		end
+		function panel:OnReleased()
+			playSnd(acceptsnd)
+		end
+		return panel
+	end
+
+	classes["ComboBox"] = classes["DComboBox"]
+
 	classes["Switch"] = function(parent,name)
 		local panel = vgui.Create("DPanel",parent)
 		panel.button = vgui.Create("DButton",panel)
@@ -827,11 +905,11 @@ Color help
 			self.text = str
 		end
 		function panel:GetText()
-			return self.text
+			return StormFox.Language.Translate(self.text)
 		end
 		function panel:SizeToContentsX( n )
 			surface.SetFont(self:GetFont())
-			local text = StormFox.Language.Translate(self.text) or self.text
+			local text = StormFox.Language.Translate(self.text)
 			local tw,th = surface.GetTextSize(text)
 			self:SetSize(tw + n,th)
 		end
@@ -843,10 +921,7 @@ Color help
 			local c = self:GetTextColor(cc)
 			surface.SetTextColor(Color(c.r,c.g,c.b,self.disabled and 100 or 255))
 			surface.SetFont(self:GetFont())
-			local t = self.text
-			if StormFox.Language.Translate then
-				t = StormFox.Language.Translate(t)
-			end
+			local t = self:GetText()
 			local tw,th = surface.GetTextSize(t)
 			if self.textalign == 0 then
 				local s = min((w - tw) / 2,2)

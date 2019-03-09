@@ -139,11 +139,18 @@ StormFox.Language = {}
 	cvars.AddChangeCallback( "sf_language_override", function( convar_name, value_old, value_new )
 		StormFox.Language.Load()
 	end,"StormFox_languagechange2")
--- Add the language files to download
-	if SERVER then
-		for _,fil in ipairs(file.Find("stormfox/language/*.lua","LUA")) do
+-- Add the language files to download and list them
+	local languages = {}
+	for _,fil in ipairs(file.Find("stormfox/language/*.lua","LUA")) do
+		if SERVER then
 			AddCSLuaFile("stormfox/language/" .. fil)
 		end
+		local name = string.match(fil,"(.+).lua") or "error"
+		if name == "chef" then continue end -- I'm hidden. Shhh
+		table.insert(languages,name)
+	end
+	function StormFox.Language.GetAll()
+		return languages
 	end
 -- Load language
 	StormFox.Language.Load()

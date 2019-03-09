@@ -152,7 +152,7 @@ return [[Stormfox Russian
 	Changelog 		= Список Изменений
 	Temperature 	= Температура
 	Wind 			= Ветер
-	Quality 		= и Качество Эффектов:
+	Quality 		= Качество Эффектов
 	Materials 		= Материалы
 	Rain/Snow Effects = Эффекты Дождя/Снега
 
@@ -175,6 +175,7 @@ return [[Stormfox Russian
 	sf_interface_max_wind 			= Макс. ветер
 	sf_interface_max_footprints 	= Максимальное количество следов
 	sf_interface_footprint_render 	= Дистанция прорисовки следов
+	sf_interface_language 			= Сменить язык для SF
 
 #Errors and warning
 	sf_missing_convar 					= Не найдено консольное значение (ConVar)
