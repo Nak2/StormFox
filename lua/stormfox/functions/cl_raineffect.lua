@@ -522,7 +522,8 @@ local Gauge = StormFox.GetData("Gauge",0)
 		hook.Add("Think","StormFox - RenderFalldownScreenThink",function()
 			if not LocalPlayer() then return end
 			if not StormFox.EFEnabled() then table.Empty(screenParticles) return end
-			if LocalPlayer():WaterLevel() >= 3 then
+			local Gauge = StormFox.GetData("Gauge",0)
+			if LocalPlayer():WaterLevel() >= 3 or Gauge <= 0 then
 				if #screenParticles > 0 then
 					table.Empty(screenParticles)
 				end
@@ -536,7 +537,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 					end
 				end
 			-- Is it even raining?
-				local Gauge = StormFox.GetData("Gauge",0)
+				
 				if Gauge <= 0 then table.Empty(screenParticles) return end
 			-- Safty first
 				if #screenParticles > 200 then return end

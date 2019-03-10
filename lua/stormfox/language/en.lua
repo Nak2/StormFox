@@ -61,7 +61,7 @@ return [[Stormfox English
 	sf_current_weather = Current Weather
 
 #Server Settings
-	sf_description.autopilot		 = Try fix all problems on launch.
+	sf_description.autopilot		 = Try to fix all problems on launch.
 	sf_description.timespeed		 = Seconds of gametime pr real second.
 	sf_description.moonscale		 = Moon scale.
 	sf_description.moonphase 		 = Enable moon-phases.
@@ -73,7 +73,7 @@ return [[Stormfox English
 	sf_description.sunmoon_yaw 	 	 = The sun/moon yaw.
 	sf_description.debugcompatibility = Enable SF compatability-debugger.
 	sf_description.skybox 			 = Enable SF-skybox.
-	sf_description.enable_ekstra_lightsupport = Enable ekstra lightsupport (Lags on large maps)
+	sf_description.enable_ekstra_lightsupport = Enable extra lightsupport (Lags on large maps)
 	sf_description.start_time 		 = Start the server at a specific time.
 	sf_description.mapbloom 		 = Allow SF editing light-bloom.
 	sf_description.enable_mapbrowser = Allow admins changing the map with SF-browser.

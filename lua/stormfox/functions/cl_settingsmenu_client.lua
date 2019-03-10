@@ -14,6 +14,13 @@
 	--("sf_enable_breath","1",true,false,"Enable cold breath-effect.")
 	("sf_useAInode","1",true,false,"Use AI nodes for more reliable sounds and effects.") People don't know what this is.
 ]]
+local lang_key = {
+		ru = "Русский",
+		en = "English",
+		["en-pt"] = "English Pirate",
+		fr = "Francais"
+	}
+
 local function makeTitle(parent,text)
 	local p = mgui.Create("Panel",parent)
 	p.text = text
@@ -219,11 +226,6 @@ function StormFox.OpenClientSettings()
 				language_box:SetPos(20 + l:GetSize(),10 + element_size * element_num)
 				language_box:SetSize(140,18)
 				local con_override = GetConVar("sf_language_override")
-				local lang_key = {
-					ru = "Русский",
-					en = "English",
-					["en-pt"] = "English Pirate"
-				}
 				if con_override and #con_override:GetString() > 0 then
 					language_box:SetValue(lang_key[con_override:GetString()] or con_override:GetString())
 				else
@@ -463,7 +465,7 @@ function StormFox.OpenClientSettings()
 			--sf_redownloadlightmaps
 				local p,label = clientToggle(panel,"sf_redownloadlightmaps")
 				p:SetPos(20,10 + element_size * 9)
-				label:SetText(label:GetText() .."(" .. ("sf_warning_unsupportmap") ..")")
+				label:SetText(label:GetText())
 				label:SizeToContentsX(5)
 				label:SetPos(30 + p:GetWide(),10 + element_size * 9)
 				label:SetTall(p:GetTall())

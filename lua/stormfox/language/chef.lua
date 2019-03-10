@@ -61,7 +61,7 @@ return [[Stormfox Chef
 	sf_current_weather = Cuorrent Veezeer
 
 #Server Settings
-	sf_description.autopilot		 = Try feex ill prublems oun luonch.
+	sf_description.autopilot		 = Try to feex ill prublems oun luonch.
 	sf_description.timespeed		 = Secunds ouff gemetime-a pr reel secund.
 	sf_description.moonscale		 = Muon scele-a
 	sf_description.moonphase 		 = Ineble-a muon-pheses.
@@ -73,7 +73,7 @@ return [[Stormfox Chef
 	sf_description.sunmoon_yaw 	 	 = Zee-a suon/muon yev.
 	sf_description.debugcompatibility = Ineble-a SF cumpetebeeleety-debuogger.
 	sf_description.skybox 			 = Ineble-a SF-skybux. Bork Bork Bork!
-	sf_description.enable_ekstra_lightsupport = Ineble-a ikstra leeghtsuoppurt (Legs oun lerge-a meps) 
+	sf_description.enable_ekstra_lightsupport = Ineble-a ixtra leeghtsuoppurt (Legs oun lerge-a meps) 
 	sf_description.start_time 		 = Stert zee-a serfer it a speceeffeec time-a.
 	sf_description.mapbloom 		 = Illuo SF ideeting leeght-bluom.
 	sf_description.enable_mapbrowser = Illuo idmeens chuongeeng zee-a mep vit SF-bruoser.

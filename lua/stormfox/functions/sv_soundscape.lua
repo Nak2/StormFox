@@ -17,12 +17,44 @@
 	if not conVar:GetBool() then return end
 
 STORMFOX_SOUNDSCAPE_ENTITY = STORMFOX_SOUNDSCAPE_ENTITY or {}
--- Delete all soundscapes
+-- "Delete" all soundscapes
 	hook.Add("OnEntityCreated","StormFox.SoundScape.Delete",function(ent)
-		if ent:GetClass() ~= "env_soundscape" and ent:GetClass() ~= "env_soundscape_proxy" then return end -- env_soundscape_triggerable
-		timer.Simple(0,function() ent:Remove() end)
+		if ent:GetClass() ~= "env_soundscape" and ent:GetClass() ~= "env_soundscape_proxy" and ent:GetClass() ~= "env_soundscape_triggerable" then return end
+		--timer.Simple(0,function() ent:Remove() end) Can crash on some maps. For some odd reason.
+		ent:Fire("Disable")
+		timer.Simple(0,function()
+			ent:Fire("Disable")
+		end)
 	end)
+	-- Just to be sure about the nail in the coffin
+		timer.Simple(0,function()
+			for i,v in ipairs(ents.FindByClass("env_soundscape*")) do
+				v:Fire("Disable")
+			end
+		end)
+	-- Stop the default soundscape from waking up
+		hook.Add("AcceptInput","StormFox.SoundScape.IO",function(ent,input,act,call,val)
+			if not IsValid(ent) then return end
+			local class = ent:GetClass()
+			if class == "trigger_soundscape" then
+				if input == "Enable" then
+					ent.enabled = true
+				elseif input == "Disable" then
+					ent.enabled = false
+				end
+			elseif class == "env_soundscape_triggerable" or class == "env_soundscape" or class == "env_soundscape_proxy" then
+				local kv = ent:GetKeyValues()
+				if kv.hammerid and StormFox.SoundScape.EnableSoundScape then
+					StormFox.SoundScape.EnableSoundScape(kv.hammerid,input ~= "Disable")
+				end
+				if input == "Enable" then -- No no no, don't wake the zombie up.
+					ent:Fire("Disable")
+					return true
+				end
+			end
+		end)
 -- Read the soundscapes
+	-- File
 		local function ReadLooping(f)
 			local t = {}
 			for i = 1,20 do
@@ -135,6 +167,119 @@ STORMFOX_SOUNDSCAPE_ENTITY = STORMFOX_SOUNDSCAPE_ENTITY or {}
 			f:Close()
 			return soundscape
 		end
+	-- String
+		local function ReadDataLooping(arr,line)
+			local t = {}
+			for i = 1,30 do
+				local l = arr[line + i]
+				local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
+				if key then
+					if key == "dps" then
+						t[key] = tonumber(var)
+					else
+						t[key] = var
+					end
+				end
+				if string.match(l,"}") then return t end
+			end
+			return t
+		end
+		local function ReadDataSoundscape(arr,line)
+			local t = {}
+			for i = 1,30 do
+				local l = arr[line + i]
+				local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
+				if key then
+					if key == "dps" then
+						t[key] = tonumber(var)
+					else
+						t[key] = var
+					end
+				end
+				if string.match(l,"}") then return t end
+			end
+			return t
+		end
+		local function ReadDataRandom(arr,line)
+			local t = {}
+			local lvl = 0
+			for i = 1,80 do
+				local l = arr[line + i]
+				local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
+				if key then
+					if key == "wave" then
+						t.wave = t.wave or {}
+						table.insert(t.wave,var)
+					elseif key == "dps" then
+						t[key] = tonumber(var)
+					else
+						t[key] = var
+					end
+				end
+				if string.match(l,"{") then
+					lvl = lvl + 1
+				elseif string.match(l,"}") then
+					lvl = lvl - 1
+					if lvl <= 0 then return t end
+				end
+			end
+			return t
+		end
+		local function ReadSoundScapeData(data)
+			local lvl = 0
+			local soundscape = {}
+			local cur_soundscape
+			local cur_tab = {}
+			local arr = string.Explode("\n",data)
+			for i = 1,3000 do -- I hate while loops
+				local l = arr[i]
+				-- Check if its something useful
+					if not l then break end
+					l = l:sub(0,#l-1)
+					l = string.match(l,"^%s*(.+)%s*$") -- Trim
+					if not l then continue end
+					if l:sub(0,2) == "//" then continue end
+					local lvlh = string.match(l,"[%{%}]")
+					if lvlh then
+						l = string.gsub(l,"[%{%}]","")
+						if lvlh == "{" then
+							lvl = lvl + 1
+							if lvl == 2 then
+								table.Empty(cur_tab)
+							end
+						elseif lvlh == "}" then
+							lvl = lvl - 1
+						end
+					end
+					if not string.match(l,"[%w%{%}]") then continue end -- In case its empty
+				if lvl == 0 then
+					l = string.match(l,[["(.+)"]]) or l
+					soundscape[l] = {}
+					cur_soundscape = l
+				elseif lvl == 1 then
+					local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
+					if not key then
+						key = string.match(l,[["([^"]+)"]])
+						soundscape[cur_soundscape][key] = soundscape[cur_soundscape][key] or {}
+						if key == "playrandom" then
+							table.insert(soundscape[cur_soundscape][key],ReadDataRandom(arr,i))
+						elseif key == "playsoundscape" then
+							table.insert(soundscape[cur_soundscape][key],ReadDataSoundscape(arr,i))
+						elseif key == "playlooping" then
+							table.insert(soundscape[cur_soundscape][key],ReadDataLooping(arr,i))
+						end
+					else
+						if key == "dps" then
+							soundscape[cur_soundscape][key] = tonumber(var)
+						else
+							soundscape[cur_soundscape][key] = var
+						end
+					end
+				end
+			end
+			return soundscape
+		end
+		--_STORMFOX_MAP__SoundScapes
 	local function ReadsoundScapeFolder(tab,folder)
 		if not tab then tab = {} end
 		local files,folders = file.Find(folder .. "/*","GAME")
@@ -154,6 +299,11 @@ STORMFOX_SOUNDSCAPE_ENTITY = STORMFOX_SOUNDSCAPE_ENTITY or {}
 	local function GetAllSoundScapes()
 		if t then return t end
 		t = ReadsoundScapeFolder(t,"scripts/soundscapes")
+		for fil,data in pairs(_STORMFOX_MAP__SoundScapes or {}) do
+			for k,v in pairs(ReadSoundScapeData(data)) do
+				t[k] = v
+			end
+		end
 		return t
 	end
 -- Place entities
@@ -226,3 +376,20 @@ STORMFOX_SOUNDSCAPE_ENTITY = STORMFOX_SOUNDSCAPE_ENTITY or {}
 
 -- Will create all soundscape entities
 	hook.Add("StormFox.PostEntity","StormFox.ScanSoundScape",SoundScapes)
+-- Serverside things
+	StormFox.SoundScape = {}
+	util.AddNetworkString("sv_trigger_soundscape")
+	function StormFox.SoundScape.TriggerSoundScape(str,ply)
+		net.Start("sv_trigger_soundscape")
+			net.WriteInt(0,3)
+			net.WriteString(str)
+		net.Send(ply)
+	end
+	function StormFox.SoundScape.EnableSoundScape(hammerid,bool)
+		net.Start("sv_trigger_soundscape")
+			net.WriteInt(1,3)
+			net.WriteString(hammerid .. "")
+			net.WriteBool(bool)
+		net.Broadcast()
+	end
+

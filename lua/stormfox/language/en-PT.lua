@@ -61,7 +61,7 @@ return [[Stormfox English Pirate
 	sf_current_weather = Current Sky
 
 #Server Settings
-	sf_description.autopilot		 = Try fix all problems on launch.
+	sf_description.autopilot		 = Try to fix all problems on launch.
 	sf_description.timespeed		 = Seconds o' gametime pr real second.
 	sf_description.moonscale		 = Moon scale.
 	sf_description.moonphase 		 = Enable moon-phases.
@@ -73,7 +73,7 @@ return [[Stormfox English Pirate
 	sf_description.sunmoon_yaw 	 	 = Th' sun/moon yaw.
 	sf_description.debugcompatibility = Set SF compatability-debugger.
 	sf_description.skybox 			 = Set SF-skybox.
-	sf_description.enable_ekstra_lightsupport = Set ekstra lightsupport (Lags on large maps)
+	sf_description.enable_ekstra_lightsupport = Set extra lightsupport (Lags on large maps)
 	sf_description.start_time 		 = Start th' poseidon at a specific time.
 	sf_description.mapbloom 		 = Allow SF editin' light-bloom.
 	sf_description.enable_mapbrowser = Allow captains changin' th' map with SF-browser.

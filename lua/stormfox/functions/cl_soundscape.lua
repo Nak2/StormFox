@@ -89,10 +89,14 @@ StormFox.SoundScape = {}
 			local dif = STORMFOX_SOUNDSCAPE.playlooping[snd][1] / (fadeover / 3)
 			STORMFOX_SOUNDSCAPE.playlooping[snd][3] = {0,dif}
 		end
+		StormFox.SoundScape.StopSound = StopSound
 	-- Play a sound
 		local function PlaySound(snd,soundlvl,pitch,volume,dsp,fadeover,ent)
-			if not file.Exists("sound/" .. snd,"GAME") then return end -- Unknown sound. I hate red errors
+			--if not file.Exists("sound/" .. snd,"GAME") then return end -- Unknown sound. I hate red errors
 			if volume <= 0 then return end
+			if volume > 1 then -- Idk why .. but some mappers do this
+				volume = volume / 100
+			end
 			if snd == "nil" then return end
 			if not dsp then dsp = 1 else dsp = tonumber(dsp) end
 			if dsp >= 20 or dsp <= 22 then dsp = 1 end -- Somehow sound breaks at dsp 20,21 and 22.
@@ -104,6 +108,8 @@ StormFox.SoundScape = {}
 			if not ent then
 				ent = ent or Entity(0)
 				soundlvl = 0
+			else
+				soundlvl = math.max(60,soundlvl)
 			end
 			-- Setup the varables
 				if not STORMFOX_SOUNDSCAPE.playlooping[snd] then
@@ -206,70 +212,242 @@ StormFox.SoundScape = {}
 			end
 		end)
 	-- Read the soundscapes
-		local function ReadLooping(f)
-			local t = {}
-			for i = 1,20 do
-				local l = f:ReadLine()
-				local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
-				if key then
-					if key == "dps" then
-						t[key] = tonumber(var)
-					else
-						t[key] = var
+		-- File
+			local function ReadLooping(f)
+				local t = {}
+				for i = 1,20 do
+					local l = f:ReadLine()
+					local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
+					if key then
+						if key == "dps" then
+							t[key] = tonumber(var)
+						else
+							t[key] = var
+						end
+					end
+					if string.match(l,"}") then return t end
+				end
+				return t
+			end
+			local function ReadSoundscape(f)
+				local t = {}
+				for i = 1,20 do
+					local l = f:ReadLine()
+					local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
+					if key then
+						if key == "dps" then
+							t[key] = tonumber(var)
+						else
+							t[key] = var
+						end
+					end
+					if string.match(l,"}") then return t end
+				end
+				return t
+			end
+			local function ReadRandom(f)
+				local t = {}
+				local lvl = 0
+				for i = 1,80 do
+					local l = f:ReadLine()
+					local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
+					if key then
+						if key == "wave" then
+							t.wave = t.wave or {}
+							table.insert(t.wave,var)
+						elseif key == "dps" then
+							t[key] = tonumber(var)
+						else
+							t[key] = var
+						end
+					end
+					if string.match(l,"{") then
+						lvl = lvl + 1
+					elseif string.match(l,"}") then
+						lvl = lvl - 1
+						if lvl <= 0 then return t end
 					end
 				end
-				if string.match(l,"}") then return t end
+				return t
 			end
-			return t
-		end
-		local function ReadSoundscape(f)
-			local t = {}
-			for i = 1,20 do
-				local l = f:ReadLine()
-				local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
-				if key then
-					if key == "dps" then
-						t[key] = tonumber(var)
-					else
-						t[key] = var
+			local function ReadSoundScapeFile(fil)
+				local f = file.Open(fil,"r","GAME")
+				local lvl = 0
+				local soundscape = {}
+				local cur_soundscape
+				local cur_tab = {}
+				for i = 1,3500 do -- I hate while loops
+					local l = f:ReadLine()
+					if string.find(l or "","union.streets") then
+						print("Found it:" .. fil)
+					end
+					-- Check if its something useful
+						if not l then break end
+						l = l:sub(0,#l-1)
+						l = string.match(l,"^%s*(.+)%s*$") -- Trim
+						if not l then continue end
+						if l:sub(0,2) == "//" then continue end
+						local lvlh = string.match(l,"[%{%}]")
+						if lvlh then
+							l = string.gsub(l,"[%{%}]","")
+							if lvlh == "{" then
+								lvl = lvl + 1
+								if lvl == 2 then
+									table.Empty(cur_tab)
+								end
+							elseif lvlh == "}" then
+								lvl = lvl - 1
+							end
+						end
+						if not string.match(l,"[%w%{%}]") then continue end -- In case its empty
+					if lvl == 0 then
+						l = string.match(l,[["(.+)"]]) or l
+						l = l:lower()
+						soundscape[l] = {}
+						cur_soundscape = l
+					elseif lvl == 1 then
+						local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
+						if not key then
+							key = string.match(l,[["([^"]+)"]])
+							soundscape[cur_soundscape][key] = soundscape[cur_soundscape][key] or {}
+							if key == "playrandom" then
+								table.insert(soundscape[cur_soundscape][key],ReadRandom(f))
+							elseif key == "playsoundscape" then
+								table.insert(soundscape[cur_soundscape][key],ReadSoundscape(f))
+							elseif key == "playlooping" then
+								table.insert(soundscape[cur_soundscape][key],ReadLooping(f))
+							end
+						else
+							if key == "dps" then
+								soundscape[cur_soundscape][key] = tonumber(var)
+							else
+								soundscape[cur_soundscape][key] = var
+							end
+						end
 					end
 				end
-				if string.match(l,"}") then return t end
+				f:Close()
+				return soundscape
 			end
-			return t
-		end
-		local function ReadRandom(f)
-			local t = {}
-			local lvl = 0
-			for i = 1,80 do
-				local l = f:ReadLine()
-				local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
-				if key then
-					if key == "wave" then
-						t.wave = t.wave or {}
-						table.insert(t.wave,var)
-					elseif key == "dps" then
-						t[key] = tonumber(var)
-					else
-						t[key] = var
+		-- String
+			local function ReadDataLooping(arr,line)
+				local t = {}
+				for i = 1,30 do
+					local l = arr[line + i]
+					local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
+					if key then
+						if key == "dps" then
+							t[key] = tonumber(var)
+						else
+							t[key] = var
+						end
+					end
+					if string.match(l,"}") then return t end
+				end
+				return t
+			end
+			local function ReadDataSoundscape(arr,line)
+				local t = {}
+				for i = 1,30 do
+					local l = arr[line + i]
+					local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
+					if key then
+						if key == "dps" then
+							t[key] = tonumber(var)
+						else
+							t[key] = var
+						end
+					end
+					if string.match(l,"}") then return t end
+				end
+				return t
+			end
+			local function ReadDataRandom(arr,line)
+				local t = {}
+				local lvl = 0
+				for i = 1,80 do
+					local l = arr[line + i]
+					local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
+					if key then
+						if key == "wave" then
+							t.wave = t.wave or {}
+							table.insert(t.wave,var)
+						elseif key == "dps" then
+							t[key] = tonumber(var)
+						else
+							t[key] = var
+						end
+					end
+					if string.match(l,"{") then
+						lvl = lvl + 1
+					elseif string.match(l,"}") then
+						lvl = lvl - 1
+						if lvl <= 0 then return t end
 					end
 				end
-				if string.match(l,"{") then
-					lvl = lvl + 1
-				elseif string.match(l,"}") then
-					lvl = lvl - 1
-					if lvl <= 0 then return t end
-				end
+				return t
 			end
-			return t
-		end
-		local function ReadSoundScapeFile(fil)
+			local function ReadSoundScapeDataString(data)
+				local lvl = 0
+				local soundscape = {}
+				local cur_soundscape
+				local cur_tab = {}
+				local arr = string.Explode("\n",data)
+				for i = 1,3000 do -- I hate while loops
+					local l = arr[i]
+					-- Check if its something useful
+						if not l then break end
+						l = l:sub(0,#l-1)
+						l = string.match(l,"^%s*(.+)%s*$") -- Trim
+						if not l then continue end
+						if l:sub(0,2) == "//" then continue end
+						local lvlh = string.match(l,"[%{%}]")
+						if lvlh then
+							l = string.gsub(l,"[%{%}]","")
+							if lvlh == "{" then
+								lvl = lvl + 1
+								if lvl == 2 then
+									table.Empty(cur_tab)
+								end
+							elseif lvlh == "}" then
+								lvl = lvl - 1
+							end
+						end
+						if not string.match(l,"[%w%{%}]") then continue end -- In case its empty
+					if lvl == 0 then
+						l = string.match(l,[["(.+)"]]) or l
+						soundscape[l] = {}
+						cur_soundscape = l
+					elseif lvl == 1 then
+						local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
+						if not key then
+							key = string.match(l,[["([^"]+)"]])
+							soundscape[cur_soundscape][key] = soundscape[cur_soundscape][key] or {}
+							if key == "playrandom" then
+								table.insert(soundscape[cur_soundscape][key],ReadDataRandom(arr,i))
+							elseif key == "playsoundscape" then
+								table.insert(soundscape[cur_soundscape][key],ReadDataSoundscape(arr,i))
+							elseif key == "playlooping" then
+								table.insert(soundscape[cur_soundscape][key],ReadDataLooping(arr,i))
+							end
+						else
+							if key == "dps" then
+								soundscape[cur_soundscape][key] = tonumber(var)
+							else
+								soundscape[cur_soundscape][key] = var
+							end
+						end
+					end
+				end
+				return soundscape
+			end
+		local function ReadSoundScapeData(fil)
 			local f = file.Open(fil,"r","GAME")
 			local lvl = 0
 			local soundscape = {}
 			local cur_soundscape
 			local cur_tab = {}
-			for i = 1,2500 do -- I hate while loops
+			for i = 1,3500 do -- I hate while loops
 				local l = f:ReadLine()
 				-- Check if its something useful
 					if not l then break end
@@ -319,6 +497,7 @@ StormFox.SoundScape = {}
 			f:Close()
 			return soundscape
 		end
+		--StormFox.MAP._SoundScapes
 		local function ReadsoundScapeFolder(tab,folder)
 			if not tab then tab = {} end
 			local files,folders = file.Find(folder .. "/*","GAME")
@@ -348,6 +527,12 @@ StormFox.SoundScape = {}
 				end
 			end
 			ReadsoundScapeFolder(t,"scripts/soundscapes")
+			-- Read map
+				for fil,data in pairs(_STORMFOX_MAP__SoundScapes or {}) do
+					for k,v in pairs(ReadSoundScapeDataString(data)) do
+						t[k] = v
+					end
+				end
 			soundscapes = t
 			return soundscapes
 		end
@@ -386,6 +571,7 @@ StormFox.SoundScape = {}
 						t.classname = data.classname
 						t.targetname = data.targetname
 						t.data = data
+						t.enabled = tonumber(data.startdisabled or "0") ~= 1
 						t.soundpositions = {}
 							for i = 0,7 do
 								if data["position" .. i] then
@@ -401,6 +587,7 @@ StormFox.SoundScape = {}
 						--t.mapdata = data
 						t.origin = util.StringToType(data.origin or "0 0 0","Vector")
 						t.proxy = true
+						t.enabled = tonumber(data.startdisabled or "0") ~= 1
 						table.insert(snd_list,t)
 					elseif data.classname == "env_soundscape_triggerable" then
 						local t = {}
@@ -414,6 +601,7 @@ StormFox.SoundScape = {}
 						t.classname = data.classname
 						t.targetname = data.targetname
 						t.data = data
+						t.enabled = tonumber(data.startdisabled or "0") ~= 1
 						t.soundpositions = {}
 							for i = 0,7 do
 								if data["position" .. i] then
@@ -594,6 +782,7 @@ StormFox.SoundScape = {}
 				local pos = StormFox.GetCalcViewResult().pos
 				local c = {}
 				for k,v in pairs(SoundScapes()) do
+					if not v.enabled then continue end
 					if not v.proxy then
 						local tr = ET(pos,v.origin,MASK_SOLID_BRUSHONLY)
 						if tr.Hit then continue end -- We're not in view
@@ -672,7 +861,7 @@ StormFox.SoundScape = {}
 						local volume = math.Rand(v.volume[1] or 1,v.volume[2] or 1)
 						local pos
 						if v.position then
-							pos = current_SoundScape.soundpositions[v.position]
+							pos = current_SoundScape.soundpositions[tonumber(v.position)]
 							if not pos then
 								-- Some maps got unset positions for sounds. I got no idea why.
 								continue
@@ -703,6 +892,22 @@ StormFox.SoundScape = {}
 			end
 			SetSoundScape(new_soundscape)
 		end
+		net.Receive("sv_trigger_soundscape",function()
+			local msg = net.ReadInt(3)
+			if msg == 0 then
+				StormFox.SoundScape.Set(net.ReadString() or "")
+			elseif msg == 1 then
+				local hammerid = net.ReadString()
+				local enable = net.ReadBool()
+				for i,v in ipairs(SoundScapes()) do
+					if not v.data then continue end
+					if not v.data.hammerid then continue end
+					if v.data.hammerid ~= hammerid then continue end
+					SoundScapes()[i].enabled = enable
+					break
+				end
+			end
+		end)
 		function StormFox.SoundScape.FindScript(soundscape_name)
 			return GetAllSoundScapes()[soundscape_name]
 		end
@@ -809,7 +1014,9 @@ StormFox.SoundScape = {}
 				local pos = v.origin
 				local range = v.radius
 				if v.powradius < pos:DistToSqr(vpos) then
-					if v.proxy then
+					if not v.enabled then
+						render.DrawSphere(pos,range,30,30,Color(25,55,55,55))
+					elseif v.proxy then
 						render.DrawSphere(pos,range,30,30,Color(255,55,55,55))
 					else
 						render.DrawSphere(pos,range,30,30,Color(55,255,55,55))

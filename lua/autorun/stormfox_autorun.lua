@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.62
+StormFox.Version = 1.63
 StormFox.WorkShopVersion = false--game.IsDedicated()
 function StormFox.Msg(...)
 	local a = {...}
@@ -12,9 +12,14 @@ function StormFox.Msg(...)
 	MsgC(Color(155,155,255),"[StormFox] ",Color(255,255,255),unpack( a ),"\n")
 end
 StormFox.Msg("V " .. StormFox.Version .. ".")
+file.CreateDir("stormfox")
+--file.CreateDir("stormfox/temp")
+-- Clear temp files
+	--for i,v in ipairs(file.Find("stormfox/temp/*","DATA")) do
+	--	file.Delete("stormfox/temp/" .. v)
+	--end
 if SERVER then
 	AddCSLuaFile()
-	file.CreateDir("stormfox")
 	file.CreateDir("stormfox/maps")
 end
 -- Skypaint creation fix. For some odd reason this has to be called ASAP.

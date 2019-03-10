@@ -115,6 +115,26 @@ StormFox.MAP = {}
 		f:Seek(lump.fileofs)
 		return lump.filelen
 	end
+-- Find soundscape in PAK
+	local conVar = GetConVar("sf_overridemapsounds")
+	local function PAKSearch(f,len)
+		if not conVar:GetBool() then return end -- Soundscape isn't enabled on the map. Ignore.
+		local data = f:Read(len)
+		local found = false
+		for s in string.gmatch( data, "scripts\\soundscapes_.-txt.-PK" ) do
+			if not found then
+				found = true
+				StormFox.Msg("Found custom soundscapes:")
+			end
+			local fil = string.match(s,"scripts\\soundscapes_.-txt")
+			local file_name = string.GetFileFromFilename(fil or "") or ""
+			StormFox.Msg(file_name)
+			if #file_name > 0 then
+				_STORMFOX_MAP__SoundScapes = _STORMFOX_MAP__SoundScapes or {}
+				_STORMFOX_MAP__SoundScapes[file_name] = s:sub(#fil + 1,#s - 4)
+			end
+		end
+	end
 -- Load BSP data.
 	local function GetBSPData(str)
 		local s = SysTime()
@@ -132,7 +152,7 @@ StormFox.MAP = {}
 			end
 			BSPDATA.version = ReadBits(f,4)
 			if BSPDATA.version > 21 then
-				error("Hello furture space person. SF is too old to read Source 2 maps.")
+				error("What year is it? SF is too old to read those maps.")
 			end
 			local lumps = {}
 			for i = 1,64 do
@@ -200,7 +220,7 @@ StormFox.MAP = {}
 					end
 				-- Static prop lump
 					local count = f:ReadLong()
-					local startRead = f:Tell()
+					--local startRead = f:Tell()
 					for i = 1,count do --1340 = crash
 						local t = {}
 						-- Version 4
@@ -285,6 +305,13 @@ StormFox.MAP = {}
 				table.insert(texdata_t,dtexdata_t)
 			end
 			BSPDATA.Textures = texdata_t
+		-- PAK search
+			local len = SetToLump(f,lumps[41])
+			if len > 10 then
+				StormFox.Msg("Found mapdata ..")
+				PAKSearch(f,len)
+			end
+			--pak_data = f:Read(len)
 		f:Close()
 		StormFox.Msg("Took " .. (SysTime() - s) .. " seconds to load the mapdata.")
 		hook.Run("StormFox.MAP.Loaded")
@@ -370,6 +397,23 @@ StormFox.MAP = {}
 			end
 		end
 		return t
+	end
+	function StormFox.MAP.FindEntity(eEnt)
+		local c = eEnt:GetClass()
+		for k,v in pairs(BSPDATA.Entities) do
+			if c == v.classname and eEnt:GetKeyValues().hammerid == v.hammerid then
+				return v
+			end
+		end
+		return
+	end
+	function StormFox.MAP.FindHammerid(id)
+		for k,v in pairs(ents.GetAll()) do
+			if v:GetKeyValues().hammerid == id then
+				return v
+			end
+		end
+		return
 	end
 -- Load
 	GetBSPData()
