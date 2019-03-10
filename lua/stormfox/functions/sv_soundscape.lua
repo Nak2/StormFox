@@ -27,7 +27,7 @@ STORMFOX_SOUNDSCAPE_ENTITY = STORMFOX_SOUNDSCAPE_ENTITY or {}
 		end)
 	end)
 	-- Just to be sure about the nail in the coffin
-		timer.Simple(0,function()
+		timer.Simple(1,function()
 			for i,v in ipairs(ents.FindByClass("env_soundscape*")) do
 				v:Fire("Disable")
 			end
