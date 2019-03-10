@@ -45,7 +45,14 @@ STORMFOX_SOUNDSCAPE_ENTITY = STORMFOX_SOUNDSCAPE_ENTITY or {}
 			elseif class == "env_soundscape_triggerable" or class == "env_soundscape" or class == "env_soundscape_proxy" then
 				local kv = ent:GetKeyValues()
 				if kv.hammerid and StormFox.SoundScape.EnableSoundScape then
-					StormFox.SoundScape.EnableSoundScape(kv.hammerid,input ~= "Disable")
+					if input == "Enable" then
+						ent.IgnoreTick = true
+					end
+					if ent.IgnoreTick and input == "Disable" then
+						ent.IgnoreTick = false
+					else
+						StormFox.SoundScape.EnableSoundScape(kv.hammerid,input ~= "Disable")
+					end
 				end
 				if input == "Enable" then -- No no no, don't wake the zombie up.
 					ent:Fire("Disable")
