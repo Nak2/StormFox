@@ -61,13 +61,27 @@ STORMFOX_SOUNDSCAPE_ENTITY = STORMFOX_SOUNDSCAPE_ENTITY or {}
 			end
 		end)
 -- Read the soundscapes
+		local function ReadKeyVars(str)
+			local key,var = string.match(str,[[([^"%s]+)[%s	"]+([^"%s]+)]])
+			if var and (#var <= 0 or string.match(var,"^//")) then
+				var = nil
+			end
+			if key and (#key <= 0 or string.match(key,"^//")) then
+				key = nil
+			end
+			if key and var then
+				return key,var
+			else
+				return string.match(str,[[([^"%s	]+)]])
+			end
+		end
 	-- File
 		local function ReadLooping(f)
 			local t = {}
 			for i = 1,20 do
 				local l = f:ReadLine()
-				local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
-				if key then
+				local key,var = ReadKeyVars(l)
+				if key and var then
 					if key == "dps" then
 						t[key] = tonumber(var)
 					else
@@ -82,8 +96,8 @@ STORMFOX_SOUNDSCAPE_ENTITY = STORMFOX_SOUNDSCAPE_ENTITY or {}
 			local t = {}
 			for i = 1,20 do
 				local l = f:ReadLine()
-				local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
-				if key then
+				local key,var = ReadKeyVars(l)
+				if key and var then
 					if key == "dps" then
 						t[key] = tonumber(var)
 					else
@@ -99,8 +113,8 @@ STORMFOX_SOUNDSCAPE_ENTITY = STORMFOX_SOUNDSCAPE_ENTITY or {}
 			local lvl = 0
 			for i = 1,80 do
 				local l = f:ReadLine()
-				local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
-				if key then
+				local key,var = ReadKeyVars(l)
+				if key and var then
 					if key == "wave" then
 						t.wave = t.wave or {}
 						table.insert(t.wave,var)
@@ -151,9 +165,8 @@ STORMFOX_SOUNDSCAPE_ENTITY = STORMFOX_SOUNDSCAPE_ENTITY or {}
 					soundscape[l] = {}
 					cur_soundscape = l
 				elseif lvl == 1 then
-					local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
-					if not key then
-						key = string.match(l,[["([^"]+)"]])
+					local key,var = ReadKeyVars(l)
+					if key and not var then
 						soundscape[cur_soundscape][key] = soundscape[cur_soundscape][key] or {}
 						if key == "playrandom" then
 							table.insert(soundscape[cur_soundscape][key],ReadRandom(f))
@@ -162,7 +175,7 @@ STORMFOX_SOUNDSCAPE_ENTITY = STORMFOX_SOUNDSCAPE_ENTITY or {}
 						elseif key == "playlooping" then
 							table.insert(soundscape[cur_soundscape][key],ReadLooping(f))
 						end
-					else
+					elseif key and var then
 						if key == "dps" then
 							soundscape[cur_soundscape][key] = tonumber(var)
 						else
@@ -179,8 +192,8 @@ STORMFOX_SOUNDSCAPE_ENTITY = STORMFOX_SOUNDSCAPE_ENTITY or {}
 			local t = {}
 			for i = 1,30 do
 				local l = arr[line + i]
-				local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
-				if key then
+				local key,var = ReadKeyVars(l)
+				if key and var then
 					if key == "dps" then
 						t[key] = tonumber(var)
 					else
@@ -195,8 +208,8 @@ STORMFOX_SOUNDSCAPE_ENTITY = STORMFOX_SOUNDSCAPE_ENTITY or {}
 			local t = {}
 			for i = 1,30 do
 				local l = arr[line + i]
-				local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
-				if key then
+				local key,var = ReadKeyVars(l)
+				if key and var then
 					if key == "dps" then
 						t[key] = tonumber(var)
 					else
@@ -212,8 +225,8 @@ STORMFOX_SOUNDSCAPE_ENTITY = STORMFOX_SOUNDSCAPE_ENTITY or {}
 			local lvl = 0
 			for i = 1,80 do
 				local l = arr[line + i]
-				local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
-				if key then
+				local key,var = ReadKeyVars(l)
+				if key and var then
 					if key == "wave" then
 						t.wave = t.wave or {}
 						table.insert(t.wave,var)
@@ -264,9 +277,8 @@ STORMFOX_SOUNDSCAPE_ENTITY = STORMFOX_SOUNDSCAPE_ENTITY or {}
 					soundscape[l] = {}
 					cur_soundscape = l
 				elseif lvl == 1 then
-					local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
-					if not key then
-						key = string.match(l,[["([^"]+)"]])
+					local key,var = ReadKeyVars(l)
+					if key and not var then
 						soundscape[cur_soundscape][key] = soundscape[cur_soundscape][key] or {}
 						if key == "playrandom" then
 							table.insert(soundscape[cur_soundscape][key],ReadDataRandom(arr,i))
@@ -275,7 +287,7 @@ STORMFOX_SOUNDSCAPE_ENTITY = STORMFOX_SOUNDSCAPE_ENTITY or {}
 						elseif key == "playlooping" then
 							table.insert(soundscape[cur_soundscape][key],ReadDataLooping(arr,i))
 						end
-					else
+					elseif key and var then
 						if key == "dps" then
 							soundscape[cur_soundscape][key] = tonumber(var)
 						else

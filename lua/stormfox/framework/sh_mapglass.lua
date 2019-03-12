@@ -120,6 +120,7 @@ StormFox.MAP = {}
 	local function PAKSearch(f,len)
 		if not conVar:GetBool() then return end -- Soundscape isn't enabled on the map. Ignore.
 		local data = f:Read(len)
+		--file.Write("oi3.txt",data)
 		local found = false
 		for s in string.gmatch( data, "scripts\\soundscapes_.-txt.-PK" ) do
 			if not found then

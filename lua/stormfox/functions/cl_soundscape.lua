@@ -212,6 +212,20 @@ StormFox.SoundScape = {}
 			end
 		end)
 	-- Read the soundscapes
+			local function ReadKeyVars(str)
+				local key,var = string.match(str,[[([^"%s]+)[%s	"]+([^"%s]+)]])
+				if var and (#var <= 0 or string.match(var,"^//")) then
+					var = nil
+				end
+				if key and (#key <= 0 or string.match(key,"^//")) then
+					key = nil
+				end
+				if key and var then
+					return key,var
+				else
+					return string.match(str,[[([^"%s	]+)]])
+				end
+			end
 		-- File
 			local function ReadLooping(f)
 				local t = {}
@@ -278,9 +292,6 @@ StormFox.SoundScape = {}
 				local cur_tab = {}
 				for i = 1,3500 do -- I hate while loops
 					local l = f:ReadLine()
-					if string.find(l or "","union.streets") then
-						print("Found it:" .. fil)
-					end
 					-- Check if its something useful
 						if not l then break end
 						l = l:sub(0,#l-1)
@@ -306,9 +317,8 @@ StormFox.SoundScape = {}
 						soundscape[l] = {}
 						cur_soundscape = l
 					elseif lvl == 1 then
-						local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
-						if not key then
-							key = string.match(l,[["([^"]+)"]])
+						local key,var = ReadKeyVars(l)
+						if key and not var then
 							soundscape[cur_soundscape][key] = soundscape[cur_soundscape][key] or {}
 							if key == "playrandom" then
 								table.insert(soundscape[cur_soundscape][key],ReadRandom(f))
@@ -317,7 +327,7 @@ StormFox.SoundScape = {}
 							elseif key == "playlooping" then
 								table.insert(soundscape[cur_soundscape][key],ReadLooping(f))
 							end
-						else
+						elseif key and var then
 							if key == "dps" then
 								soundscape[cur_soundscape][key] = tonumber(var)
 							else
@@ -334,8 +344,8 @@ StormFox.SoundScape = {}
 				local t = {}
 				for i = 1,30 do
 					local l = arr[line + i]
-					local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
-					if key then
+					local key,var = ReadKeyVars(l)
+					if key and var then
 						if key == "dps" then
 							t[key] = tonumber(var)
 						else
@@ -350,8 +360,8 @@ StormFox.SoundScape = {}
 				local t = {}
 				for i = 1,30 do
 					local l = arr[line + i]
-					local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
-					if key then
+					local key,var = ReadKeyVars(l)
+					if key and var then
 						if key == "dps" then
 							t[key] = tonumber(var)
 						else
@@ -367,8 +377,8 @@ StormFox.SoundScape = {}
 				local lvl = 0
 				for i = 1,80 do
 					local l = arr[line + i]
-					local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
-					if key then
+					local key,var = ReadKeyVars(l)
+					if key and var then
 						if key == "wave" then
 							t.wave = t.wave or {}
 							table.insert(t.wave,var)
@@ -419,9 +429,8 @@ StormFox.SoundScape = {}
 						soundscape[l] = {}
 						cur_soundscape = l
 					elseif lvl == 1 then
-						local key,var = string.match(l,[["([^"]+)"%s*"([^"]+)"]])
-						if not key then
-							key = string.match(l,[["([^"]+)"]])
+						local key,var = ReadKeyVars(l)
+						if key and not var then
 							soundscape[cur_soundscape][key] = soundscape[cur_soundscape][key] or {}
 							if key == "playrandom" then
 								table.insert(soundscape[cur_soundscape][key],ReadDataRandom(arr,i))
@@ -430,7 +439,7 @@ StormFox.SoundScape = {}
 							elseif key == "playlooping" then
 								table.insert(soundscape[cur_soundscape][key],ReadDataLooping(arr,i))
 							end
-						else
+						elseif key and var then
 							if key == "dps" then
 								soundscape[cur_soundscape][key] = tonumber(var)
 							else
@@ -529,6 +538,7 @@ StormFox.SoundScape = {}
 			ReadsoundScapeFolder(t,"scripts/soundscapes")
 			-- Read map
 				for fil,data in pairs(_STORMFOX_MAP__SoundScapes or {}) do
+					StormFox.Msg("Custom soundscape: " .. fil)
 					for k,v in pairs(ReadSoundScapeDataString(data)) do
 						t[k] = v
 					end
@@ -740,6 +750,11 @@ StormFox.SoundScape = {}
 				-- Load the sounds
 					local dsp = snd_list[snd_id].snd.dsp or 1
 					for k,v in pairs(snd_list[snd_id].snd.playlooping or {}) do
+						if not v.wave then
+							StormFox.Msg("[Warning] Empty playloop detected. This should not happen.")
+							snd_list[snd_id].snd.playlooping = nil
+							continue
+						end
 						local t = {}
 							t.dsp = dsp
 							t.volume = NumVal(v.volume or "1",nil)
@@ -1044,7 +1059,7 @@ StormFox.SoundScape = {}
 	-- Enverioment guesser
 		function StormFox.SoundScape.GetEnvState()
 			local outside = string.match(last_name,"[%.%_]outside") or string.match(last_name,"[%.%_]outdoor")
-			local inside = string.match(last_name,"[%.%_]inside") or string.match(last_name,"[%.%_]indoor")
+			local inside = string.match(last_name,"[%.%_]inside") or string.match(last_name,"[%.%_]indoor") or string.match(last_name,"[%.%_]interior") or string.match(last_name,"[%.%_]room")
 			local state = (outside and -1 or 0) + (inside and 1 or 0)
 			return state
 		end

@@ -100,7 +100,7 @@ local default_foliage = {}
 
 		default_foliage["statua/nature/furcard1"] = {2,0.1}
 		default_foliage["models/statua/shared/furcard1"] = {2,0.1}
-
+		
 hook.Add("StormFox.TexHandler.Default","StormFox.DefaultTexData",function()
 	local t = {}
 	t.snow = {
@@ -142,7 +142,7 @@ hook.Add("StormFox.TexHandler.Default","StormFox.DefaultTexData",function()
 			["models/props_vehicles/tiger_tank"] = "models/props_vehicles/tiger_tank_snow",
 			["models/props_vehicles/tiger_tank_navyb"] = "models/props_vehicles/tiger_tank_snow",
 		-- SF
-			["models/buggy/buggy001"] = "stormfox/textures/buggy001-snow"
+			["models/buggy/buggy001"] = "stormfox/textures/buggy001-snow",
 	}
 	t.rain = {}
 	local con = GetConVar("sf_overridefoliagesway")
