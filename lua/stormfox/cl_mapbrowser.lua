@@ -163,7 +163,7 @@ local MapNames = {}
 	for k, gm in ipairs( GamemodeList ) do
 		local Name = gm.title or "Unnammed Gamemode"
 		local Maps = string.Split( gm.maps, "|" )
-		if ( Maps && gm.maps ~= "" ) then
+		if ( Maps and gm.maps ~= "" ) then
 
 			for k, pattern in ipairs( Maps ) do
 				-- When in doubt, just try to match it with string.find
