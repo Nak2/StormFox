@@ -73,7 +73,7 @@ return [[Stormfox Russian
 	sf_description.sunmoon_yaw			= Установить угол востока/запада.
 	sf_description.debugcompatibility 	= Включить дебаггер совместимости
 	sf_description.skybox				= Включить StormFox-небо
-	sf_description.enable_ekstra_lightsupport = Включить продвинутое освещение 
+	sf_description.enable_ekstra_lightsupport = Включить продвинутое освещение (Лаги на больших картах)
 	sf_description.start_time			= При запуске сервер выставит это время.
 	sf_description.mapbloom				= Разеришть StormFox управлять пост-обработкой
 	sf_description.enable_mapbrowser 	= Разрешить админам менять карту в окне "Список Карт"
@@ -81,7 +81,7 @@ return [[Stormfox Russian
 	sf_description.autoweather 			= Включить ветро-генератор
 	sf_description.realtime				= Использовать реальное время для StormFox
 	sf_description.foliagesway			= Включить раскачивание деревьев
-	sf_description.override_soundscape	= Разеришть StormFox заменить soundscape карты
+	sf_description.override_soundscape	= Разрешить StormFox заменить soundscape карты
 	sf_description.sf_enable_ekstra_entsupport = Обновлять все объекты при смене освещения
 
 #Client Settings
@@ -111,7 +111,7 @@ return [[Stormfox Russian
 
 #Map Settings
 	sf_description.dynamiclight 		 = Разрешить динамический свет для всех клиентов
-	sf_description.replace_dirtgrassonly = Заменять только землю
+	sf_description.replace_dirtgrassonly = Заменять только траву\грязь
 	sf_description.wind_breakconstraints = Разрушать сварку и другие связи у пропов
 	sf_description.map_entities = Объекты на карте
 
