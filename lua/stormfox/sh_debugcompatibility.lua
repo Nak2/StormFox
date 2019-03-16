@@ -31,7 +31,7 @@ local function TraceThatScriptDown(name, gm, ... )
 		elseif ( IsValid( k ) ) then
 				a = v( k, ... )
 		end
-		if ( a != nil ) then
+		if ( a ~= nil ) then
 			return debug.getinfo(v)
 		end
 	end
@@ -46,7 +46,7 @@ end
 -- Now lets edit hook.Call to support it
 hook.Call = function( name, gm, ... )
 	local a, b, c, d, e, f = _SF_OLDHOOKCALL(name,gm, ...)
-	if ( a != nil ) then
+	if ( a ~= nil ) then
 		if DontReturn[name] then -- Should we care?
 			local funcinfo = TraceThatScriptDown(name, gm, ... ) -- Check
 			if funcinfo then

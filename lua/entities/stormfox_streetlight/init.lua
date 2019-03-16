@@ -7,7 +7,7 @@ function ENT:Initialize()
 	self:SetModel( "models/props_c17/lamppost03a_off_dynamic.mdl" )
 	self:SetMoveType( MOVETYPE_NONE )
 	self:PhysicsInit( SOLID_VPHYSICS )
-	
+
 
 	self.RenderMode = 1
 
@@ -22,7 +22,7 @@ end
 
 function ENT:SpawnFunction( ply, tr, ClassName )
 
-	if ( !tr.Hit ) then return end
+	if ( not tr.Hit ) then return end
 
 	local SpawnPos = tr.HitPos + tr.HitNormal * -0.5
 

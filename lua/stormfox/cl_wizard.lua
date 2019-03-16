@@ -138,7 +138,7 @@ Problem finder
 	end
 
 	net.Receive("StormFox - SendMessageBox",function()
-		ShowMessageBox(net.ReadString(),net.ReadString(),false,nil,net.ReadString())	
+		ShowMessageBox(net.ReadString(),net.ReadString(),false,nil,net.ReadString())
 	end)
 --[[-------------------------------------------------------------------------
 Material scanner
@@ -225,7 +225,7 @@ Material scanner
 			if not dirlen then dirlen = dir:len() end
 			local files, folders = file.Find(dir .. "/*", "GAME")
 			for _, fdir in ipairs(folders) do
-				if fdir != ".svn" then
+				if fdir ~= ".svn" then
 					AddDir(dir .. "/" .. fdir)
 				end
 			end
@@ -337,7 +337,7 @@ Check for commen problems
 			return "Allow clients to disable SF? (Clients might get an unfair advantage in heavy rain with this.)",DIS
 		end
 		problemTree["_sky_problem"] = _light_on_2dsky
-	
+
 
 local function commenwizard()
 

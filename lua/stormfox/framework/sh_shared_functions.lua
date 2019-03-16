@@ -20,7 +20,7 @@ end
 
 -- Local functions
 	local function StringToTime( str )
-		if !str then return 0 end
+		if not str then return 0 end
 		local a = string.Explode( ":", str )
 		if #a < 2 then return 0 end
 		local h,m = string.match(a[1],"%d+"),string.match(a[2],"%d+")
@@ -236,13 +236,13 @@ if SERVER then
 		end
 	end)
 end
-	
+
 -- Setup server varables
 	if SERVER then
 		hook.Add("StormFox.PostInit","StormFox.StartTime",function()
 			local con = GetConVar("sf_start_time")
 			local con2 = GetConVar("sf_realtime")
-			
+
 			-- Realtime setting
 				if con2 and con2:GetBool() then
 					RunConsoleCommand("sf_timespeed",1) -- match the real world timespeed. Seconds of gametime pr second

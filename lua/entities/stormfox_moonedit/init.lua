@@ -13,7 +13,7 @@ end
 
 function ENT:SpawnFunction( ply, tr, ClassName )
 
-	if ( !tr.Hit ) then return end
+	if ( not tr.Hit ) then return end
 
 	local SpawnPos = tr.HitPos + tr.HitNormal * 10
 	local SpawnAng = ply:EyeAngles()

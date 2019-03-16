@@ -21,7 +21,7 @@ end
 
 function ENT:SpawnFunction( ply, tr, ClassName )
 
-	if ( !tr.Hit ) then return end
+	if ( not tr.Hit ) then return end
 
 	local SpawnPos = tr.HitPos + tr.HitNormal * 20
 
@@ -36,5 +36,5 @@ function ENT:SpawnFunction( ply, tr, ClassName )
 end
 
 function ENT:Think()
-	
+
 end

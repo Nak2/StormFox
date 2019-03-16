@@ -1,5 +1,5 @@
 
--- List of map categories 
+-- List of map categories
 local MapPatterns = {}
 local MapNames = {}
 	MapNames[ "aoc_" ] = "Age of Chivalry"
@@ -163,7 +163,7 @@ local MapNames = {}
 	for k, gm in ipairs( GamemodeList ) do
 		local Name = gm.title or "Unnammed Gamemode"
 		local Maps = string.Split( gm.maps, "|" )
-		if ( Maps && gm.maps != "" ) then
+		if ( Maps && gm.maps ~= "" ) then
 
 			for k, pattern in ipairs( Maps ) do
 				-- When in doubt, just try to match it with string.find
@@ -481,7 +481,7 @@ local IgnoreMaps = {
 						if b == nil then
 							btn.outdate = true
 						end
-					end 
+					end
 					function btn:PaintOver(w,h)
 						local p = self.mapdata.percent_support or 0
 						local b = self.mapdata.bonus or 0

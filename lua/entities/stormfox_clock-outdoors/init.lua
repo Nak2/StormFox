@@ -26,7 +26,7 @@ function ENT:Initialize()
 end
 
 local function SetWire(self,data,value)
-	if self.Outputs[data].Value != value then
+	if self.Outputs[data].Value ~= value then
 		Wire_TriggerOutput(self, data, value)
 	end
 end
@@ -43,7 +43,7 @@ end
 
 function ENT:SpawnFunction( ply, tr, ClassName )
 
-	if ( !tr.Hit ) then return end
+	if ( not tr.Hit ) then return end
 
 	local SpawnPos = tr.HitPos + tr.HitNormal * 64
 

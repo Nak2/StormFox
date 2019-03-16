@@ -81,7 +81,7 @@ function ENT:DrawTranslucent()
 			render.SetMaterial( matLight )
 			local Visibile = util.PixelVisible( lpos, 16, self.PixVis )
 
-			if ( !Visibile ) then return end
+			if ( not Visibile ) then return end
 
 			local Size = math.Clamp( Distance * Visibile * ViewDot * 2, 64, 512 / 2 )
 

@@ -22,7 +22,7 @@ end
 function ENT:Think()
 	if not self.on then return end
 	if GetDis(self) > 1309552 then return end
-	
+
 	local con = GetConVar("sf_allow_dynamiclights")
 	if not con:GetBool() then return end
 	local dlight = DynamicLight( self:EntIndex() )
@@ -62,7 +62,7 @@ function ENT:DrawTranslucent()
 			render.SetMaterial( matLight )
 			local Visibile = util.PixelVisible( lpos, 16, self.PixVis )
 
-			if ( !Visibile ) then return end
+			if ( not Visibile ) then return end
 			local Size = math.Clamp( Distance * Visibile * ViewDot * 2, 64, 512 / 2 )
 			Distance = math.Clamp( Distance, 32, 8000 )
 			local Alpha = math.Clamp( ( 8000 - Distance ) * Visibile * ViewDot, 0, 200 ) * 0.15

@@ -12,7 +12,7 @@ local min = math.min
 		if not currentValue then return targetValue end -- NOTE: If you find that the values are going instantly to the target check here first
 		if not targetValue then return currentValue end
 		amount = math.Clamp( amount, 0, 1 )
-		if type( currentValue ) != type( targetValue ) then
+		if type( currentValue ) ~= type( targetValue ) then
 			ErrorNoHalt("ERROR: lerpAnyValue called with values of two different types. Returning original value")
 			debug.Trace()
 			return currentValue
@@ -57,7 +57,7 @@ if SERVER then
 			StormFox.TexHandler.ApplyMaterial(str,mType,lvl,snd)
 		end
 	end
-	
+
 	function StormFox.SetWeather( sWeatherId, flMagnitude, tTime )
 		if not StormFox.GetWeatherType( sWeatherId ) then print( "[StormFox] Weather not found:", sWeatherId ) print(debug.traceback()) return end
 		local old_w = StormFox.GetNetworkData("Weather","clear")

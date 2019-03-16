@@ -46,7 +46,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 		if not t then -- tracer failed, this should not happen. Create a fake result.
 			local t = {}
 				t.HitPos = pos + pos2
-			return t 
+			return t
 		end
 		t.HitPos = t.HitPos or (pos + pos2)
 		return t
@@ -62,7 +62,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 		if not t then -- tracer failed, this should not happen. Create a fake result.
 			local t = {}
 				t.HitPos = pos + pos2
-			return t 
+			return t
 		end
 		t.HitPos = t.HitPos or (pos + pos2)
 		return t
@@ -88,7 +88,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 	local function ETCalcTrace(pos,size,fDN)
 		if not size then size = 1 end
 		local sky = ET(pos, fDN * -16384) --, MASK_SHOT)
-		if not sky.HitSky and sky.HitTexture != "TOOLS/TOOLSINVISIBLE" then
+		if not sky.HitSky and sky.HitTexture ~= "TOOLS/TOOLSINVISIBLE" then
 			return nil
 		end -- Not under sky
 		--PrintTable(ET(sky.HitPos,pos))
@@ -537,7 +537,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 					end
 				end
 			-- Is it even raining?
-				
+
 				if Gauge <= 0 then table.Empty(screenParticles) return end
 			-- Safty first
 				if #screenParticles > 200 then return end

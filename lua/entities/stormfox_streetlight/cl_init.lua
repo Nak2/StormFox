@@ -78,20 +78,20 @@ function ENT:DrawTranslucent()
 	--render.DrawBeam(lpos,lpos - self:GetAngles():Up() * 500,180,0,1,Color(255,255,255,100 - Alpha * 0.9))
 	if ( ViewDot >= 0 ) then
 
-			render.SetMaterial( matLight )
-			local Visibile = util.PixelVisible( lpos, 16, self.PixVis )
+		render.SetMaterial( matLight )
+		local Visibile = util.PixelVisible( lpos, 16, self.PixVis )
 
-			if ( !Visibile ) then return end
+		if ( not Visibile ) then return end
 
-			local Size = math.Clamp( Distance * Visibile * ViewDot * 2, 64, 512 / 2 )
+		local Size = math.Clamp( Distance * Visibile * ViewDot * 2, 64, 512 / 2 )
 
-			Distance = math.Clamp( Distance, 32, 800 )
-			local Alpha = math.Clamp( ( 1000 - Distance ) * Visibile * ViewDot, 0, 100 )
-			local Col = self:GetColor()
-			Col.a = Alpha
+		Distance = math.Clamp( Distance, 32, 800 )
+		local Alpha = math.Clamp( ( 1000 - Distance ) * Visibile * ViewDot, 0, 100 )
+		local Col = self:GetColor()
+		Col.a = Alpha
 
-			render.DrawSprite( lpos, Size, Size, Col, Visibile * ViewDot )
-			render.DrawSprite( lpos, Size * 0.4, Size * 0.4, Color( 255, 255, 255, Alpha ), Visibile * ViewDot )
+		render.DrawSprite( lpos, Size, Size, Col, Visibile * ViewDot )
+		render.DrawSprite( lpos, Size * 0.4, Size * 0.4, Color( 255, 255, 255, Alpha ), Visibile * ViewDot )
 
-		end
+	end
 end
