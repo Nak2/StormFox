@@ -163,7 +163,7 @@ return [[Stormfox English
 	sf_setwindangle 			 	= Set WindAngle
 	sf_setweather 					= Set Weather
 	sf_settime 						= Set Time
-	sf_holdc 						= Hold C
+	sf_holdc 						= Hold
 	sf_interface_lighttheme 		= Light Theme
 	sf_interface_darktheme 			= Dark Theme
 	sf_interface_light 				= Light
