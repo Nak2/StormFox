@@ -163,7 +163,7 @@ return [[Stormfox Chef
 	sf_setwindangle 			 	= Set VindOungle-a
 	sf_setweather 					= Set Veezeer
 	sf_settime 						= Set Time-a
-	sf_holdc 						= Huld C
+	sf_holdc 						= Huld
 	sf_interface_lighttheme 		= LEEght Zeeme-a
 	sf_interface_darktheme 			= Derk Zeeme-a
 	sf_interface_light 				= LEEght
