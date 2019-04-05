@@ -1002,15 +1002,26 @@
 				surface.SetFont("StormFox-Console")
 				local tw,th = surface.GetTextSize(t)
 				surface.SetTextPos(w / 2 - tw / 2,h / 2 - th / 2)
-				surface.DrawText(t)
+				if t == StormFox.Language.Translate(self.text) then
+					surface.DrawText(string.format("%s %s", t, string.upper(input.LookupBinding("+menu_context", true) or "C")))
+				else
+					surface.DrawText(t)
+				end
 			end
 			function panel:Think()
-				if not self.enabled and input.IsKeyDown(KEY_C) and not openChat and not gui.IsConsoleVisible() then
+				--input.GetKeyCode flips out if the command it's looking for doesn't have any binds, so check if it's bound, if not, default back to using KEY_C
+				local bind
+				if input.LookupBinding("+menu_context", true) then
+					bind = input.GetKeyCode(input.LookupBinding("+menu_context", true))
+				else
+					bind = KEY_C
+				end
+				if not self.enabled and input.IsKeyDown(bind) and not openChat and not gui.IsConsoleVisible() then
 					self.enabled = true
 					self.btnClose:SetDisabled( false )
 					self:MakePopup()
 					self:SetSelected()
-				elseif self.enabled and not input.IsKeyDown(KEY_C) then
+				elseif self.enabled and not input.IsKeyDown(bind) then
 					self.enabled = false
 					self.btnClose:SetDisabled( true )
 					self:SetMouseInputEnabled(false)
