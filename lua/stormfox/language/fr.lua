@@ -150,7 +150,7 @@
 	sf_setwindangle 			 	= Régler l'angle de vent
 	sf_setweather 					= Changer la météo
 	sf_settime 						= Changer l'heure
-	sf_holdc 						= Maintenir C
+	sf_holdc 						= Maintenir
 	sf_interface_lighttheme 		= Thème clair
 	sf_interface_darktheme 			= Thème sombre
 	sf_interface_light 				= Lumière
