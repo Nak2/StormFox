@@ -162,7 +162,7 @@ return [[Stormfox Russian
 	sf_setwindangle 				= Установ. Угол
 	sf_setweather 					= Выбрать Погоду
 	sf_settime 						= Установить Время
-	sf_holdc 						= Удерживайте "С"
+	sf_holdc 						= Удерживайте
 	sf_interface_lighttheme 		= Светлая Тема
 	sf_interface_darktheme 			= Тёмная Тема
 	sf_interface_light 				= Освещение
