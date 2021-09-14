@@ -8,7 +8,7 @@ return [[Stormfox Russian
 	sf_tool.menu 		= Меню
 	sf_tool.maptexture 	= Текстуры Карты
 	sf_tool.maptexture.helpm1 = Нажмите левую кнопку мыши, чтобы добавить свойства материалу
-	sf_tool.maptexture.helpm2 = Нажмите правую кнопку мыши, чтобы удалить свойства матриала
+	sf_tool.maptexture.helpm2 = Нажмите правую кнопку мыши, чтобы удалить свойства материала
 	sf_tool.permaentity = Перманентные Пропы
 	sf_tool.addmaterial = Добавить
 	sf_tool.cancel 		= Отмена
@@ -73,7 +73,7 @@ return [[Stormfox Russian
 	sf_description.sunmoon_yaw			= Установить угол востока/запада.
 	sf_description.debugcompatibility 	= Включить дебаггер совместимости
 	sf_description.skybox				= Включить StormFox-небо
-	sf_description.enable_ekstra_lightsupport = Включить продвинутое освещение 
+	sf_description.enable_ekstra_lightsupport = Включить продвинутое освещение
 	sf_description.start_time			= При запуске сервер выставит это время.
 	sf_description.mapbloom				= Разеришть StormFox управлять пост-обработкой
 	sf_description.enable_mapbrowser 	= Разрешить админам менять карту в окне "Список Карт"
@@ -81,7 +81,7 @@ return [[Stormfox Russian
 	sf_description.autoweather 			= Включить ветро-генератор
 	sf_description.realtime				= Использовать реальное время для StormFox
 	sf_description.foliagesway			= Включить раскачивание деревьев
-	sf_description.override_soundscape	= Разеришть StormFox заменить soundscape карты
+	sf_description.override_soundscape	= Разрешить StormFox заменить soundscape карты
 	sf_description.sf_enable_ekstra_entsupport = Обновлять все объекты при смене освещения
 
 #Client Settings
