@@ -8,7 +8,7 @@ return [[Stormfox Russian
 	sf_tool.menu 		= Меню
 	sf_tool.maptexture 	= Текстуры Карты
 	sf_tool.maptexture.helpm1 = Нажмите левую кнопку мыши, чтобы добавить свойства материалу
-	sf_tool.maptexture.helpm2 = Нажмите правую кнопку мыши, чтобы удалить свойства матриала
+	sf_tool.maptexture.helpm2 = Нажмите правую кнопку мыши, чтобы удалить свойства материала
 	sf_tool.permaentity = Перманентные Пропы
 	sf_tool.addmaterial = Добавить
 	sf_tool.cancel 		= Отмена
