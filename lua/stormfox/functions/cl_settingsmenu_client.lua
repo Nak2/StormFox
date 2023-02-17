@@ -18,7 +18,8 @@ local lang_key = {
 		ru = "Русский",
 		en = "English",
 		["en-pt"] = "English Pirate",
-		fr = "Francais"
+		fr = "Francais",
+		["zh-cn"] = "简体中文"
 	}
 
 local function makeTitle(parent,text)
