@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.63
+StormFox.Version = 1.65
 StormFox.WorkShopVersion = false--game.IsDedicated()
 function StormFox.Msg(...)
 	local a = {...}
