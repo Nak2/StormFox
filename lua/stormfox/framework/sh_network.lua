@@ -227,10 +227,6 @@
 			for conname,_ in pairs(StormFox.convars) do
 				local con = GetConVar(conname)
 				network_data["con_" .. conname] = con:GetString()
-				cvars.AddChangeCallback(conname, function( convar_name, value_old, value_new )
-					StormFox.SetNetworkData("con_" .. convar_name,value_new)
-					--print("StormFox update " .. conname)
-				end,"SF_Netupdate-" .. conname )
 			end
 		-- Set the value if its an 'instant'.
 			if not network_data[str] or not over_seconds then -- No base or time .. send it instant to clients
@@ -284,7 +280,7 @@
 			StormFox_AIMDATA[str] = nil
 			return network_data[str]
 		end
-		
+
 		-- We need to calculate the data
 		local n = LeapVarable(network_data[str],network_aimdata[str][1],t_start,t_stop)
 		-- Cache it for other functions

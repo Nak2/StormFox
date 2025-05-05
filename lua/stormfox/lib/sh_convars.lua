@@ -7,8 +7,12 @@ StormFox.convars = {}
 	local function AddConVar(str,default,helptext)
 		StormFox.convars[str] = true
 		if ConVarExists(str) then return end
-		CreateConVar(str,default, { FCVAR_REPLICATED, FCVAR_ARCHIVE }, helptext)
 		-- FCVAR_REPLICATED is not 100% accurate for some reason
+		CreateConVar(str,default, { FCVAR_REPLICATED, FCVAR_ARCHIVE }, helptext)
+		cvars.AddChangeCallback(str, function(convar_name, value_old, value_new)
+			StormFox.SetNetworkData("con_" .. convar_name, value_new)
+			--print("StormFox update " .. str)
+		end,"SF_Netupdate-" .. str )
 	end
 	AddConVar("sf_autopilot", game.SinglePlayer() and 1 or 0,"sf_description.autopilot")
 	AddConVar("sf_timespeed",60,"sf_description.timespeed")
