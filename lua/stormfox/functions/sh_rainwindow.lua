@@ -100,6 +100,9 @@ if StormFox.NikNaks and NikNaks.Version >= 0.91 then
 		end
 	end)
 else
+	if StormFox.NikNaks then
+		StormFox.Msg("NikNaks is installed, but it is outdated. Some features are disabled.")
+	end
 	local function HandleVarablesWindow( ent )
 		-- Get the window varables ( world positions )
 			local ll = ent:GetNWVector("SF_POS10")
