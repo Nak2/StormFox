@@ -15,6 +15,17 @@ local min,max = math.min,math.max
 local darkalpha = 0
 local clamp = math.Clamp
 local con = GetConVar("sf_renderscreenspace_effects")
+local tab = {
+	[ "$pp_colour_addr" ] = 0,
+	[ "$pp_colour_addg" ] = 0,
+	[ "$pp_colour_addb" ] = 0,
+	[ "$pp_colour_brightness" ] = 0,
+	[ "$pp_colour_contrast" ] = 1,
+	[ "$pp_colour_colour" ] = 1,
+	[ "$pp_colour_mulr" ] = 0,
+	[ "$pp_colour_mulg" ] = 0,
+	[ "$pp_colour_mulb" ] = 0
+}
 hook.Add( "RenderScreenspaceEffects", "stormFox - screenmodifier", function()
 	if not con or not con:GetBool() then return end
 	local outside = StormFox.Env.IsOutside() or StormFox.Env.NearOutside()
@@ -31,18 +42,8 @@ hook.Add( "RenderScreenspaceEffects", "stormFox - screenmodifier", function()
 	local ml = amount * darkalpha
 
 	if ml <= 0 or darkalpha <= 0 then return end
-	local tab = {}
-
-	tab[ "$pp_colour_addr" ] = 0
-	tab[ "$pp_colour_addg" ] = 0
-	tab[ "$pp_colour_addb" ] = 0
 	tab[ "$pp_colour_brightness" ] = -0.02 * ml
-
-	tab[ "$pp_colour_contrast" ] = 1
 	tab[ "$pp_colour_colour" ] = 1 - ml * 0.4
-	tab[ "$pp_colour_mulr" ] = 0
-	tab[ "$pp_colour_mulg" ] = 0
-	tab[ "$pp_colour_mulb" ] = 0
 
 	DrawColorModify( tab )
 end )

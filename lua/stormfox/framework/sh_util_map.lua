@@ -17,53 +17,21 @@
 	local sky_scale = 0
 
 	if SERVER then
-		local function SkyTexture(str,vec)
-			vec = vec or Vector(0,0,0)
-			if str == "TOOLS/TOOLSNODRAW" and vec.z < 0 then return true end
-			if str == "TOOLS/TOOLSINVISIBLE" and vec.z < 0 then return true end
-			if str == "TOOLS/TOOLSSKYBOX" then return true end
-			if str == "**empty**" then return true end
-			return false
-		end
-		local function ET(pos,pos2,mask)
-			local t = util.TraceLine( {
-				start = pos,
-				endpos = pos + pos2,
-				mask = mask
-			} )
-			local l = 0
-			local norm = Vector(pos2.x,pos2.y,pos2.z)
-				norm:Normalize()
-			--print("Scan:",norm)
-			while t.Hit and not t.Hitsky and l < 10 and not SkyTexture(t.HitTexture,norm) do
-				l = l + 1
-				--print("	",l,t.HitTexture)
-				local sp = t.HitPos + norm * 3
-				t = nil
-				t = util.TraceLine( {
-					start = sp,
-					endpos = sp + pos2,
-					mask = mask
-				} )
-			end
-			--print("Don",t.HitTexture,not t.HitSky,t.Hit,not SkyTexture(t.HitTexture,norm))
-
-			t.HitPos = t.HitPos or (pos + pos2)
-			return t
-		end
 		StormFox_NETWORK_DATA = StormFox_NETWORK_DATA or {} -- Not sure what runs first .. but this table is global
 		local function scan()
-			StormFox_NETWORK_DATA["mapobbmaxs"] =  game.GetWorld():GetSaveTable().m_WorldMaxs or Vector(0,0,1000)
-			StormFox_NETWORK_DATA["mapobbmins"] =  game.GetWorld():GetSaveTable().m_WorldMins or Vector(0,0,0)
+			local saveTbl = game.GetWorld():GetSaveTable() or {}
+			StormFox_NETWORK_DATA["mapobbmaxs"] =  saveTbl.m_WorldMaxs or Vector(0,0,1000)
+			StormFox_NETWORK_DATA["mapobbmins"] =  saveTbl.m_WorldMins or Vector(0,0,0)
 			StormFox_NETWORK_DATA["mapobbcenter"] = StormFox_NETWORK_DATA["mapobbmins"] + (StormFox_NETWORK_DATA["mapobbmaxs"] - StormFox_NETWORK_DATA["mapobbmins"]) / 2
 
 			local l = ents.FindByClass("sky_camera")
 
 			if #l < 1 then return end
 			sky_cam = l[1]
-			sky_scale = l[1]:GetSaveTable().scale
+			local keyvalues = sky_cam:GetSaveTable() or {}
+			sky_scale = tonumber(keyvalues.scale) or 16
 			StormFox_NETWORK_DATA["skybox_scale"] = sky_scale
-			StormFox_NETWORK_DATA["skybox_pos"] = sky_cam:GetSaveTable()["m_skyboxData.origin"] or sky_cam:GetPos()
+			StormFox_NETWORK_DATA["skybox_pos"] = keyvalues["m_skyboxData.origin"] or sky_cam:GetPos()
 		end
 		hook.Add("StormFox.PostEntity","StormFox.FindSkyBox",scan)
 

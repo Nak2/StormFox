@@ -98,13 +98,13 @@ if SERVER then
 			StormFox.CLEmitSound("ambient/atmosphere/thunder" .. math.random(3,4) .. ".wav",nil,0.5)
 			if math.random(1,10)>=5 then
 				local thunder_length = math.Rand(1,2) / 10
-				local thunder_light = math.random(150,100)
+				local thunder_light = math.random(100,150)
 				StormFox.SetData("ThunderLight",thunder_light)
 				StormFox.SetData("ThunderLight",0,thunder_length)
 			end 
 		else
 			local thunder_length = math.Rand(1,2) / 10
-			local thunder_light = math.random(150,100)
+			local thunder_light = math.random(100,150)
 			-- Create lightning bolt
 			local thundersize = 512
 			local mmax = StormFox.MapOBBMaxs()
@@ -194,7 +194,9 @@ else
 	local texend = {(Material("stormfox/effects/lightning_end.png")),(Material("stormfox/effects/lightning_end2.png"))}
 	local cur = CurTime
 	local cos = math.cos
+	local lcol = Color(255,255,255,255)
 	hook.Add("PostDrawOpaqueRenderables","StormFox - Lightning",function(_,sky)
+		if #lightning <= 0 then return end
 		local removes = {}
 		local bap = ran(2,4)
 		for id,data in ipairs(lightning) do
@@ -202,13 +204,14 @@ else
 				table.insert(removes,id)
 			else
 				local a = cos(cur() * 20)
+				lcol.a = a * 25 + 50
 				--PrintTable(tex)
 				render.SetMaterial(tex[1])
 				render.StartBeam(#data)
 				for i = 1, #data do
 					local vec = data[i][1]
 					local tp = 1 / #data * i
-						render.AddBeam( vec, 100, tp, Color(255,255,255,a * 25 + 50) )
+						render.AddBeam( vec, 100, tp, lcol )
 						--render.SetMaterial(Material("stormfox/moon_glow"))
 						--render.DrawSprite(vec,400,400,Color(255,255,255,a * 25 + 150))
 				end
@@ -219,15 +222,15 @@ else
 					local n = i % #texend + 1
 					render.SetMaterial(texend[n])
 					local w,h = texend[n]:Width(),texend[n]:Height()
-						render.DrawBeam( vec, vec + data[i][3] * h  * data[i][2], w * data[i][2], 0, 1, Color(255,255,255,a * 25 + 50) )
+						render.DrawBeam( vec, vec + data[i][3] * h  * data[i][2], w * data[i][2], 0, 1, lcol )
 						--render.SetMaterial(Material("stormfox/moon_glow"))
 						--render.DrawSprite(vec,400,400,Color(255,255,255,a * 25 + 150))
 				end
 				
 			end
 		end
-		for _,id in ipairs(removes) do
-			table.remove(lightning,id)
+		for i = #removes,1,-1 do -- Remove from the back, or the indexes shift
+			table.remove(lightning,removes[i])
 		end
 	end)
 end

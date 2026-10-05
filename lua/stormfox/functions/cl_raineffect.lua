@@ -19,6 +19,39 @@ local random_side = 400
 local downfallNorm = Vector(0,0,1)
 local SysTime = SysTime
 local EyeAngles = EyeAngles
+-- Scratch objects. Render calls copy these, so they can be safely reused instead of allocating per particle.
+local scratchC = Color(255,255,255,255)
+local function col(r,g,b,a)
+	scratchC.r,scratchC.g,scratchC.b,scratchC.a = r,g,b,a or 255
+	return scratchC
+end
+local scratchV,scratchV2 = Vector(),Vector()
+local function beamEnd(data) -- data.pos - data.norm * data.size * data.length_m
+	local k = data.size * data.length_m
+	local pos,norm = data.pos,data.norm
+	scratchV2.x,scratchV2.y,scratchV2.z = pos.x - norm.x * k,pos.y - norm.y * k,pos.z - norm.z * k
+	return scratchV2
+end
+local function wobble(pos,n) -- pos + Vector(n,n,0)
+	scratchV.x,scratchV.y,scratchV.z = pos.x + n,pos.y + n,pos.z
+	return scratchV
+end
+-- Removes all dead particles in one pass (instead of table.remove per dead particle)
+local function compact(tab)
+	local j = 0
+	local n = #tab
+	for i = 1,n do
+		local v = tab[i]
+		if v.alive then
+			j = j + 1
+			if i ~= j then tab[j] = v end
+		end
+	end
+	for i = n,j + 1,-1 do tab[i] = nil end
+end
+local con_raindrops
+local fallbackSnow = Material("particle/snow")
+local debugBall = Material("sprites/sent_ball")
 
 local raindebug = StormFox.GetNetworkData("Raindebug",false)
 local materials = {}
@@ -289,8 +322,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 		if LocalPlayer():WaterLevel() >= 3 then return end
 		--local sky_col = StormFox.GetData("Bottomcolor",Color(204,255,255))
 		--	sky_col = Color(max(sky_col.r,24),max(sky_col.g,155),max(sky_col.b,155),155)
-		local sky_col = Color(255,255,255)
-		local snowmat = StormFox.GetData("SnowTexture") or Material("particle/snow")
+		local snowmat = StormFox.GetData("SnowTexture") or fallbackSnow
 		for id,data in ipairs(particles.main) do
 			if data.alive then
 				local speed = data.norm * -FT
@@ -362,11 +394,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 				end
 			end
 		end
-		for i = #particles.main,1,-1 do
-			if not particles.main[i].alive then
-				table.remove(particles.main,i)
-			end
-		end
+		compact(particles.main)
 		for id,data in ipairs(particles.bg) do
 			if data.alive then
 				local speed = data.norm * -FT
@@ -424,11 +452,7 @@ local Gauge = StormFox.GetData("Gauge",0)
 				end
 			end
 		end
-		for i = #particles.bg,1,-1 do
-			if not particles.bg[i].alive then
-				table.remove(particles.bg,i)
-			end
-		end
+		compact(particles.bg)
 	end)
 -- Render the raindrops
 	local render_DrawBeam = render.DrawBeam
@@ -443,35 +467,31 @@ local Gauge = StormFox.GetData("Gauge",0)
 		_STORMFOX_PEM:Draw()
 		_STORMFOX_PEM2d:Draw()
 		local Gauge = StormFox.GetData("Gauge",0)
-		local alpha = 75 + min(Gauge * 10,150)
-
-		local sky_col = StormFox.GetData("Bottomcolor",Color(204,255,255))
-			sky_col = Color(max(sky_col.r,4),max(sky_col.g,55),max(sky_col.b,55),max(alpha,155))
-		for id,data in ipairs(particles.main) do
+		for _,data in ipairs(particles.main) do
 			render_SetMaterial(data.material or materials.Rain)
 			if data.rain then
 				if data.smoke then
-					render_DrawSprite(data.pos, data.size, data.size,Color(GaugeColor.r * 0.5,GaugeColor.g * 0.5,GaugeColor.b * 0.5,15))
+					render_DrawSprite(data.pos, data.size, data.size,col(GaugeColor.r * 0.5,GaugeColor.g * 0.5,GaugeColor.b * 0.5,15))
 				else
-					render_DrawBeam(  data.pos,  data.pos - data.norm * data.size * data.length_m, 10 * data.size, 1, 0, Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,5))
+					render_DrawBeam(  data.pos,  beamEnd(data), 10 * data.size, 1, 0, col(GaugeColor.r,GaugeColor.g,GaugeColor.b,5))
 				end
 			else
 				if data.smoke then
-					render_DrawSprite(data.pos, data.size * 1.4, data.size * 1.4,Color(GaugeColor.r * 0.5,GaugeColor.g * 0.5,GaugeColor.b * 0.5,max(5,Gauge * 2)))
+					render_DrawSprite(data.pos, data.size * 1.4, data.size * 1.4,col(GaugeColor.r * 0.5,GaugeColor.g * 0.5,GaugeColor.b * 0.5,max(5,Gauge * 2)))
 				else
 					local d = data.pos.z - data.endpos.z + data.r
 					local n = sin(d / 100)
 					local s = data.size
 					local nn = max(0,16 - wind)
-					render_DrawSprite(data.pos + Vector(n * nn,n * nn,0), s, s,Color(GaugeColor.r * 0.5,GaugeColor.g * 0.5,GaugeColor.b * 0.5))
+					render_DrawSprite(wobble(data.pos,n * nn), s, s,col(GaugeColor.r * 0.5,GaugeColor.g * 0.5,GaugeColor.b * 0.5))
 				end
 			end
 			if raindebug then
-				render_SetMaterial(Material("sprites/sent_ball"))
+				render_SetMaterial(debugBall)
 				if data.smoke then
-					render_DrawSprite(data.endpos, 10,10,Color(0,0,255))
+					render_DrawSprite(data.endpos, 10,10,col(0,0,255))
 				else
-					render_DrawSprite(data.endpos, 10,10,Color(0,255,0))
+					render_DrawSprite(data.endpos, 10,10,col(0,255,0))
 				end
 			end
 		end
@@ -480,25 +500,25 @@ local Gauge = StormFox.GetData("Gauge",0)
 			if data.rain then
 				if data.smoke then
 					--render.DrawBeam(startPos,  endPos                    ,number width,number textureStart,number textureEnd,table color)
-					render_DrawBeam(  data.pos,  data.pos - data.norm * data.size * data.length_m, 6 * data.size, 1, 0, Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,6))
+					render_DrawBeam(  data.pos,  beamEnd(data), 6 * data.size, 1, 0, col(GaugeColor.r,GaugeColor.g,GaugeColor.b,6))
 				else
-					render_DrawBeam(  data.pos,  data.pos - data.norm * data.size * data.length_m, data.size, 2, 0, Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,25))
+					render_DrawBeam(  data.pos,  beamEnd(data), data.size, 2, 0, col(GaugeColor.r,GaugeColor.g,GaugeColor.b,25))
 				end
 			else
 				if data.smoke then
 					data.a = max(data.a + RealFrameTime() * 0.1,5)
-					render_DrawBeam(  data.pos,  data.pos - data.norm * data.size * data.length_m,  data.size * 10, 1, 0, Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,data.a))
+					render_DrawBeam(  data.pos,  beamEnd(data),  data.size * 10, 1, 0, col(GaugeColor.r,GaugeColor.g,GaugeColor.b,data.a))
 				else
 					local d = data.pos.z - data.endpos.z + data.r
 					local n = sin(d / 100)
 					local s = data.size * 10
 					local nn = clamp(20 - Gauge * 2,0,16)
-					render_DrawSprite(data.pos + Vector(n * nn,n * nn,0) + data.ang:Forward() * 10, s, s,Color(GaugeColor.r,GaugeColor.g,GaugeColor.b,55))
+					render_DrawSprite(wobble(data.pos,n * nn) + data.ang:Forward() * 10, s, s,col(GaugeColor.r,GaugeColor.g,GaugeColor.b,55))
 				end
 			end
 			if raindebug then
-				render_SetMaterial(Material("sprites/sent_ball"))
-				render_DrawSprite(data.endpos, 10,10,Color(255,0,0))
+				render_SetMaterial(debugBall)
+				render_DrawSprite(data.endpos, 10,10,col(255,0,0))
 			end
 		end
 	end
@@ -597,7 +617,8 @@ local Gauge = StormFox.GetData("Gauge",0)
 	local rainscreen_alpha = 0
 	hook.Add("HUDPaint","StormFox - RenderRainScreen",function()
 		if not LocalPlayer() then return end
-		local con = GetConVar("sf_allow_raindrops")
+		con_raindrops = con_raindrops or GetConVar("sf_allow_raindrops")
+		local con = con_raindrops
 		if con and not con:GetBool() then return end
 		if not StormFox.EFEnabled() then return end
 
@@ -643,7 +664,8 @@ local Gauge = StormFox.GetData("Gauge",0)
 		if not StormFox.EFEnabled() then return end
 		surface.SetDrawColor(255,255,255)
 		local grav = max(50 -  abs(EyeAngles().p),0) / 60 --Gravity the raindrops
-		local con = GetConVar("sf_allow_raindrops")
+		con_raindrops = con_raindrops or GetConVar("sf_allow_raindrops")
+		local con = con_raindrops
 		local oldrain = con and not con:GetBool() or false
 		local ms = 1
 		if oldrain then

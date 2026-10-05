@@ -14,8 +14,7 @@ end
 local function GetDis(ent)
 	if (ent.time_dis or 0) > CurTime() then return ent.time_dis_v or 0 end
 		ent.time_dis = CurTime() + 1
-	if not LocalPlayer() then return 0 end
-	ent.time_dis_v = LocalPlayer():GetShootPos():DistToSqr(ent:GetPos())
+	ent.time_dis_v = StormFox.DistToHeadSqr(ent:GetPos()) or 0
 	return ent.time_dis_v
 end
 

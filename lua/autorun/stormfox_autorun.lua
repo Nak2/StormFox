@@ -1,6 +1,13 @@
 StormFox = {}
-StormFox.Version = 1.65
+StormFox.Version = 1.80
 StormFox.WorkShopVersion = false--game.IsDedicated()
+
+StormFox.NikNaks = false
+if NikNaks or file.Exists("includes/modules/niknaks.lua","LUA") then
+	pcall(require,"niknaks")
+	StormFox.NikNaks = NikNaks and true or false
+end
+
 function StormFox.Msg(...)
 	local a = {...}
 	if StormFox.Language then
@@ -11,13 +18,9 @@ function StormFox.Msg(...)
 	end
 	MsgC(Color(155,155,255),"[StormFox] ",Color(255,255,255),unpack( a ),"\n")
 end
-StormFox.Msg("V " .. StormFox.Version .. ".")
+StormFox.Msg("V " .. StormFox.Version .. (StormFox.NikNaks and " (NikNaks detected!)" or "."))
+
 file.CreateDir("stormfox")
---file.CreateDir("stormfox/temp")
--- Clear temp files
-	--for i,v in ipairs(file.Find("stormfox/temp/*","DATA")) do
-	--	file.Delete("stormfox/temp/" .. v)
-	--end
 if SERVER then
 	AddCSLuaFile()
 	file.CreateDir("stormfox/maps")
@@ -103,6 +106,7 @@ end
 	HandleFile("stormfox/" .. "sh_options.lua")
 	HandleFile("stormfox/" .. "cl_wizard.lua")
 	HandleFile("stormfox/" .. "cl_mapbrowser.lua")
+	HandleFile("stormfox/" .. "sv_concommands.lua")
 	hook.Call("StormFox.PostInit")
 -- Reload support
 	hook.Add("LoadGModSave","StormFox.SandboxLoadSupport",function()
@@ -119,14 +123,16 @@ end
 	end
 -- Hack to stop cleanupmap breaking SF
 	STORMFOX_CLEANUPMAP = STORMFOX_CLEANUPMAP or game.CleanUpMap
+	local keep_classes = {
+		"light_environment","env_fog_controller","shadow_control","env_tonemap_controller",
+		"env_wind","env_skypaint","sf_soundscape"
+	}
 	function game.CleanUpMap( dontSendToClients, ExtraFilters )
-		ExtraFilters = ExtraFilters or {}
-		table.insert(ExtraFilters,"light_environment")
-		table.insert(ExtraFilters,"env_fog_controller")
-		table.insert(ExtraFilters,"shadow_control")
-		table.insert(ExtraFilters,"env_tonemap_controller")
-		table.insert(ExtraFilters,"env_wind")
-		table.insert(ExtraFilters,"env_skypaint")
-		table.insert(ExtraFilters,"sf_soundscape")
-		STORMFOX_CLEANUPMAP(dontSendToClients,ExtraFilters)
+		-- Build a new list. Other addons might reuse (or share) the table they gave us.
+		local filters = table.Copy(keep_classes)
+		if istable(ExtraFilters) then
+			table.Add(filters,ExtraFilters)
+		end
+		timer.Simple(0,function() hook.Run("StormFox.PostEntity") end)
+		return STORMFOX_CLEANUPMAP(dontSendToClients,filters)
 	end

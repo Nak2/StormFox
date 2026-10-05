@@ -9,7 +9,7 @@ Foggy.StormMagnitudeMin = 0.6
 Foggy.StormMagnitudeMax = 0.9
 Foggy.MaxLength = 1440 / 4
 Foggy.GenerateCondition = function()
-	return GetConVar("sf_enablefog"):GetBool() and math.random(4) >= 3
+	return cvars.Bool("sf_enablefog",false) and math.random(4) >= 3
 end
 local rc = Color(231,233,240)
 local a,aa = 0.02,1

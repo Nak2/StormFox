@@ -1,41 +1,7 @@
 assert(StormFox,"Missing everything")
 assert(StormFox.SetWeather,"Missing weather controller")
 
--- Local Functions
-	local function IsColdWorld()
-		local mapEnt = StormFox.MAP.Entities()[1]
-		if not mapEnt.coldworld then return false end
-		return mapEnt.coldworld > 0
-	end
-
---[[
-Data
-	Thunder: boolean
-	Temperature: number
-	Wind: number
-	WindAngle: number 0-360
-
-Functions:
-	StormFox.SetWeather(weather_str,0-1)
-		Clear
-		Rain
-		Cloudy
-		Fog
-
-Statments:
-	Snow looks bad in a storm
-		if snow then wind = min(wind,3) end
-	Rain should max be a ½ day
-	Rain should be from 0.2 and up
-	Thunder is with rain thats 0.8 and up
-	Fog should be in the morning
-
-
-]]
 local weatherdata = {}
---[[
-	funccondition(weatherpercent,currentweather)
-]]
 function StormFox.AddWeatherCondition(name,clockrange,percentrange,lengthrange,canPick)
 	table.insert(weatherdata,{name = name,clockrange = clockrange,percentrange = percentrange,lengthrange = lengthrange,canPick = canPick})
 end
@@ -90,7 +56,7 @@ function StormFox.GenerateNewDay(dont_update)
 	local lastWeather = week[#week] or {}
 	-- Calc temperature change
 		local tempmin,tempmax = StormFox.GetMapSetting("mintemp",-10),StormFox.GetMapSetting("maxtemp",20)
-		if IsColdWorld() then
+		if StormFox.MAP.IsColdWorld() then
 			tempmin = math.min(tempmin,-3)
 			tempmax = math.min(tempmax,-3)
 		end

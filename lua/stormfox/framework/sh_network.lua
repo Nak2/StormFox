@@ -66,8 +66,9 @@
 				return data[str] or nil
 			end
 			-- Check for cache
-				if cdata[str] and cdata[str][1] > RealTime() then
-					return cdata[str][2]
+				local cd = cdata[str]
+				if cd and cd[1] > RealTime() then
+					return cd[2]
 				end
 			local st = con:GetFloat() / 60
 			local t = CurTime()
@@ -84,10 +85,11 @@
 			-- We need to calculate the data
 			local n = LeapVarable(data[str],aimdata[str][1],t_start,t_stop)
 			-- Cache it for other functions
-			if SERVER then
-				cdata[str] = {RealTime() + FrameTime(),n}
+			local expire = RealTime() + (SERVER and FrameTime() or RealFrameTime())
+			if cd then
+				cd[1],cd[2] = expire,n
 			else
-				cdata[str] = {RealTime() + RealFrameTime(),n}
+				cdata[str] = {expire,n}
 			end
 			return n
 		end
@@ -144,14 +146,8 @@
 	-- Update incoming people
 	if SERVER then
 		util.AddNetworkString("StormFox - Data")
+		local token = SysTime()
 		function StormFox.SendAllData(ply)
-			if ply then
-				ply.StormFox_S = token
-			else
-				for _,plyi in ipairs( player.GetAll() ) do
-					plyi.StormFox_S = token
-				end
-			end
 			net.Start("StormFox - Data")
 				net.WriteInt(1,8)
 				local t = {}
@@ -168,13 +164,6 @@
 			end
 		end
 		function StormFox.SendAllAim(ply)
-			if ply then
-				ply.StormFox_S = true
-			else
-				for _,plyi in ipairs( player.GetAll() ) do
-					plyi.StormFox_S = true
-				end
-			end
 			net.Start("StormFox - Data")
 				net.WriteInt(3,8)
 				local t = {}
@@ -190,9 +179,8 @@
 				net.Broadcast()
 			end
 		end
-		local token = SysTime()
 		net.Receive("StormFox - Data",function(len,ply)
-			if ply.StormFox_S and ply.StormFox_S == token then return end -- Only one ticket
+			if not IsValid(ply) or ply.StormFox_S == token then return end -- Only one ticket
 			ply.StormFox_S = token
 			--print("[StormFox] - DataSend to " .. ply:Nick())
 			StormFox.SendAllData(ply) -- first the base
@@ -201,6 +189,21 @@
 	end
 
 	local netcashe = {}
+	local synced_convars = {}
+	local function SyncConVars()
+		for conname,_ in pairs(StormFox.convars) do
+			if not synced_convars[conname] then
+				local sf_con = GetConVar(conname)
+				if sf_con then
+					synced_convars[conname] = true
+					network_data["con_" .. conname] = sf_con:GetString()
+					cvars.AddChangeCallback(conname, function( name, _, value )
+						StormFox.SetNetworkData("con_" .. name,value)
+					end,"SF_Netupdate-" .. conname )
+				end
+			end
+		end
+	end
 	function StormFox.SetNetworkData(str,var,over_seconds)
 		if con and con:GetFloat() <= 0 then
 			over_seconds = nil
@@ -224,14 +227,7 @@
 				network_aimdata[str] = nil
 			end
 		-- SetConvars
-			for conname,_ in pairs(StormFox.convars) do
-				local con = GetConVar(conname)
-				network_data["con_" .. conname] = con:GetString()
-				cvars.AddChangeCallback(conname, function( convar_name, value_old, value_new )
-					StormFox.SetNetworkData("con_" .. convar_name,value_new)
-					--print("StormFox update " .. conname)
-				end,"SF_Netupdate-" .. conname )
-			end
+			SyncConVars()
 		-- Set the value if its an 'instant'.
 			if not network_data[str] or not over_seconds then -- No base or time .. send it instant to clients
 				network_data[str] = var
@@ -268,8 +264,9 @@
 			return network_data[str]
 		end
 		-- Check for cache
-			if cdata[str] and cdata[str][1] > RealTime() then
-				return cdata[str][2]
+			local cd = cdata[str]
+			if cd and cd[1] > RealTime() then
+				return cd[2]
 			end
 
 		local t = CurTime()
@@ -288,10 +285,11 @@
 		-- We need to calculate the data
 		local n = LeapVarable(network_data[str],network_aimdata[str][1],t_start,t_stop)
 		-- Cache it for other functions
-		if SERVER then
-			cdata[str] = {RealTime() + FrameTime(),n}
+		local expire = RealTime() + (SERVER and FrameTime() or RealFrameTime())
+		if cd then
+			cd[1],cd[2] = expire,n
 		else
-			cdata[str] = {RealTime() + RealFrameTime(),n}
+			cdata[str] = {expire,n}
 		end
 		return n
 	end
@@ -322,23 +320,4 @@
 				end
 			end
 		end)
-		--[[
-		hook.Add("HUDPaint","StormFoxDebug",function()
-			surface.SetFont("default")
-			surface.SetTextColor(255,255,255)
-			local i = 0
-			for key,var in pairs(network_data) do
-				surface.SetTextPos(10,10 + i * 15)
-				surface.DrawText(key .. ":" .. tostring(StormFox.GetNetworkData(key,var)))
-				i = i + 1
-			end
-				i = 0
-			for key,var in pairs(aimdata) do
-				surface.SetTextPos(ScrW() - 400,10 + i * 15)
-				surface.DrawText(key .. " : " .. math.Round(aimdata[key][3] - CurTime()) .. " : " ..tostring(StormFox.GetData(key,var)))
-				i = i + 1
-			end
-			surface.SetTextPos(ScrW() - 400,10 + i * 15)
-			surface.DrawText(StormFox.GetRealTime())
-		end)]]
 	end

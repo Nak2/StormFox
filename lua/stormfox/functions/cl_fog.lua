@@ -10,12 +10,14 @@ local function fogapp(current,goal,speed)
 	return app(current,goal,ap * speed)
 end
 
+local con_fog
 local SkyFog = function(scale)
 	--if true then return end
 	if not scale then scale = 1 end
 	if not StormFox.GetData then return end
 	if not StormFox.EFEnabled() then return end
-	local con = GetConVar("sf_enablefog")
+	con_fog = con_fog or GetConVar("sf_enablefog")
+	local con = con_fog
 	if con and not con:GetBool() then
 		local col = StormFox.GetData("Fogcolor") or StormFox.GetData("SkyBottomColor",Color(255,255,255))
 		render.FogColor( col.r,col.g,col.b )

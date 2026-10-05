@@ -234,7 +234,7 @@ Rain puddles
 				end
 				render.SetMaterial(tex)
 				local s = puddlesize * (1 + (node_id % 2)) * 100
-				render.DrawQuadEasy(data[1],data[2]:Up(),s,s,Color(255,255,255),node_id * 19 % 360)
+				render.DrawQuadEasy(data[1],data[2]:Up(),s,s,color_white,node_id * 19 % 360)
 			end
 		end)
 --[[-------------------------------------------------------------------------
@@ -245,7 +245,7 @@ Snow footsteps
 	local footstep_dis = 2000^2
 	timer.Create("StormFox.Footstep toggle",2,0,function()
 		footsteps = false
-		if GetConVar("sf_footsteps_enable"):GetBool() ~= true then
+		if not cvars.Bool("sf_footsteps_enable",false) then
 			table.Empty(STORMFOX_SNOW_FEETS)
 			return
 		end
@@ -313,13 +313,17 @@ Snow footsteps
 		end
 		return mat[q + 1]
 	end
+	local footDistCon
+	local del = {}
 	hook.Add("PreDrawOpaqueRenderables","StormFox - Footprints",function()
 		if not footsteps then return end
+		if #STORMFOX_SNOW_FEETS <= 0 then return end
 		local lp = StormFox.GetCalcViewResult().pos
-		local setting = GetConVar("sf_footsteps_distance")
+		footDistCon = footDistCon or GetConVar("sf_footsteps_distance")
+		local setting = footDistCon
 		if not setting then return end
 		local render_distance = (setting:GetInt() / 4)^2
-		local del = {}
+		for i = #del,1,-1 do del[i] = nil end
 		for k,v in pairs(STORMFOX_SNOW_FEETS) do
 			-- 	pos 	ang 	foot 	scale 	life 	multi
 			local pos,ang,foot,scale,life,multi = v[1],v[2],v[3],v[4],v[5],v[6]

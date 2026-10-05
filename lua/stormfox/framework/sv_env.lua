@@ -77,13 +77,18 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)]]
 		end
 		StormFox.light_environment = ents.FindByClass( "light_environment" )[1] or nil-- ents.FindByName("lightenv")[1] or nil
 		StormFox.light_environments = ents.FindByClass( "light_environment" ) or {}
-		StormFox.env_fog_controller = StormFox.env_fog_controller or GetOrCreate( "env_fog_controller" ) or nil
-		StormFox.shadow_control = StormFox.shadow_control or ents.FindByClass( "shadow_control" )[1] or nil
-		StormFox.env_tonemap_controller = StormFox.env_tonemap_controller or ents.FindByClass("env_tonemap_controller")[1] or nil
-		StormFox.env_wind = StormFox.env_wind or ents.FindByClass("env_wind")[1] or nil
+		-- Keep the old entity only if it is still alive. A map cleanup can leave us with a dead reference.
+		local function Alive( ent, class )
+			if IsValid( ent ) then return ent end
+			return ents.FindByClass( class )[1]
+		end
+		StormFox.env_fog_controller = IsValid( StormFox.env_fog_controller ) and StormFox.env_fog_controller or GetOrCreate( "env_fog_controller" ) or nil
+		StormFox.shadow_control = Alive( StormFox.shadow_control, "shadow_control" )
+		StormFox.env_tonemap_controller = Alive( StormFox.env_tonemap_controller, "env_tonemap_controller" )
+		StormFox.env_wind = Alive( StormFox.env_wind, "env_wind" )
 
 		local con = GetConVar("sf_skybox")
-		if con or con:GetBool() then
+		if not con or con:GetBool() then
 			StormFox.env_skypaint = GetOrCreate("env_skypaint") or nil
 		end
 
@@ -110,7 +115,7 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)]]
 	end
 
 	function StormFox.SetShadowAngle( nShadowPitch )
-		if not StormFox.shadow_control then return end
+		if not IsValid(StormFox.shadow_control) then return end
 		nShadowPitch = (nShadowPitch + 180) % 360
 		-- min 190 max 350
 		local sAngleString = ( nShadowPitch + 180 ) .. " " .. StormFox.GetSunMoonAngle() .. " " .. 0 .. " "
@@ -118,12 +123,12 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)]]
 	end
 
 	function StormFox.SetShadowDistance( dis )
-		if not StormFox.shadow_control then return end
+		if not IsValid(StormFox.shadow_control) then return end
 		StormFox.shadow_control:SetKeyValue( "SetDistance", dis )
 	end
 
 	function StormFox.SetShadowDisable( bool )
-		if not StormFox.shadow_control then return end
+		if not IsValid(StormFox.shadow_control) then return end
 		StormFox.shadow_control:SetKeyValue( "SetShadowsDisabled", bool and 1 or 0 )
 	end
 
@@ -166,6 +171,7 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)]]
 		if nbloom2 and nbloom2 == str then
 			return
 		end
+		nbloom2 = str
 		if not IsValid(StormFox.env_tonemap_controller) then return end
 		StormFox.env_tonemap_controller:Fire("BlendTonemapScale",str)
 	end
@@ -186,6 +192,7 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)]]
 	local blockSpam = SysTime() + 30
 	hook.Add("StormFox.PostEntityScan","StormFox - FixMapBlackness",function()
 		blockSpam = SysTime() + 10
+		oldls = "-" -- light_environments might be new; make sure they get the current style
 	end)
 	local conc = GetConVar("sf_enable_ekstra_entsupport")
 	local function WakeAllEntites()
@@ -229,12 +236,12 @@ hook.Add("OnEntityCreated", "SF-Unnamedentities compatibility", SetNameFix)]]
 
 -- MapWind
 	function StormFox.SetMinWind(n)
-		if not StormFox.env_wind then return false end
+		if not IsValid(StormFox.env_wind) then return false end
 		StormFox.env_wind:Fire("Min normal speed",n)
 		return true
 	end
 	function StormFox.SetMaxWind(n)
-		if not StormFox.env_wind then return false end
+		if not IsValid(StormFox.env_wind) then return false end
 		StormFox.env_wind:Fire("Max normal speed",n)
 		return true
 	end

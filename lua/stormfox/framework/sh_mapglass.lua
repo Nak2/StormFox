@@ -20,6 +20,7 @@ There might still be bugs...
 Tested from HL1 to CS:GO maps.
 ---------------------------------------------------------------------------]]
 StormFox.MAP = {}
+
 -- Local vars
 	local file = table.Copy(file)
 	local Vector = Vector
@@ -35,11 +36,6 @@ StormFox.MAP = {}
 	local DIRTGRASS_TYPE = 0
 	local ROOF_TYPE = 1
 	local ROAD_TYPE = 2
-	local PAVEMENT_TYPE = 3
-
-	local CONTENTS_WATER = 0x20
-	local CONTENTS_WINDOW = 0x2
-	local CONTENTS_SOLID = 0x1
 -- Read functions
 	local function ReadFloatSafe( f )
 		if f:ReadULong() > 0xff800000 then return 0 / 0 end
@@ -117,9 +113,8 @@ StormFox.MAP = {}
 	end
 -- Find soundscape in PAK
 	local conVar = GetConVar("sf_overridemapsounds")
-	local function PAKSearch(f,len)
-		if not conVar:GetBool() then return end -- Soundscape isn't enabled on the map. Ignore.
-		local data = f:Read(len)
+	local function PAKSearchData(data)
+		if not data or not conVar:GetBool() then return end -- Soundscape isn't enabled on the map. Ignore.
 		--file.Write("oi3.txt",data)
 		local found = false
 		for s in string.gmatch( data, "scripts\\soundscapes_.-txt.-PK" ) do
@@ -135,6 +130,10 @@ StormFox.MAP = {}
 				_STORMFOX_MAP__SoundScapes[file_name] = s:sub(#fil + 1,#s - 4)
 			end
 		end
+	end
+	local function PAKSearch(f,len)
+		if not conVar:GetBool() then return end
+		PAKSearchData(f:Read(len))
 	end
 -- Load BSP data.
 	local function GetBSPData(str)
@@ -333,6 +332,12 @@ StormFox.MAP = {}
 	function StormFox.MAP.Version()
 		return BSPDATA.version or 0
 	end
+	function StormFox.MAP.IsColdWorld()
+		local ents = StormFox.MAP.Entities() or {}
+		local worldspawn = ents[1]
+		return worldspawn and worldspawn.coldworld and worldspawn.coldworld > 0 or false
+	end
+
 -- Type Guesser function
 	local blacklist = {"indoor","foliage","model","dirtfloor005c","dirtground010","concretefloor027a","swamp"}
 	local function GetTexType(str)
@@ -383,8 +388,8 @@ StormFox.MAP = {}
 -- Find an entity-class matching the input
 	function StormFox.MAP.FindClass(sClass)
 		local t = {}
-		for k,v in pairs(BSPDATA.Entities) do
-			if string.match(v.classname,sClass) then
+		for _,v in pairs(BSPDATA.Entities or {}) do
+			if string.match(v.classname or "",sClass) then
 				table.insert(t,v)
 			end
 		end
@@ -392,7 +397,7 @@ StormFox.MAP = {}
 	end
 	function StormFox.MAP.FindTargetName(sTargetName)
 		local t = {}
-		for k,v in pairs(BSPDATA.Entities) do
+		for _,v in pairs(BSPDATA.Entities or {}) do
 			if string.match(v.targetname or "",sTargetName) then
 				table.insert(t,v)
 			end
@@ -401,7 +406,7 @@ StormFox.MAP = {}
 	end
 	function StormFox.MAP.FindEntity(eEnt)
 		local c = eEnt:GetClass()
-		for k,v in pairs(BSPDATA.Entities) do
+		for _,v in pairs(BSPDATA.Entities or {}) do
 			if c == v.classname and eEnt:GetKeyValues().hammerid == v.hammerid then
 				return v
 			end
@@ -409,12 +414,85 @@ StormFox.MAP = {}
 		return
 	end
 	function StormFox.MAP.FindHammerid(id)
-		for k,v in pairs(ents.GetAll()) do
+		for _,v in pairs(ents.GetAll()) do
 			if v:GetKeyValues().hammerid == id then
 				return v
 			end
 		end
 		return
 	end
+-- NikNaks support
+	-- NikNaks entities starts at 0, keeps the keys case and converts numbers. StormFox have always had 1-based lists, with lowercase keys.
+	local function NikNaksEntities(map)
+		local raw = map:GetEntities()
+		local list = {}
+		local i = 0
+		while raw[i] do
+			local c = {}
+			for k,v in pairs(raw[i]) do
+				c[type(k) == "string" and string.lower(k) or k] = v
+			end
+			c.rendercolor = c.rendercolor or Color(255,255,255)
+			list[i + 1] = c
+			i = i + 1
+		end
+		return list
+	end
+	local function LoadFromNikNaks(map)
+		local s = SysTime()
+		table.Empty(BSPDATA)
+		BSPDATA.version = map:GetVersion()
+		BSPDATA.Entities = NikNaksEntities(map)
+		BSPDATA.TextureArray = map:GetTextures()
+		-- PAK search (Lump 40)
+			local header = map._lumpheader and map._lumpheader[40]
+			if header and header.filelen > 10 then
+				StormFox.Msg("Found mapdata ..")
+				PAKSearchData(map:GetLumpString(40))
+			end
+		-- Textures and staticprops are not used by StormFox itself. Load them if someone asks.
+		function StormFox.MAP.Textures()
+			if BSPDATA.Textures then return BSPDATA.Textures end
+			local t = {}
+			local ok,tex = pcall(map.GetTexData,map)
+			if ok and tex then
+				for i = 0,#tex do
+					local d = tex[i]
+					if d then
+						d.texture = d.nameStringTableID -- NikNaks stores the name here
+						table.insert(t,d)
+					end
+				end
+			end
+			BSPDATA.Textures = t
+			return t
+		end
+		function StormFox.MAP.StaticProps()
+			if BSPDATA.StaticProps then return BSPDATA.StaticProps end
+			local ok,props = pcall(map.GetStaticProps,map)
+			BSPDATA.StaticProps = ok and props or {}
+			return BSPDATA.StaticProps
+		end
+		StormFox.Msg("Took " .. (SysTime() - s) .. " seconds to load the mapdata ( NikNaks ).")
+		hook.Run("StormFox.MAP.Loaded")
+	end
 -- Load
-	GetBSPData()
+	local nn_map = StormFox.NikNaks and NikNaks.CurrentMap
+	local nn_ok = false
+	local nn_link = "https://steamcommunity.com/sharedfiles/filedetails/?id=2861839844"
+	if nn_map then
+		local ok,err = pcall(LoadFromNikNaks,nn_map)
+		if ok and NikNaks and NikNaks.CurrentMap then
+			nn_ok = true
+			StormFox.Msg("NikNaks found. Using it to read the map.")
+		else
+			ErrorNoHalt("[StormFox] NikNaks failed to read the map. Using the build-in reader: " .. tostring(err) .. "\n")
+		end
+	end
+	if not nn_ok then
+		local ok,err = pcall(GetBSPData)
+		if (not ok or not BSPDATA.Entities) and not nn_map then
+			StormFox.Msg("Unable to read the map. Install NikNaks to fix this: " .. nn_link)
+		end
+		if not ok then error(err,0) end
+	end

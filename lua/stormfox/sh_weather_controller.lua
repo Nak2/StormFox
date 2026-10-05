@@ -3,11 +3,6 @@ local clamp,floor = math.Clamp,math.floor
 local min = math.min
 
 -- Local variables
-	local function IsColdWorld()
-		local mapEnt = StormFox.MAP.Entities()[1]
-		if not mapEnt.coldworld then return false end
-		return mapEnt.coldworld > 0
-	end
 	local function lerpAnyValue( amount, currentValue, targetValue )
 		if not currentValue then return targetValue end -- NOTE: If you find that the values are going instantly to the target check here first
 		if not targetValue then return currentValue end
@@ -43,7 +38,7 @@ end
 local currentMapMaterialFunc,currentMapMaterial,currentLvl,currentMapMaterialid = nil,nil,0,""
 if SERVER then
 	local startTemp = math.random(StormFox.GetMapSetting("mintemp",-10),StormFox.GetMapSetting("maxtemp",20))
-	if IsColdWorld() then
+	if StormFox.MAP.IsColdWorld() then
 		startTemp = math.min(startTemp,-3)
 	end
 	StormFox.SetNetworkData( "Temperature", startTemp )

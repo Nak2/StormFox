@@ -31,11 +31,11 @@ timer.Simple(3,function()
 			tab[ent:GetKeyValues().hammerid or -1] = ent
 		end
 		for i,v in ipairs(StormFox.MAP.FindClass("trigger_soundscape")) do
-			if tab[v.hammerid] then
-				local ent = tab[v.hammerid]
+			local ent = tab[v.hammerid] or tab[tonumber(v.hammerid)]
+			if ent then
 				if not v.soundscape then continue end -- No soundscape
 				ent.soundscape = v.soundscape -- The targetname
-				if v.startdisabled then
+				if tonumber(v.startdisabled) == 1 then
 					ent.enabled = false
 				end
 			end

@@ -138,8 +138,9 @@ function ENT:Draw()
 			drawdebug(x,54 + 90,"3D skybox",StormFox.Is3DSkybox())
 
 		local ax,ay = 0,0
-		if LocalPlayer():GetEyeTrace().Entity == self then
-			ax,ay = WorldToScreen(LocalPlayer():GetEyeTrace().HitPos,campos,0.1,self:LocalToWorldAngles(Angle(0,90,90)))
+		local look = StormFox.GetLookTrace()
+		if look and look.Entity == self then
+			ax,ay = WorldToScreen(look.HitPos,campos,0.1,self:LocalToWorldAngles(Angle(0,90,90)))
 			ax = min(max(ax,20),220)
 			ay = min(max(ay,0),340)
 		end

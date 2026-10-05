@@ -613,6 +613,12 @@ Since we change the material, we need to change the sound as well
 	-- Hooks
 		local unknown = {}
 		local npclast = {}
+		hook.Add("EntityRemoved","StormFox.Footstep.Cleanup",function(ent)
+			lastFoot[ent] = nil
+			canTrigger[ent] = nil
+			unknown[ent] = nil
+			npclast[ent] = nil
+		end)
 		hook.Add("EntityEmitSound","StormFox.Footstep.Detect",function(data)
 			-- Get sound data
 				local ent = data.Entity

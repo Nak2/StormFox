@@ -43,6 +43,29 @@ end
 		return StringToTime(str)
 	end
 
+-- Realtime keeps the time on the servers local clock. Setting the time (or timespeed) by hand ends it:
+-- sf_realtime is turned off and the clock continues from the new time. Re-enabling sf_realtime syncs to the clock again.
+local time_set_by_clock = false -- true while the realtime code (or the start-time) is the one setting it
+
+local function LeaveRealtime( sWhy )
+	local con = GetConVar("sf_realtime")
+	if not con or not con:GetBool() then return end
+	RunConsoleCommand("sf_realtime","0")
+	StormFox.Msg("sf_realtime was turned off, since " .. sWhy .. ".")
+end
+
+-- Sets the time without counting as a time set by hand (Serverside)
+local function SetTimeSilent( flTime )
+	time_set_by_clock = true
+	StormFox.SetTime( flTime )
+	time_set_by_clock = false
+end
+-- Sets the time from the servers clock and lets realtime keep it in sync (Serverside)
+local function SyncTimeToClock()
+	local dt = string.Explode(":",os.date("%H:%M:%S"))
+	SetTimeSilent( dt[1] * 60 + dt[2] + (dt[3] / 60) )
+end
+
 -- Sync functions
 	if SERVER then
 		util.AddNetworkString( "StormFox_SetTimeData" )
@@ -67,6 +90,9 @@ end
 		cvars.AddChangeCallback( "sf_timespeed", function( sConvarName, sOldValue, sNewValue )
 			local flNewValue = (tonumber( sNewValue ) or 1)
 			local flOldTime = StormFox.GetTime()
+			if flNewValue ~= 1 then
+				LeaveRealtime( "the timespeed was changed" )
+			end
 			if flNewValue > 3960 then
 				MsgN( "[StormFox] WARNING: Timespeed was set to higer than 3960.0. Reverting to a value of 3960.")
 				GetConVar( "sf_timespeed" ):SetFloat( 3960.0 )
@@ -103,6 +129,9 @@ end
 		-- Used to update the current stormfox time
 		function StormFox.SetTime( var )
 			if not var then return false end
+			if not time_set_by_clock then
+				LeaveRealtime( "the time was set" )
+			end
 			local flNewTime = nil
 			if type( var ) == "string" then
 				flNewTime = StringToTime( var )
@@ -210,18 +239,17 @@ end
 	end
 
 if SERVER then
-	StormFox.SetTime( os.time() % 1440 )
+	SetTimeSilent( os.time() % 1440 )
 	cvars.AddChangeCallback( "sf_realtime", function( convar_name, value_old, value_new )
 		if value_new == "1" then
 			RunConsoleCommand("sf_timespeed",1) -- match the real world timespeed. Seconds of gametime pr second
-			local dt = string.Explode(":",os.date("%H:%M:%S"))
-			StormFox.SetTime(dt[1] * 60 + dt[2] + (dt[3] / 60))
+			SyncTimeToClock()
 			print("[StormFox] Setting time to localtime (" .. os.date("%H:%M:%S") .. ")")
 		end
 	end, "StormFox - SF_REALTIMESET" )
 	timer.Create("StormFox - SF_KeepRealTime",6,0,function()
 		local con = GetConVar("sf_realtime")
-		if not con:GetBool() then return end
+		if not con or not con:GetBool() then return end
 		-- In case of desync
 		local con2 = GetConVar("sf_timespeed")
 		if con2:GetInt() ~= 1 then
@@ -230,9 +258,11 @@ if SERVER then
 		end
 		local dt = string.Explode(":",os.date("%H:%M:%S"))
 		local t = dt[1] * 60 + dt[2] + (dt[3] / 60)
-		if StormFox.GetTime() ~= t then
+		-- Only correct real drift. The floats are never exactly equal, so comparing them directly reset (and re-sent) the time every cycle.
+		local drift = math.abs(StormFox.GetTime() - t)
+		if math.min(drift,1440 - drift) > 0.5 then -- More than 30 seconds off
 			--StormFox.Msg("Desync detected while running sf_timespeed.")
-			StormFox.SetTime(dt[1] * 60 + dt[2] + (dt[3] / 60))
+			SyncTimeToClock()
 		end
 	end)
 end
@@ -246,8 +276,7 @@ end
 			-- Realtime setting
 				if con2 and con2:GetBool() then
 					RunConsoleCommand("sf_timespeed",1) -- match the real world timespeed. Seconds of gametime pr second
-					local dt = string.Explode(":",os.date("%H:%M:%S"))
-					StormFox.SetTime(dt[1] * 60 + dt[2] + (dt[3] / 60))
+					SyncTimeToClock()
 					print("[StormFox] sf_start_time: Setting time to localtime (" .. os.date("%H:%M:%S") .. ")")
 					return
 				end
@@ -257,7 +286,7 @@ end
 				local n = StringToTime(str)
 				if not n then print("[StormFox] WARNING. sf_start_time is invalid: " .. str) return end
 				print("[StormFox] sf_start_time: Setting time to: " .. str)
-				StormFox.SetTime(n)
+				SetTimeSilent(n)
 			else
 				local cookie = cookie.GetString("StormFox - ShutDown",nil)
 				if cookie then
@@ -267,7 +296,7 @@ end
 						diff_time = diff_time * TIME_SPEED
 					end
 					local n = tonumber(a[1]) + diff_time
-					StormFox.SetTime(n % 1440)
+					SetTimeSilent(n % 1440)
 					print("[StormFox] Loaded time.")
 				end
 			end

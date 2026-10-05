@@ -52,6 +52,7 @@ StormFox.SoundScape = {}
 	local abs,Approach,cos,sin,rad = math.abs,math.Approach,math.cos,math.sin,math.rad
 	STORMFOX_SOUNDSCAPE = STORMFOX_SOUNDSCAPE or {}							-- Global varable
 	STORMFOX_SOUNDSCAPE_ENTITY = STORMFOX_SOUNDSCAPE_ENTITY or {}			-- Soundscape position entities
+	STORMFOX_SOUNDSCAPE.patches = STORMFOX_SOUNDSCAPE.patches or {}
 	STORMFOX_SOUNDSCAPE.playlooping = STORMFOX_SOUNDSCAPE.playlooping or {} -- List of looping sounds. We keep this global in case of reload.
 	STORMFOX_SOUNDSCAPE.playrandom = STORMFOX_SOUNDSCAPE.playrandom or {} 	-- List of random sounds.
 	function StormFox.SoundScape.GetLoopSounds()
@@ -119,24 +120,27 @@ StormFox.SoundScape = {}
 						[3] = {volume,CurTime() + fadeover} -- Target volume
 					}
 				end
-			-- Stop all sounds on old entity
-				local old_ent = STORMFOX_SOUNDSCAPE.playlooping[snd][2]
-				if old_ent ~= ent and IsValid(old_ent) then
-					old_ent.sf_soundscape[snd]:FadeOut(fadeover)
-					old_ent.sf_soundscape[snd] = nil
+			-- Moving to another entity. Let the old SoundPatch fade out and start a new one.
+				local patches = STORMFOX_SOUNDSCAPE.patches
+				if STORMFOX_SOUNDSCAPE.playlooping[snd][2] ~= ent and patches[snd] then
+					patches[snd]:FadeOut(fadeover)
+					patches[snd] = nil
 				end
 			-- Set the new entities
 				STORMFOX_SOUNDSCAPE.playlooping[snd][2] = ent
 			-- Play the sound on the entity
-				if not ent.sf_soundscape then ent.sf_soundscape = {} end
-				if not ent.sf_soundscape[snd] then
-					ent.sf_soundscape[snd] = CreateSound(ent,snd)
-					ent.sf_soundscape[snd]:SetSoundLevel(soundlvl or 80)
-					ent.sf_soundscape[snd]:SetDSP(dsp or 1)
-					ent.sf_soundscape[snd]:PlayEx(STORMFOX_SOUNDSCAPE.playlooping[snd][1],pitch)
-				else
-					ent.sf_soundscape[snd]:SetSoundLevel(soundlvl or 80)
-					ent.sf_soundscape[snd]:SetDSP(dsp or 1)
+				local isnew = patches[snd] == nil
+				if isnew then
+					patches[snd] = CreateSound(ent,snd)
+					if not patches[snd] then -- Gmod couldn't make the sound
+						STORMFOX_SOUNDSCAPE.playlooping[snd] = nil
+						return
+					end
+				end
+				patches[snd]:SetSoundLevel(soundlvl or 80)
+				patches[snd]:SetDSP(dsp or 1)
+				if isnew then
+					patches[snd]:PlayEx(STORMFOX_SOUNDSCAPE.playlooping[snd][1],pitch)
 				end
 				local dif = abs( STORMFOX_SOUNDSCAPE.playlooping[snd][1] - volume ) / fadeover
 				STORMFOX_SOUNDSCAPE.playlooping[snd][3] = {volume,dif} -- Target volume
@@ -196,16 +200,21 @@ StormFox.SoundScape = {}
 		timer.Create("StormFox.SoundScape.Fader",1,0,function()
 			for snd,tab in pairs(STORMFOX_SOUNDSCAPE.playlooping) do
 				if not tab[3] then continue end
+				local sound_loop = STORMFOX_SOUNDSCAPE.patches[snd]
+				if not sound_loop then -- Nothing is playing, so there is nothing to fade
+					STORMFOX_SOUNDSCAPE.playlooping[snd] = nil
+					continue
+				end
 				local vol_target,vol_amount,vol_current = tab[3][1],tab[3][2],tab[1]
 				if vol_target ~= vol_current then -- Not there yet
 					local nextstep = Approach(vol_current,vol_target,vol_amount)
-					tab[2].sf_soundscape[snd]:ChangeVolume(nextstep,1)
+					sound_loop:ChangeVolume(nextstep,1)
 					STORMFOX_SOUNDSCAPE.playlooping[snd][1] = nextstep
 				else -- We reached the goal
 					STORMFOX_SOUNDSCAPE.playlooping[snd][3] = nil
 					if STORMFOX_SOUNDSCAPE.playlooping[snd][1] <= 0 then -- If volume is 0, we should remove the sound
-						tab[2].sf_soundscape[snd]:Stop()
-						tab[2].sf_soundscape[snd] = nil
+						sound_loop:Stop()
+						STORMFOX_SOUNDSCAPE.patches[snd] = nil
 						STORMFOX_SOUNDSCAPE.playlooping[snd] = nil
 					end
 				end
@@ -795,30 +804,21 @@ StormFox.SoundScape = {}
 			if not IsValid(LocalPlayer()) then return end
 			-- Scan and find all soundscapes nearby
 				local pos = StormFox.GetCalcViewResult().pos
-				local c = {}
+			-- Find the closest. The distance is cheap and the trace isn't, so only trace the ones that can win.
+				local closest,dis = nil,-1
 				for k,v in pairs(SoundScapes()) do
 					if not v.enabled then continue end
+					local d = pos:DistToSqr(v.origin)
+					if dis >= 0 and d >= dis then continue end -- Not closer than what we already have
+					if v.radius >= 0 and v.powradius < d then continue end -- Out of range
 					if not v.proxy then
 						local tr = ET(pos,v.origin,MASK_SOLID_BRUSHONLY)
 						if tr.Hit then continue end -- We're not in view
 					end
-					local dis = pos:DistToSqr(v.origin)
-					local ss = v.soundscape
-					if v.radius < 0 then
-						table.insert(c,{k,dis,ss})
-					elseif v.powradius >= dis then
-						table.insert(c,{k,dis,ss})
-					end
+					dis = d
+					closest = k
 				end
-				if #c <= 0 then return end
-			-- Find the closest
-				local closest,dis = 1,-1
-				for k,v in pairs(c) do
-					if dis < 0 or dis > v[2] then
-						dis = v[2]
-						closest = v[1]
-					end
-				end
+				if not closest then return end
 			if currentSoundscapeID == closest then return end -- No update
 			--	print("SoundScape ID: " .. closest)
 			--	print("Name: " .. name)
@@ -917,7 +917,7 @@ StormFox.SoundScape = {}
 				for i,v in ipairs(SoundScapes()) do
 					if not v.data then continue end
 					if not v.data.hammerid then continue end
-					if v.data.hammerid ~= hammerid then continue end
+					if tostring(v.data.hammerid) ~= hammerid then continue end
 					SoundScapes()[i].enabled = enable
 					break
 				end

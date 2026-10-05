@@ -146,17 +146,23 @@ end)
 
 	local lastRotation,lastCurrentPhase = -1,-1
 	local lastMoonMat = ""
+	local moonMatName,moonMatCache
 	local function RenderMoonPhase(rotation,currentPhase)
 		-- Check if there is a need to re-render
-			local moonMat = Material(StormFox.GetData("MoonTexture") or "stormfox/effects/moon.png")
+			local moonName = StormFox.GetData("MoonTexture") or "stormfox/effects/moon.png"
+			if moonName ~= moonMatName then
+				moonMatName = moonName
+				moonMatCache = Material(moonName)
+			end
+			local moonMat = moonMatCache
 			rotation = rotation or 0
 			currentPhase = currentPhase or 1.3
 			if lastRotation == rotation and lastCurrentPhase == currentPhase and lastMoonMat == moonMat then
 				-- Already rendered
 				return true
 			end
-			lastRotation = rotation 
-			lastCurrentPhase = currentPhase 
+			lastRotation = rotation
+			lastCurrentPhase = currentPhase
 			lastMoonMat = moonMat
 		
 		-- Set dark texture
@@ -176,7 +182,7 @@ end)
 			--	render.OverrideBlendFunc( true, BLEND_ZERO, BLEND_SRC_ALPHA, BLEND_DST_ALPHA, BLEND_ZERO )
 				render_OverrideBlend(true, BLEND_ZERO, BLEND_SRC_ALPHA,0,BLEND_DST_ALPHA, BLEND_ZERO,0)
 			-- Render mask
-				surface.SetDrawColor(Color(255,255,255,255))
+				surface.SetDrawColor(color_white)
 				-- 0 to 50%
 				if currentPhase < 2.9 then
 					local s = 7 - 2.3 * currentPhase
@@ -238,10 +244,8 @@ end
 
 local atan2 = math.atan2
 -- Render Sun and moon
-	local MoonGlow = Material("stormfox/moon_glow")
-	local MoonMat = Material( "stormfox/moon_fix" );
 	local sunMat = Material("stormfox/moon_glow")
-	local sunC = Color(255,255,255)
+	local sunDrawCol,moonDarkCol,moonCol = Color(255,255,255,255),Color(0,0,0,0),Color(255,255,255,255)
 	hook.Add("StormFox - TopSkyRender","StormFox - SunAndMoon",function()
 		-- moonScale,sunScale
 		local eyeang = EyeAngles()
@@ -258,7 +262,8 @@ local atan2 = math.atan2
 			render.SetLightingMode( 2 )
 			-- Render sun first
 				local c_c = StormFox.GetData("SunColor", Color(255,255,255))
-				local c = Color(c_c.r,c_c.g,c_c.b,c_c.a)
+				local c = sunDrawCol
+				c.r,c.g,c.b = c_c.r,c_c.g,c_c.b
 				local a = clamp(sunScale / 20,0,1) * 255 * StormFox.CalculateMapLight(StormFox.GetTime()) / 255
 					c.a = a
 					sum_a = a / 255
@@ -305,10 +310,11 @@ local atan2 = math.atan2
 			--	local lum = 0.2126 * BG_Color.r + 0.7152 * BG_Color.g + 0.0722 * BG_Color.b
 			--	print(lum) -- 120 = 5
 							--
-				render.DrawQuadEasy( N * 200, NN, moonScale * 5, moonScale * 5, Color(0,0,0, 0 ), sa )
+				render.DrawQuadEasy( N * 200, NN, moonScale * 5, moonScale * 5, moonDarkCol, sa )
 				render.SetMaterial( CurrentMoonTexture )
 				local aa = max(0,(3.125 * a) - 57.5)
-				render.DrawQuadEasy( N * 200, NN, moonScale * 5, moonScale * 5, Color(c.r,c.g,c.b, aa  ), sa )
+				moonCol.r,moonCol.g,moonCol.b,moonCol.a = c.r,c.g,c.b,aa
+				render.DrawQuadEasy( N * 200, NN, moonScale * 5, moonScale * 5, moonCol, sa )
 
 				render.SuppressEngineLighting(false)
 				render.SetLightingMode( 0 )
@@ -321,18 +327,21 @@ local atan2 = math.atan2
 	--sf_allow_sunbeams
 	local matSunbeams = Material( "pp/sunbeams" )
 		matSunbeams:SetTexture( "$fbtexture", render.GetScreenEffectTexture() )
+	local con_sunbeams
+	local pixelShaders
 	hook.Add( "RenderScreenspaceEffects", "StormFox - Sunbeams", function()
-		if ( not render.SupportsPixelShaders_2_0() ) then return end
-		local con = GetConVar("sf_allow_sunbeams")
+		if pixelShaders == nil then pixelShaders = render.SupportsPixelShaders_2_0() end
+		if not pixelShaders then return end
+		con_sunbeams = con_sunbeams or GetConVar("sf_allow_sunbeams")
+		local con = con_sunbeams
 		if not con or not con:GetBool() then return end
+		if ( sunRayVis == 0 ) then return end
 		local lam = StormFox.CalculateMapLight() / 100 - 0.5
 
 		local direciton = sunAng:Forward()
 		local beampos = StormFox.GetEyePos() + direciton * 4096
 
 		local scrpos = beampos:ToScreen()
-
-		if ( sunRayVis == 0 ) then return end
 
 		local dot = ( direciton:Dot( EyeVector() ) - 0.8 ) * 5
 		if ( dot <= 0 ) then return end

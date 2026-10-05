@@ -110,13 +110,17 @@
 	end)
 
 -- SkyPaint Main
-	local max,round,clamp = math.max,math.Round,math.Clamp
-	local oldSunSize
+	local clamp = math.Clamp
 	local max = math.max
 	local con = GetConVar("sf_skybox")
+	local nextSkyUpdate = 0
 	hook.Add("Think","StormFox - SkyThink",function()
 		if not IsValid(g_SkyPaint) then return end
 		if con and not con:GetBool() then return end
+		-- The sky changes over minutes. 30 updates a second is plenty.
+		local now = SysTime()
+		if now < nextSkyUpdate then return end
+		nextSkyUpdate = now + 1 / 30
 			local tl = StormFox.GetData("ThunderLight") or 0
 			local topColor = StormFox.GetData("SkyTopColor") or Color(51,127.5,255)
 			g_SkyPaint:SetTopColor(ColVec(Color(max(topColor.r,tl),max(topColor.g,tl),max(topColor.b,tl)),255))

@@ -45,7 +45,7 @@ timer.Create("StormFox - LightTimer",0.5,0,function()
 	if lightState and currentindex > 6 then return end
 	if not lightState and currentindex <= 0 then return end
 	if nT > CurTime() then return end
-	nT = math.random(0.2,2) + CurTime()
+	nT = math.Rand(0.2,2) + CurTime()
 	currentindex = clamp(currentindex,1,6)
 
 	local sOnOff = lightState and "TurnOn" or "TurnOff"

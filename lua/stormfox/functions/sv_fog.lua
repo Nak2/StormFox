@@ -5,8 +5,8 @@
 ---------------------------------------------------------------------------]]
 local clamp = math.Clamp
 hook.Add("StormFox.PostEntityScan","Fog reader",function()
-	if not StormFox.env_fog_controller then return end
-	local fog_val = StormFox.env_fog_controller:GetKeyValues()
+	if not IsValid(StormFox.env_fog_controller) then return end
+	local fog_val = StormFox.env_fog_controller:GetKeyValues() or {}
 	StormFox.SetNetworkData("fog_start",clamp(fog_val["fogstart"] or -100,-1000,0))
 	StormFox.SetNetworkData("fog_end",clamp(fog_val["fogend"] or 108000,7000,108000))
 	StormFox.SetNetworkData("fogmaxdensity",clamp(fog_val["fogmaxdensity"] or 0.8,0.2,0.9))

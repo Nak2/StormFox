@@ -38,6 +38,16 @@ Potato protection
 			return b and n or max(n / 4,1)
 		end
 	end
+	-- Squared distance from the local players head to a position. nil until the player exists.
+	function StormFox.DistToHeadSqr(pos)
+		return MainEyePos():DistToSqr(pos)
+	end
+	-- What the local player is looking at. nil until the player exists.
+	function StormFox.GetLookTrace()
+		local ply = LocalPlayer()
+		if not IsValid(ply) then return nil end
+		return ply:GetEyeTrace()
+	end
 	function StormFox.GetAvageFPS()
 		return avagefps or 1 / RealFrameTime()
 	end
@@ -114,7 +124,7 @@ Outdoor varables
 			local wind = StormFox.GetData("Wind",0)
 			local windangle = StormFox.GetData("WindAngle",0)
 			local downspeed = -max(1.56 * Gauge + 1.22,10) -- Base on realworld stuff .. and some tweaking (Was too slow)
-				downfallNorm = Angle(0,windangle,0):Forward() * wind
+			local downfallNorm = Angle(0,windangle,0):Forward() * wind
 				downfallNorm.z = downfallNorm.z + downspeed
 			return downfallNorm
 		end
@@ -186,9 +196,10 @@ Outdoor varables
 		end
 	-- Allow varables to be set
 		local enviroment = {}
+		local pending = {} -- A scan is built here, then swapped in. Readers never see half a scan.
 		local function AddEnvData(name,pos)
 			if type(pos) == "boolean" and pos then
-				enviroment[name] = true
+				pending[name] = true
 				return
 			end
 			if not pos then return end
@@ -197,10 +208,10 @@ Outdoor varables
 			end
 
 			if pos <= 0 then return end -- Throw it out if its 0 or less
-			if enviroment[name] and enviroment[name] > pos then -- Check with current varable
+			if pending[name] and pending[name] > pos then -- Check with current varable
 				return
 			end
-			enviroment[name] = pos -- Set it as current
+			pending[name] = pos -- Set it as current
 			return
 		end
 		--[[
@@ -218,6 +229,57 @@ Outdoor varables
 		end]]
 
 		local lFilter,lEnv = 0,0
+		local scanCo
+		-- The scan is a lot of traces. Its done as a coroutine: one direction pr. frame, instead of everything in one.
+		local function DoScan(exp)
+			local eyepos,eyeang = view.pos,view.ang
+			local dfn = -GetDFn()
+			table.Empty(pending)
+			-- Check the players head
+				local overhead,_,underglass = HandleSkyPillar(nil)
+				if not overhead then
+					AddEnvData("Outside",true)
+				end
+			-- Check the direct rain
+				local dir_overhead,_,glass = HandleSkyPillar(nil,dfn)
+				if not dir_overhead then
+					AddEnvData("InRain",true)
+				end
+
+				if overhead or dir_overhead then
+					if underglass or glass then
+						AddEnvData("Window",dir_overhead)
+						AddEnvData("Window",overhead)
+					else
+						AddEnvData("Roof",overhead)
+					end
+				end
+			if not dir_overhead then return end -- No need to check indoor things
+			coroutine.yield()
+
+			-- Scan infront (Just in case)
+			local r = rad(eyeang.y)
+			local pos = eyepos + Vector(cos(r) * 250,sin(r) * 250,0)
+			local result,in_the_way,is_glass = HandleSkyPillar(pos,dfn)
+			if not result and not in_the_way then
+				AddEnvData("NextToOutside",true)
+			elseif is_glass then
+				AddEnvData("Window",result)
+			end
+			-- Scan around
+				local n = clamp(exp * 4 - 1,4,16)
+				for i = 0,n do
+					coroutine.yield()
+					local r = rad(i * (360 / (n + 1)))
+					local pos = eyepos + Vector(cos(r) * 250,sin(r) * 250,0)
+					local result,in_the_way,is_glass = HandleSkyPillar(pos,dfn)
+					if is_glass then
+						AddEnvData("Window",result)
+					elseif not in_the_way then
+						AddEnvData("NextToOutside",true)
+					end
+				end
+		end
 		hook.Add("Think","StormFox - Outdoor Env",function()
 			-- Update the soundfilter. This can be a bit slow, so only every 5th second.
 				if lFilter <= SysTime() then
@@ -225,63 +287,26 @@ Outdoor varables
 					UpdateFilter()
 				end
 			-- Scan the enviroment
-				if lEnv > SysTime() then return end
-				local eyepos,eyeang = view.pos,view.ang
-				local exp = StormFox.GetExspensive()
-				lEnv = SysTime() + clamp( 1 - exp * 0.1,0.2,2)
-				table.Empty(enviroment)
-				--debugoverlay.Line(eyepos,eyepos + -GetDFn() * 100,lEnv - SysTime(),Color( 255, 255, 255 ),false)
-				-- Check the players head
-					local overhead,_,underglass = HandleSkyPillar(nil)
-					if not overhead then
-						AddEnvData("Outside",true)
-					else
-						--debugoverlay.Box(overhead,Vector(-5,-5,-5),Vector(5,5,5),1,Color( 255, 255, 255 ))
-					end
-				-- Check the direct rain
-					local dir_overhead,_,glass = HandleSkyPillar(nil,-GetDFn())
-					if not dir_overhead then
-						AddEnvData("InRain",true)
-					else
-						--debugoverlay.Box(dir_overhead,Vector(-5,-5,-5),Vector(5,5,5),1,Color( 255, 255, 255 ))
-					end
-
-					if overhead or dir_overhead then
-						if underglass or glass then
-							AddEnvData("Window",dir_overhead)
-							AddEnvData("Window",overhead)
-						else
-							--AddEnvData("Roof",dir_overhead)
-							AddEnvData("Roof",overhead)
-						end
-					end
-			if not dir_overhead then hook.Call("StormFox - EnvUpdate") return end -- No need to check indoor things
-
-			-- Scan infront (Just in case)
-			local r = rad(eyeang.y)
-			local pos = eyepos + Vector(cos(r) * 250,sin(r) * 250,0)
-			local result,in_the_way,is_glass = HandleSkyPillar(pos,-GetDFn())
-			--debugBox(result or pos,in_the_way,is_glass)
-			if not result and not in_the_way then
-				AddEnvData("NextToOutside",true)
-			elseif is_glass then
-				AddEnvData("Window",vec)
-			end
-			-- Scan around
-				local n = clamp(exp * 4 - 1,4,16)
-				for i = 0,n do
-					local r = rad(i * (360 / (n + 1)))
-					local pos = eyepos + Vector(cos(r) * 250,sin(r) * 250,0)
-					local result,in_the_way,is_glass = HandleSkyPillar(pos,-GetDFn())
-
-					--debugBox(result or pos,in_the_way,is_glass)
-					if is_glass then
-						AddEnvData("Window",result)
-					elseif not wall_hit and not in_the_way then
-						AddEnvData("NextToOutside",true)
-					end
+				local ok,err
+				if scanCo then
+					ok,err = coroutine.resume(scanCo)
+				else
+					if lEnv > SysTime() then return end
+					local exp = StormFox.GetExspensive()
+					lEnv = SysTime() + clamp( 1 - exp * 0.1,0.2,2)
+					scanCo = coroutine.create(DoScan)
+					ok,err = coroutine.resume(scanCo,exp)
 				end
-			hook.Call("StormFox - EnvUpdate")
+				if not ok then
+					ErrorNoHalt("[StormFox] Environment scan failed: " .. tostring(err) .. "\n")
+					scanCo = nil
+					return
+				end
+				if coroutine.status(scanCo) == "dead" then
+					scanCo = nil
+					enviroment,pending = pending,enviroment
+					hook.Call("StormFox - EnvUpdate")
+				end
 		end)
 	-- Easy functions
 		StormFox.Env = {}

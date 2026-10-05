@@ -83,16 +83,17 @@ end
 	local r = math.Round
 
 	-- Render function that supports fractions (surface libary is whole numbers only)
+		local win_m,win_v = Matrix(),Vector()
 		local function DrawTextureRectWindow(w,h,o_x,o_y)
 			if o_x < 0 then o_x = o_x + w end
 			if o_y < 0 then o_y = o_y + h end
 			o_x = o_x % w
 			o_y = o_y % h
 
-			local m = Matrix()
-			m:Identity() 
-			
-			m:Translate(Vector(o_x % w,o_y % h)) 
+			local m = win_m
+			m:Identity()
+			win_v.x,win_v.y = o_x % w,o_y % h
+			m:Translate(win_v)
 			cam.PushModelMatrix(m)
 				surface.DrawTexturedRect(0,0,w,h)
 				surface.DrawTexturedRect(-w,0,w,h)
@@ -121,8 +122,8 @@ end
 			local x_w,y_w = cos(w_ang) * w_force,sin(w_ang) * w_force
 			for i=1,4 do
 				local ri = 5 - i
-				local x,y = offset[i][1],offset[i][2]
-				offset[i] = {x + x_w * ri ,y + y_w * ri}
+				local o = offset[i]
+				o[1],o[2] = o[1] + x_w * ri,o[2] + y_w * ri
 			end
 		end)
 	-- Cloud-Rendering
@@ -227,30 +228,25 @@ end
 		-- Create top - cloud layer
 			RTRender(sky_rts[1],true)
 				surface.SetMaterial(cloudbig)
-				surface.SetDrawColor(Color(255,255,255,min(cloud_alpha * 4,240)))
+				surface.SetDrawColor(255,255,255,min(cloud_alpha * 4,240))
 				DrawTextureRectWindow(texscale,texscale,offset[1][1] + c_seed,offset[1][2] + c_seed)
 			RTMask()
 				surface.SetMaterial(cloudbig)
 				DrawTextureRectWindow(texscale,texscale,offset[1][1] + c_seed,offset[1][2] + c_seed)
 			RTEnd(sky_mats[1])
-			local r,g,b = 255,140,0
 			sky_mats[1]:SetVector("$color", Vector(ambiantLight.r / 255,ambiantLight.g / 255,ambiantLight.b / 255))
 
 		-- Create middle - cloud layer
 			RTRender(sky_rts[2],true)
 				surface.SetMaterial(cloudbig)
-				surface.SetDrawColor(Color(255,255,255,max(0,cloud_alpha * 3 - 85)))
+				surface.SetDrawColor(255,255,255,max(0,cloud_alpha * 3 - 85))
 				DrawTextureRectWindow(texscale,texscale,offset[2][1] + d_seed,offset[2][2] + d_seed)
 			RTMask()
 				surface.SetMaterial(cloudbig)
 				DrawTextureRectWindow(texscale,texscale,offset[2][1] + d_seed,offset[2][2] + d_seed)
 			RTEnd(sky_mats[2])
 			
-			local r,g,b = 255,140,0
-			--Vector(r / 255,g / 255,b / 255) or 
 			sky_mats[2]:SetVector("$color",Vector(ambiantLight.r / 255,ambiantLight.g / 255,ambiantLight.b / 255))
-		-- Create light 
-			local ambiantLight,ambiantShine,amb_shine_ang = CalcAmbiantColor()
 		--[[
 			local off_a,off_mul = rad(amb_shine_ang.y),abs(mad(amb_shine_ang.p + 90 , 360)) / 5
 			local offset_x,offset_y = cos(off_a) * off_mul,sin(off_a) * off_mul
@@ -270,6 +266,7 @@ end
 
 -- render.CullMode(1) render render.CullMode(0) will change the render
 -- Cloud layer
+local nextCloudRT = 0
 hook.Add("StormFox - RenderClouds","StormFox - CloudsRender",function(c_pos,map_center)
 	if not StormFox.EFEnabled() then return end
 	if not StormFox.MapOBBCenter or not StormFox.GetEyePos then return end
@@ -277,7 +274,12 @@ hook.Add("StormFox - RenderClouds","StormFox - CloudsRender",function(c_pos,map_
 	-- Start render
 	local c_a = StormFox.GetData("CloudsAlpha",0)
 	local SE_quality = StormFox.GetExspensive()
-	CloudRender(c_a,SE_quality)
+	-- The cloud textures drift slowly. Re-rendering them 30 times a second looks identical to every frame.
+	local now = SysTime()
+	if now >= nextCloudRT then
+		nextCloudRT = now + 1 / 30
+		CloudRender(c_a,SE_quality)
+	end
 	cam.Start3D( Vector( 0, 0, 0 ), EyeAngles() ,nil,nil,nil,nil,nil,0,32000)
 		local n = clamp(ceil(c_a / 60),0,4)
 		-- Render top clouds

@@ -264,7 +264,7 @@ local mad = math.AngleDifference
 			end
 			local sun_rise = Color(250, 214, 165,sun_riseset * 255) -- from wiki https://en.wikipedia.org/wiki/Sunset_(color)
 			local c = ColorMixer(c,sun_rise)
-				ca = c.a / 255
+			local ca = c.a / 255
 			a.p = a.p + 180
 			ccc = Color(c.r * ca,c.g * ca,c.b * ca),a
 			aaa = a
@@ -290,12 +290,13 @@ local mad = math.AngleDifference
 		return windVec
 	end
 	local max_dis = 32400
+	local up_trace = Vector(0,0,640000)
 	function StormFox.IsVectorInWind(vec ,filter )
 		local tr = ET(vec, windNorm * -640000, MASK_SHOT, filter)
 		local hitSky = tr.HitSky
 		local dis = tr.HitPos:DistToSqr( vec )
 		if not hitSky and dis >= max_dis then -- So far away. The wind would had gone around. Check if we're outside.
-			local tr = ET(vec,Vector(0,0,640000),MASK_SHOT,filter)
+			local tr = ET(vec,up_trace,MASK_SHOT,filter)
 			hitSky = tr.HitSky
 		end
 		return hitSky,tr
@@ -323,7 +324,7 @@ local mad = math.AngleDifference
 		local hitSky = tr.HitSky
 		local dis = tr.HitPos:DistToSqr( pos )
 		if not hitSky and dis >= max_dis then -- So far away. The wind would had gone around. Check if we're outside.
-			local tr = ET(pos,Vector(0,0,640000),MASK_SHOT,ent)
+			local tr = ET(pos,up_trace,MASK_SHOT,ent)
 			hitSky = tr.HitSky
 		end
 		if not dont_cache then
@@ -346,9 +347,8 @@ local mad = math.AngleDifference
 		local pos = e_pos(ent)
 		local tr = ET(pos, windNorm * -640000, MASK_SHOT, ent)
 		local hitSky = tr.HitSky
-		local dis = pos:DistToSqr( Vector(tr.HitPos.x,tr.HitPos.y,pos.z) )
 		if not hitSky then -- Check trace up
-			local tr = ET(pos,Vector(0,0,640000),MASK_SHOT,ent)
+			local tr = ET(pos,up_trace,MASK_SHOT,ent)
 			hitSky = tr.HitSky
 		end
 		if not dont_cache then

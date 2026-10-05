@@ -77,7 +77,6 @@ local t = 0
 hook.Add("Think","StormFox - EffectProps",function()
 	if not con:GetBool() then return end
 	--local constraint = StormFox.GetMapSetting("wind_breakconstraints",true)
-	local r = {}
 	local wind = StormFox.GetNetworkData("Wind",0)
 	local breakconstraints = StormFox.GetMapSetting("wind_breakconstraints",false)
 	local windnorm = StormFox.GetWindNorm()
@@ -85,6 +84,7 @@ hook.Add("Think","StormFox - EffectProps",function()
 		table.Empty(move_tab)
 		return 
 	end
+	local r = {}
 	for ent,fall_safe in pairs(move_tab) do
 		if not ent or not IsValid(ent) then 	-- Check if valid
 			-- Remove ent
@@ -133,7 +133,7 @@ hook.Add("Think","StormFox - EffectProps",function()
 				pys:ApplyForceCenter(windPush)
 			-- Take damage (To stop all the wood props)
 				if not ent:IsVehicle() and t <= CurTime() and wind > 40 then
-					t3 = CurTime() + 0.5
+					t = CurTime() + 0.5
 					ent:TakeDamage(1,game.GetWorld(),game.GetWorld())
 				end
 		end
