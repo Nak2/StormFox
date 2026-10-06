@@ -76,7 +76,7 @@ if StormFox.NikNaks and NikNaks.Version >= 0.91 then
 			if ent:Health() <= 0 or ent._sfd then continue end
 			if not ent.sf_vars then
 				local id = ent:MapCreationID()
-				local windowData = id >= 0 and map:FindByHammerID(id)
+				local windowData = id >= 0 and map:FindByMapCreationID(id)
 				if not windowData then
 					ent._sfd = true
 					continue
