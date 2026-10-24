@@ -22,35 +22,48 @@ end
 	local max,min,clamp,ceil,abs = math.max,math.min,math.Clamp,math.ceil,math.abs
 
 -- Init sky
-	-- Generate dome
-		local Render_Dome = Mesh()
+	-- Generate dome (ported from StormFox2)
+		local Render_Dome
 		local cos,sin,rad = math.cos,math.sin,math.rad
+		local layers = 4
+		local top_height = 20
+		local z_level = -.8
 		local sc = 20
-		local stage = 0
-		local e_r = math.rad(45)
-		local t_s = 6
-		mesh.Begin( Render_Dome, MATERIAL_TRIANGLES, 8 )
-			for i=1,8 do
-				local yaw = math.rad(45 * i)
-				-- L
-				local c,s = cos(yaw),sin(yaw)
-				mesh.Position(Vector(c * sc,s * sc,0.1 * -sc))
-				mesh.TexCoord( stage, (1 + c) / 2 * t_s,  (1 + s) / 2 * t_s )
-				mesh.Color(255,255,255,0)
-				mesh.AdvanceVertex()
-				-- R
-				local c,s = cos(yaw + e_r),sin(yaw + e_r)
-				mesh.Position(Vector(c * sc,s * sc,0.1 * -sc))
-				mesh.TexCoord( stage, (1 + c) / 2 * t_s,  (1 + s) / 2 * t_s )
-				mesh.Color(255,255,255,0)
-				mesh.AdvanceVertex()
-				-- T
-				mesh.Position(Vector(0,0,0.1 * sc))
-				mesh.TexCoord( stage, 0.5 * t_s,0.5 * t_s )
-				mesh.Color(255,255,255,255)
-				mesh.AdvanceVertex()
+		local e_r = rad(45)
+		local t_s = 1
+		local function UVMulti(uv,mul)
+			return (uv - 0.5) * mul + 0.5
+		end
+		local function BuildDome(mat)
+			local tris, n = {}, 0
+			local function V(pos, u, v, a)
+				n = n + 1
+				tris[n] = { pos = pos, u = u, v = v, color = Color(255, 255, 255, a) }
 			end
-		mesh.End()
+			for i = 1,8 do
+				local yaw = rad(45 * i)
+				-- Top
+				local c,s = cos(yaw),sin(yaw)
+				local L = {Vector(c * sc,s * sc,0.1 * -sc),(1 + c) / 2 * t_s,(1 + s) / 2 * t_s}
+				local c,s = cos(yaw + e_r),sin(yaw + e_r)
+				local R = {Vector(c * sc,s * sc,0.1 * -sc),(1 + c) / 2 * t_s,(1 + s) / 2 * t_s}
+				V(L[1], L[2], L[3], 255)
+				V(R[1], R[2], R[3], 255)
+				V(Vector(0,0,0.1 * top_height), 0.5 * t_s, 0.5 * t_s, 255)
+				-- Side 1 (fades out towards the horizon)
+				local R2 = {R[1] * 1.4 - Vector(0,0,4),UVMulti(R[2],1.4),UVMulti(R[3],1.4)}
+				V(L[1], L[2], L[3], 255)
+				V(R2[1], R2[2], R2[3], 0)
+				V(R[1], R[2], R[3], 255)
+				-- Side 2
+				V(L[1], L[2], L[3], 255)
+				V(L[1] * 1.4 - Vector(0,0,4), UVMulti(L[2], 1.4), UVMulti(L[3],1.4), 0)
+				V(R2[1], R2[2], R2[3], 0)
+			end
+			local m = Mesh(mat)
+			m:BuildFromTriangles(tris)
+			return m
+		end
 	-- Setup Materials
 		local sky_mats = {}
 		local offset = {}
@@ -63,15 +76,16 @@ end
 			params[ "$nolod" ] = 1
 			params[ "$nomip" ] = 1
 			params["$additive"] = 0
-		for i=1,4 do
+		for i=1,layers do
 			sky_mats[i] = CreateMaterial("SF_RENDER_Skytext4" .. i,"UnlitGeneric",params)
-			offset[i] = {i * 128,i * 128}
-		end	
+			offset[i] = {i * 99,i * 33}
+		end
+		Render_Dome = BuildDome(sky_mats[1])
 	-- Setup RT-Render
 		local sky_rts = {}
 		local texscale = 512
 		local half_texscale = texscale / 2 
-		for i=1,4 do
+		for i=1,layers do
 			sky_rts[i] = GetRenderTargetEx( "StormFox - Sky" .. i, texscale, texscale, 1, MATERIAL_RT_DEPTH_NONE, 2, CREATERENDERTARGETFLAGS_UNFILTERABLE_OK, IMAGE_FORMAT_RGBA8888)
 		end
 
@@ -105,7 +119,7 @@ end
 		local matrix = Matrix()
 		local function RenderDome(pos,mat,alpha)
 			matrix:Identity()
-			matrix:Translate( vector_origin - pos )
+			matrix:Translate( vector_origin + pos )
 			--mat:SetAlpha(alpha)
 			cam_PushModelMatrix(matrix)
 				render.SetBlend(alpha / 255)
@@ -120,8 +134,8 @@ end
 			local w_ang = rad(StormFox.GetNetworkData("WindAngle",0))
 			local w_force = max(StormFox.GetNetworkData("Wind",0) * (FrameTime() / 8),0.01)
 			local x_w,y_w = cos(w_ang) * w_force,sin(w_ang) * w_force
-			for i=1,4 do
-				local ri = 5 - i
+			for i=1,layers do
+				local ri = layers - i + 1
 				local o = offset[i]
 				o[1],o[2] = o[1] + x_w * ri,o[2] + y_w * ri
 			end
@@ -225,28 +239,25 @@ end
 
 		
 			ambiantLight = b_color
-		-- Create top - cloud layer
-			RTRender(sky_rts[1],true)
-				surface.SetMaterial(cloudbig)
-				surface.SetDrawColor(255,255,255,min(cloud_alpha * 4,240))
-				DrawTextureRectWindow(texscale,texscale,offset[1][1] + c_seed,offset[1][2] + c_seed)
-			RTMask()
-				surface.SetMaterial(cloudbig)
-				DrawTextureRectWindow(texscale,texscale,offset[1][1] + c_seed,offset[1][2] + c_seed)
-			RTEnd(sky_mats[1])
-			sky_mats[1]:SetVector("$color", Vector(ambiantLight.r / 255,ambiantLight.g / 255,ambiantLight.b / 255))
-
-		-- Create middle - cloud layer
-			RTRender(sky_rts[2],true)
-				surface.SetMaterial(cloudbig)
-				surface.SetDrawColor(255,255,255,max(0,cloud_alpha * 3 - 85))
-				DrawTextureRectWindow(texscale,texscale,offset[2][1] + d_seed,offset[2][2] + d_seed)
-			RTMask()
-				surface.SetMaterial(cloudbig)
-				DrawTextureRectWindow(texscale,texscale,offset[2][1] + d_seed,offset[2][2] + d_seed)
-			RTEnd(sky_mats[2])
-			
-			sky_mats[2]:SetVector("$color",Vector(ambiantLight.r / 255,ambiantLight.g / 255,ambiantLight.b / 255))
+		-- Create cloud layers (each layer has its own RT, offset and speed)
+			local n = clamp(ceil(cloud_alpha / 60),0,layers)
+			local light = Vector(ambiantLight.r,ambiantLight.g,ambiantLight.b) / 255
+			for i = 1,n do
+				local seed = (i == 1) and c_seed or d_seed
+				local a = (i == 1) and min(cloud_alpha * 4,240) or max(0,cloud_alpha * 3 - 85)
+				local ox,oy = offset[i][1] + seed + i * 33,offset[i][2] + seed + i * 33
+				RTRender(sky_rts[i],true)
+					surface.SetMaterial(cloudbig)
+					surface.SetDrawColor(255,255,255,a)
+					DrawTextureRectWindow(texscale,texscale,ox,oy)
+				RTMask()
+					surface.SetMaterial(cloudbig)
+					DrawTextureRectWindow(texscale,texscale,ox,oy)
+				RTEnd(sky_mats[i])
+				-- Upper layers are a bit brighter
+				local amp = 1 + .4 * (1 - (i / n))
+				sky_mats[i]:SetVector("$color",Vector(min(light.x * amp,1),min(light.y * amp,1),min(light.z * amp,1)))
+			end
 		--[[
 			local off_a,off_mul = rad(amb_shine_ang.y),abs(mad(amb_shine_ang.p + 90 , 360)) / 5
 			local offset_x,offset_y = cos(off_a) * off_mul,sin(off_a) * off_mul
@@ -266,31 +277,20 @@ end
 
 -- render.CullMode(1) render render.CullMode(0) will change the render
 -- Cloud layer
-local nextCloudRT = 0
 hook.Add("StormFox - RenderClouds","StormFox - CloudsRender",function(c_pos,map_center)
 	if not StormFox.EFEnabled() then return end
 	if not StormFox.MapOBBCenter or not StormFox.GetEyePos then return end
-	local height = map_center.z
-	-- Start render
 	local c_a = StormFox.GetData("CloudsAlpha",0)
-	local SE_quality = StormFox.GetExspensive()
-	-- The cloud textures drift slowly. Re-rendering them 30 times a second looks identical to every frame.
-	local now = SysTime()
-	if now >= nextCloudRT then
-		nextCloudRT = now + 1 / 30
-		CloudRender(c_a,SE_quality)
-	end
-	cam.Start3D( Vector( 0, 0, 0 ), EyeAngles() ,nil,nil,nil,nil,nil,0,32000)
-		local n = clamp(ceil(c_a / 60),0,4)
-		-- Render top clouds
-		for i = 1,1 do
-			RenderDome(c_pos * 0 + Vector(0,0,0.9 * (0.4 + i * 0.04)),sky_mats[2],255)
+	local n = clamp(ceil(c_a / 60),0,layers)
+	if n <= 0 then return end
+	CloudRender(c_a,StormFox.GetExspensive())
+	-- A sane near-plane keeps the depth buffer precise, otherwise the layers z-fight (flicker).
+	cam.Start3D( Vector( 0, 0, 0 ), EyeAngles() ,nil,nil,nil,nil,nil,1,1000)
+		-- Layers are spaced apart so they never share depth.
+		for i = 1,n do
+			local ri = n - i + layers
+			RenderDome(Vector(0,0,z_level + 0.4 * ri),sky_mats[i],255)
 		end
-		-- Render clouds
-		for i = 1,2 do
-			RenderDome(c_pos * 0 + Vector(0,0,1 * (0.4 + i * 0.01)),sky_mats[1],255)
-		end
-		-- Render light
 	cam.End3D()
 end)
 

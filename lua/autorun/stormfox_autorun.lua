@@ -1,5 +1,5 @@
 StormFox = {}
-StormFox.Version = 1.80
+StormFox.Version = 1.81
 StormFox.WorkShopVersion = false--game.IsDedicated()
 
 StormFox.NikNaks = false
