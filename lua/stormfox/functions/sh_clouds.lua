@@ -16,13 +16,12 @@ end
 	local render_OverrideBlend = render.OverrideBlend
 
 -- Localize for optimisasion
-	local render_DrawQuadEasy = render.DrawQuadEasy
 	local cam_PopModelMatrix = cam.PopModelMatrix
 	local cam_PushModelMatrix = cam.PushModelMatrix
 	local max,min,clamp,ceil,abs = math.max,math.min,math.Clamp,math.ceil,math.abs
 
 -- Init sky
-	-- Generate dome (ported from StormFox2)
+	-- Generate dome
 		local Render_Dome
 		local cos,sin,rad = math.cos,math.sin,math.rad
 		local layers = 4
@@ -84,7 +83,6 @@ end
 	-- Setup RT-Render
 		local sky_rts = {}
 		local texscale = 512
-		local half_texscale = texscale / 2 
 		for i=1,layers do
 			sky_rts[i] = GetRenderTargetEx( "StormFox - Sky" .. i, texscale, texscale, 1, MATERIAL_RT_DEPTH_NONE, 2, CREATERENDERTARGETFLAGS_UNFILTERABLE_OK, IMAGE_FORMAT_RGBA8888)
 		end
@@ -93,10 +91,8 @@ end
 		cloudbig:SetFloat("$nocull",1)
 		cloudbig:SetFloat("$nocull",1)
 		cloudbig:SetFloat("$additive",0)
-	local zero_mat = Material("stormfox/mat_zero")
-	local r = math.Round
 
-	-- Render function that supports fractions (surface libary is whole numbers only)
+		-- Render function that supports fractions (surface libary is whole numbers only)
 		local win_m,win_v = Matrix(),Vector()
 		local function DrawTextureRectWindow(w,h,o_x,o_y)
 			if o_x < 0 then o_x = o_x + w end
@@ -152,28 +148,6 @@ end
 
 	---------------------------------------------------------------------------]]
 	local mad = math.AngleDifference
-	local function CalcAmbiantColor(t) -- Calc the "cloud" light
-		t = t or StormFox.GetTime()
-		local SunSetRise_Amount = StormFox.GetSun_SetRise(t)
-		local amb_c = Color(0,0,0)
-		local shine_c = Color(0,0,0)
-		if t < 1080 and t > 360 then
-			-- Day
-			local sA = StormFox.GetData("SunColor",Color(255,255,255)).a / 255 * (1 - SunSetRise_Amount)
-			amb_c = Color(255 * sA, 255 * sA, sA * 255)
-			shine_c = Color(255 * sA + 255 * SunSetRise_Amount, 255 * sA + 127.5 * SunSetRise_Amount, sA * 255)
-			return amb_c,shine_c,StormFox.GetSunAngle(t)
-		else
-			-- Night
-			local mul = clamp(mad(StormFox.GetMoonAngle().p,360) / -90 * 5,0,1)
-			local mA = StormFox.GetData("MoonVisibility",100) / 100 * (1 - SunSetRise_Amount) * mul
-			amb_c = Color(25 * mA, 25 * mA, mA * 25)
-			shine_c = Color(55 * mA + 255 * SunSetRise_Amount, 55 * mA + 127.5 * SunSetRise_Amount, mA * 55)
-			return amb_c,shine_c,SunSetRise_Amount < 0.3 and StormFox.GetMoonAngle() or StormFox.GetSunAngle(t)
-		end
-		return amb_c,shine_c,0
-	end
-	local HQ_Rendering = true
 	local function ColorMix(c,add,cmin,cmax)
 		return Color(clamp(c.r + add,cmin or 0,cmax or 255),clamp(c.g + add,cmin or 0,cmax or 255),clamp(c.b + add,cmin or 0,cmax or 255))
 	end
@@ -217,9 +191,6 @@ end
 
 
 		-- Load varables
-			local SE_quality = SE_quality or StormFox.GetExspensive() -- quality_level
-				HQ_Rendering = SE_quality >= 7 -- HQ render if quality_level is equal or above 7
-				HQ_Rendering = false
 			local c_seed = StormFox.GetNetworkData("CloudSeed",0)
 			local d_seed = c_seed * 3.4 % 100
 			local b_color_raw = StormFox.GetData("SkyBottomColor") or Color(255,255,255)
@@ -238,7 +209,7 @@ end
 			local b_color = ColorMix(Color(aa,aa,aa),t_n + mA * 30 ,15,255)
 
 		
-			ambiantLight = b_color
+			local ambiantLight = b_color
 		-- Create cloud layers (each layer has its own RT, offset and speed)
 			local n = clamp(ceil(cloud_alpha / 60),0,layers)
 			local light = Vector(ambiantLight.r,ambiantLight.g,ambiantLight.b) / 255
